@@ -200,22 +200,22 @@ if ($result->num_rows > 0) {
                 <!-- 2KG Totals -->
                 <th class="text-center">'.($totals['Trust_2KG'] <= 0 ? '' : ceil($totals['Trust_2KG'])).'</th>
                 <th class="text-center">'.($totals['Trust_Return_2KG'] <= 0 ? '' : ceil($totals['Trust_Return_2KG'])).'</th>
-                <th class="text-center">'.($totals['Balance_2KG'] <= 0 ? '' : ceil($totals['Balance_2KG'])).'</th>
+                <th class="text-center">'.($totals['Balance_2KG'] == 0 ? '' : ceil($totals['Balance_2KG'])).'</th>
                 
                 <!-- 5KG Totals -->
                 <th class="text-center">'.($totals['Trust_5KG'] <= 0 ? '' : ceil($totals['Trust_5KG'])).'</th>
                 <th class="text-center">'.($totals['Trust_Return_5KG'] <= 0 ? '' : ceil($totals['Trust_Return_5KG'])).'</th>
-                <th class="text-center">'.($totals['Balance_5KG'] <= 0 ? '' : ceil($totals['Balance_5KG'])).'</th>
+                <th class="text-center">'.($totals['Balance_5KG'] == 0 ? '' : ceil($totals['Balance_5KG'])).'</th>
                 
                 <!-- 12.5KG Totals -->
                 <th class="text-center">'.($totals['Trust_12_5KG'] <= 0 ? '' : ceil($totals['Trust_12_5KG'])).'</th>
                 <th class="text-center">'.($totals['Trust_Return_12_5KG'] <= 0 ? '' : ceil($totals['Trust_Return_12_5KG'])).'</th>
-                <th class="text-center">'.($totals['Balance_12_5KG'] <= 0 ? '' : ceil($totals['Balance_12_5KG'])).'</th>
+                <th class="text-center">'.($totals['Balance_12_5KG'] == 0 ? '' : ceil($totals['Balance_12_5KG'])).'</th>
                 
                 <!-- 37.5KG Totals -->
                 <th class="text-center">'.($totals['Trust_37_5KG'] <= 0 ? '' : ceil($totals['Trust_37_5KG'])).'</th>
                 <th class="text-center">'.($totals['Trust_Return_37_5KG'] <= 0 ? '' : ceil($totals['Trust_Return_37_5KG'])).'</th>
-                <th class="text-center">'.($totals['Balance_37_5KG'] <= 0 ? '' : ceil($totals['Balance_37_5KG'])).'</th>
+                <th class="text-center">'.($totals['Balance_37_5KG'] == 0 ? '' : ceil($totals['Balance_37_5KG'])).'</th>
             </tr>
         </tfoot>
     </table></div>';
