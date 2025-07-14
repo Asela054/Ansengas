@@ -10,7 +10,29 @@ $resulttruststock =$conn-> query($sqltruststock);
 $sqlsaftystock="SELECT `tbl_product`.`product_name`,`tbl_product`.`orderlevel`, `tbl_stock_trust`.`saftyqty`, `tbl_stock_trust`.`saftyreturnqty` FROM `tbl_stock_trust` LEFT JOIN `tbl_product` ON `tbl_product`.`idtbl_product`=`tbl_stock_trust`.`tbl_product_idtbl_product` WHERE `tbl_stock_trust`.`status`=1 AND `tbl_product`.`status`=1 ORDER BY `tbl_product`.`orderlevel`";
 $resultsaftystock =$conn-> query($sqlsaftystock);
 
-$sqltrustcusstock="SELECT `tbl_product`.`product_name`,`tbl_product`.`orderlevel`, SUM(`tbl_cutomer_trustreturn`.`trustqty`) AS `trustqty`, SUM(`tbl_cutomer_trustreturn`.`returnqty`) AS `returnqty` FROM `tbl_cutomer_trustreturn` LEFT JOIN `tbl_product` ON `tbl_product`.`idtbl_product`=`tbl_cutomer_trustreturn`.`tbl_product_idtbl_product` WHERE `tbl_cutomer_trustreturn`.`status`=1 AND `tbl_product`.`status`=1 GROUP BY `tbl_cutomer_trustreturn`.`tbl_product_idtbl_product` ORDER BY `tbl_product`.`orderlevel`";
+// $sqltrustcusstock="SELECT `tbl_product`.`product_name`,`tbl_product`.`orderlevel`, SUM(`tbl_cutomer_trustreturn`.`trustqty`) AS `trustqty`, SUM(`tbl_cutomer_trustreturn`.`returnqty`) AS `returnqty` FROM `tbl_cutomer_trustreturn` LEFT JOIN `tbl_product` ON `tbl_product`.`idtbl_product`=`tbl_cutomer_trustreturn`.`tbl_product_idtbl_product` WHERE `tbl_cutomer_trustreturn`.`status`=1 AND `tbl_product`.`status`=1 GROUP BY `tbl_cutomer_trustreturn`.`tbl_product_idtbl_product` ORDER BY `tbl_product`.`orderlevel`";
+$sqltrustcusstock="SELECT 
+    p.product_name AS 'Product',
+    SUM(d.trustqty) AS 'Trust_Stock',
+    SUM(d.trustreturnqty) AS 'Return_Stock',
+    (SUM(d.trustqty) - SUM(d.trustreturnqty)) AS 'Balance'
+FROM 
+    tbl_invoice i
+INNER JOIN 
+    tbl_invoice_detail d ON i.idtbl_invoice = d.tbl_invoice_idtbl_invoice
+LEFT JOIN 
+    tbl_product p ON p.idtbl_product = d.tbl_product_idtbl_product
+WHERE 
+    i.status = 1
+    AND d.tbl_product_idtbl_product IN (1, 2, 4, 6)
+    AND (d.trustqty > 0 OR d.trustreturnqty > 0)
+    AND d.trustqty != d.trustreturnqty
+GROUP BY 
+    d.tbl_product_idtbl_product
+HAVING 
+    (SUM(d.trustqty) - SUM(d.trustreturnqty)) != 0
+ORDER BY 
+    p.orderlevel ASC";
 $resulttrustcusstock =$conn-> query($sqltrustcusstock);
 
 include "include/topnavbar.php"; 
@@ -108,10 +130,10 @@ include "include/topnavbar.php";
                                     <tbody>
                                         <?php if($resulttrustcusstock->num_rows > 0) {while ($rowtrustcusstock = $resulttrustcusstock-> fetch_assoc()) { ?>
                                         <tr>
-                                            <td><?php echo $rowtrustcusstock['product_name'] ?></td>
-                                            <td class="text-center"><?php echo $rowtrustcusstock['trustqty'] ?></td>
-                                            <td class="text-center"><?php echo $rowtrustcusstock['returnqty'] ?></td>
-                                            <td class="text-center"><?php echo ($rowtrustcusstock['trustqty']-$rowtrustcusstock['returnqty']) ?></td>
+                                            <td><?php echo $rowtrustcusstock['Product'] ?></td>
+                                            <td class="text-center"><?php echo $rowtrustcusstock['Trust_Stock'] ?></td>
+                                            <td class="text-center"><?php echo $rowtrustcusstock['Return_Stock'] ?></td>
+                                            <td class="text-center"><?php echo $rowtrustcusstock['Balance'] ?></td>
                                         </tr>
                                         <?php }} ?>
                                     </tbody>
