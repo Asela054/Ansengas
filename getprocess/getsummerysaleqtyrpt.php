@@ -465,7 +465,7 @@ if($resultdaily->num_rows>0){
         $resultinvdetail = $conn->query($sqlinvdetail);
         $rowinvdetail = $resultinvdetail->fetch_assoc();
 
-        if(!empty($rowinvdetail['tbl_product_idtbl_product']) && $rowinvdetail['discount_price']>0){
+        if(!empty($rowinvdetail['tbl_product_idtbl_product']) && $rowinvdetail['discount_price']>0 && $discountstatus==1){
             $refillqty=$rowinvdetail['refillqty'];
             $refill_price=(($rowinvdetail['encustomer_refillprice']*($vatamount+100))/100);
             $discount_price=(($rowinvdetail['discount_price']*($vatamount+100))/100);
