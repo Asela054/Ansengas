@@ -364,11 +364,11 @@ else if($lastElement=='rptsalereportmonthly.php'){
     $statuscheck=checkprivilege($menuprivilegearray, 91, 3);
     $deletecheck=checkprivilege($menuprivilegearray, 91, 4);
 }
-else if($lastElement=='localpurchase.php'){
-    $addcheck=checkprivilege($menuprivilegearray, 93, 1);
-    $editcheck=checkprivilege($menuprivilegearray, 93, 2);
-    $statuscheck=checkprivilege($menuprivilegearray, 93, 3);
-    $deletecheck=checkprivilege($menuprivilegearray, 93, 4);
+else if($lastElement=='rptsalereportmonthlyempty.php'){
+    $addcheck=checkprivilege($menuprivilegearray, 92, 1);
+    $editcheck=checkprivilege($menuprivilegearray, 92, 2);
+    $statuscheck=checkprivilege($menuprivilegearray, 92, 3);
+    $deletecheck=checkprivilege($menuprivilegearray, 92, 4);
 }
 
 function checkprivilege($arraymenu, $menuID, $type){
@@ -482,11 +482,6 @@ function checkprivilege($arraymenu, $menuID, $type){
                 <div class="nav-link-icon"><i class="fas fa-exchange-alt"></i></div>
                 Tank Transactions
             </a>
-            <?php }if(menucheck($menuprivilegearray, 93)==1){ ?>
-            <a class="nav-link p-0 px-3 py-2" href="localpurchase.php">
-                <div class="nav-link-icon"><i class="fas fa-shopping-bag"></i></div>
-                Local Purchase
-            </a>
             <?php }if(menucheck($menuprivilegearray, 17)==1){ ?>
             <a class="nav-link p-0 px-3 py-2" href="unloading.php">
                 <div class="nav-link-icon"><i class="fas fa-warehouse"></i></div>
@@ -567,13 +562,13 @@ function checkprivilege($arraymenu, $menuID, $type){
                     <?php } ?>
                 </nav>
             </div>
-            <?php } if(menucheck($menuprivilegearray, 18)==1 | menucheck($menuprivilegearray, 19)==1 | menucheck($menuprivilegearray, 20)==1 | menucheck($menuprivilegearray, 21)==1 | menucheck($menuprivilegearray, 22)==1 | menucheck($menuprivilegearray, 25)==1 | menucheck($menuprivilegearray, 30)==1 | menucheck($menuprivilegearray, 31)==1 | menucheck($menuprivilegearray, 32)==1 | menucheck($menuprivilegearray, 33)==1 | menucheck($menuprivilegearray, 66)==1 | menucheck($menuprivilegearray, 67)==1 | menucheck($menuprivilegearray, 68)==1 | menucheck($menuprivilegearray, 81)==1 | menucheck($menuprivilegearray, 84)==1 | menucheck($menuprivilegearray, 85)==1 | menucheck($menuprivilegearray, 90)==1 | menucheck($menuprivilegearray, 91)==1){ ?>
+            <?php } if(menucheck($menuprivilegearray, 18)==1 | menucheck($menuprivilegearray, 19)==1 | menucheck($menuprivilegearray, 20)==1 | menucheck($menuprivilegearray, 21)==1 | menucheck($menuprivilegearray, 22)==1 | menucheck($menuprivilegearray, 25)==1 | menucheck($menuprivilegearray, 30)==1 | menucheck($menuprivilegearray, 31)==1 | menucheck($menuprivilegearray, 32)==1 | menucheck($menuprivilegearray, 33)==1 | menucheck($menuprivilegearray, 66)==1 | menucheck($menuprivilegearray, 67)==1 | menucheck($menuprivilegearray, 68)==1 | menucheck($menuprivilegearray, 81)==1 | menucheck($menuprivilegearray, 84)==1 | menucheck($menuprivilegearray, 85)==1 | menucheck($menuprivilegearray, 90)==1 | menucheck($menuprivilegearray, 91)==1 | menucheck($menuprivilegearray, 92)==1){ ?>
             <a class="nav-link p-0 px-3 py-2 collapsed" href="javascript:void(0);" data-toggle="collapse" data-target="#collapsereport" aria-expanded="false" aria-controls="collapsereport">
                 <div class="nav-link-icon"><i data-feather="file"></i></div>
                 Reports
                 <div class="sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
             </a>
-            <div class="collapse <?php if($lastElement=="stock.php" | $lastElement=="employeetarget.php" | $lastElement=="vehicletarget.php" | $lastElement=="customeroutstanding.php" | $lastElement=="dailysale.php" | $lastElement=="refsaleinfo.php" | $lastElement=="dailycash.php" | $lastElement=="salereportcustomer.php" | $lastElement=="salereportproduct.php" | $lastElement=="bufferstockmaintainreport.php" | $lastElement=="lorrysaleinfo.php" | $lastElement=="driversaleinfo.php" | $lastElement=="rpt_summery_sale_qty.php" | $lastElement=="rpt_suppliertax.php" | $lastElement=="rpt_customertax.php" | $lastElement=="rpt_trustbreakdown.php" | $lastElement=="rptsalereportmonthly.php"){echo 'show';} ?>" id="collapsereport" data-parent="#accordionSidenav">
+            <div class="collapse <?php if($lastElement=="stock.php" | $lastElement=="employeetarget.php" | $lastElement=="vehicletarget.php" | $lastElement=="customeroutstanding.php" | $lastElement=="dailysale.php" | $lastElement=="refsaleinfo.php" | $lastElement=="dailycash.php" | $lastElement=="salereportcustomer.php" | $lastElement=="salereportproduct.php" | $lastElement=="bufferstockmaintainreport.php" | $lastElement=="lorrysaleinfo.php" | $lastElement=="driversaleinfo.php" | $lastElement=="rpt_summery_sale_qty.php" | $lastElement=="rpt_suppliertax.php" | $lastElement=="rpt_customertax.php" | $lastElement=="rpt_trustbreakdown.php" | $lastElement=="rptsalereportmonthly.php" | $lastElement=="rptsalereportmonthlyempty.php"){echo 'show';} ?>" id="collapsereport" data-parent="#accordionSidenav">
                 <nav class="sidenav-menu-nested nav accordion" id="accordionSidenavPages">
                     <?php if(menucheck($menuprivilegearray, 18)==1){ ?> 
                     <a class="nav-link p-0 px-3 py-1" href="stock.php">Stock</a>
@@ -608,9 +603,11 @@ function checkprivilege($arraymenu, $menuID, $type){
                     <?php }if(menucheck($menuprivilegearray, 85)==1){ ?>
                     <a class="nav-link p-0 px-3 py-1" href="rpt_customertax.php">Customer Tax Report</a>
                     <?php }if(menucheck($menuprivilegearray, 90)==1){ ?>
-                    <a class="nav-link p-0 px-3 py-1" href="rpt_trustbreakdown.php">Trust Break Report</a>
+                    <a class="nav-link p-0 px-3 py-1" href="rpt_trustbreakdown.php">Trust Breakdown Report</a>
                     <?php }if(menucheck($menuprivilegearray, 91)==1){ ?>
-                    <a class="nav-link p-0 px-3 py-1" href="rptsalereportmonthly.php">Sale Report Monthly</a>
+                    <a class="nav-link p-0 px-3 py-1" href="rptsalereportmonthly.php">Sale Report Refill Monthly</a>
+                    <?php }if(menucheck($menuprivilegearray, 92)==1){ ?>
+                    <a class="nav-link p-0 px-3 py-1" href="rptsalereportmonthlyempty.php">Sale Report Empty Monthly</a>
                     <?php } ?>
                 </nav>
             </div>
