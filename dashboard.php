@@ -178,7 +178,7 @@ th[rowspan] {
                                         <table class="table table-striped table-bordered table-sm small" id="mainstocksummerytable">
                                             <thead class="thead-dark">
                                                 <tr class="">
-                                                    <th>Gas Accesaries</th>
+                                                    <th>Gas & Accessories</th>
                                                     <th class="text-center">Full Qty</th>
                                                     <th class="text-center">Empty Qty</th> 
                                                     <th class="text-center">Damage Qty</th> 

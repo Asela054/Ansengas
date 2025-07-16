@@ -235,6 +235,7 @@ include "include/topnavbar.php";
     $(document).ready(function() {
 
         $("#customer").select2({
+            dropdownParent: $('#modalcreateorder'),
             ajax: {
                 url: 'getprocess/getcustomerlist.php',
                 type: "post",

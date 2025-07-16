@@ -155,11 +155,11 @@ foreach($qtyarray as $rowqty) {
     </tr>';
 }
 
-$html .= '<tr>
-    <th>Total</th>
-    <th class="text-center">'.$nettotalfull.'</th>
-    <th class="text-center">'.$nettotalempty.'</th>
-    <th class="text-center">'.$nettotaldamage.'</th>
-</tr>';
+// $html .= '<tr>
+//     <th>Total</th>
+//     <th class="text-center">'.$nettotalfull.'</th>
+//     <th class="text-center">'.$nettotalempty.'</th>
+//     <th class="text-center">'.$nettotaldamage.'</th>
+// </tr>';
 
 echo $html;
