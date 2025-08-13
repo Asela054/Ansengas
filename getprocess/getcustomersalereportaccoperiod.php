@@ -6,16 +6,17 @@ $validto = $_POST['validto'];
 $typeSelector = $_POST['typeSelector'];
 $dataselector = $_POST['dataselector'];
 $cusType = $_POST['cusType'];
+if(!empty($_POST['groupcategory'])){$groupcategory=$_POST['groupcategory'];}
 
 if($typeSelector==1){
     if($dataselector==''){
         // $sql = "SELECT `idtbl_customer`, `name`, `phone`, `address` FROM `tbl_customer` WHERE `status`=1";
-        $sql = "SELECT `tbl_customer`.`idtbl_customer`, `tbl_customer`.`name`, `tbl_customer`.`phone`, `tbl_customer`.`address`, `tbl_area`.`area` FROM `tbl_customer` LEFT JOIN `tbl_area` ON `tbl_area`.`idtbl_area`=`tbl_customer`.`tbl_area_idtbl_area` WHERE `tbl_customer`.`status`=1 ORDER BY `tbl_customer`.`tbl_area_idtbl_area` ASC";
+        $sql = "SELECT `tbl_customer`.`idtbl_customer`, `tbl_customer`.`name`, `tbl_customer`.`phone`, `tbl_customer`.`address`, `tbl_area`.`area` FROM `tbl_customer` LEFT JOIN `tbl_area` ON `tbl_area`.`idtbl_area`=`tbl_customer`.`tbl_area_idtbl_area` WHERE 1=1";if(!empty($_POST['groupcategory'])){$sql.=" AND `tbl_customer`.`tbl_group_category_idtbl_group_category`='$groupcategory'";}$sql.=" AND `tbl_customer`.`status`=1 ORDER BY `tbl_customer`.`tbl_area_idtbl_area` ASC";
         $result = $conn->query($sql);
     }
     else{
         // $sql = "SELECT `idtbl_customer`, `name`, `phone`, `address` FROM `tbl_customer` WHERE `status`=1 AND `idtbl_customer`='$dataselector'";
-        $sql = "SELECT `tbl_customer`.`idtbl_customer`, `tbl_customer`.`name`, `tbl_customer`.`phone`, `tbl_customer`.`address`, `tbl_area`.`area` FROM `tbl_customer` LEFT JOIN `tbl_area` ON `tbl_area`.`idtbl_area`=`tbl_customer`.`tbl_area_idtbl_area` WHERE `tbl_customer`.`status`=1 AND `tbl_customer`.`idtbl_customer`='$dataselector' ORDER BY `tbl_customer`.`tbl_area_idtbl_area` ASC";
+        $sql = "SELECT `tbl_customer`.`idtbl_customer`, `tbl_customer`.`name`, `tbl_customer`.`phone`, `tbl_customer`.`address`, `tbl_area`.`area` FROM `tbl_customer` LEFT JOIN `tbl_area` ON `tbl_area`.`idtbl_area`=`tbl_customer`.`tbl_area_idtbl_area` WHERE 1=1";if(!empty($_POST['groupcategory'])){$sql.=" AND `tbl_customer`.`tbl_group_category_idtbl_group_category`='$groupcategory'";}$sql.=" AND `tbl_customer`.`status`=1 AND `tbl_customer`.`idtbl_customer`='$dataselector' ORDER BY `tbl_customer`.`tbl_area_idtbl_area` ASC";
         $result = $conn->query($sql);
     }
 }
@@ -66,7 +67,7 @@ while($rowproductcount = $resultproductcount->fetch_assoc()){
     <thead class="thead-dark">
         <tr>
             <th style="border: none;">Distributor: </th>
-            <th colspan="<?php echo $accessoriescount+19 ?>" style="border: none;">ANSEN Gas Distributors (Pvt) Ltd</th>
+            <th colspan="<?php echo $accessoriescount+23 ?>" style="border: none;">ANSEN Gas Distributors (Pvt) Ltd</th>
         </tr>
         <tr>
             <th colspan="4"></th>
@@ -74,6 +75,7 @@ while($rowproductcount = $resultproductcount->fetch_assoc()){
             <th class="text-center" colspan="<?php echo $gascount ?>">New Cylinders</th>
             <th class="text-center" colspan="<?php echo $gascount ?>">Empty Cylinders</th>
             <th class="text-center" colspan="<?php echo $gascount ?>">Trust Cylinders</th>
+            <th class="text-center" colspan="<?php echo $gascount ?>">Trust Return Cylinders</th>
             <th class="text-center" colspan="<?php echo $accessoriescount ?>">Accessories</th>
         </tr>
         <tr>
@@ -82,6 +84,9 @@ while($rowproductcount = $resultproductcount->fetch_assoc()){
             <th>Dealer Name</th>
             <th>Address</th>
             <th>Telephone Number</th>
+            <?php foreach ($products as $rowproduct){if($rowproduct->categoryid==1){  ?>
+            <th nowrap><?php echo $rowproduct->product_name; ?></th>
+            <?php }} ?>
             <?php foreach ($products as $rowproduct){if($rowproduct->categoryid==1){  ?>
             <th nowrap><?php echo $rowproduct->product_name; ?></th>
             <?php }} ?>
@@ -105,6 +110,7 @@ while($rowproductcount = $resultproductcount->fetch_assoc()){
         $productnewfull = array();
         $productemptyfull = array();
         $producttrustfull = array();
+        $productreturntrustfull = array();
         $productaccessories = array();
         while ($row = $result->fetch_assoc()) { 
             $customerID = $row['idtbl_customer'];
@@ -318,6 +324,54 @@ while($rowproductcount = $resultproductcount->fetch_assoc()){
             <td class="text-center"><?php echo $rowsaleinfo['trustqty'] != 0 ? $rowsaleinfo['trustqty'] : '-'; ?></td>
             <?php }} ?>
             <?php 
+            foreach ($products as $rowproduct){if($rowproduct->categoryid==1){
+                $sqlvat = "SELECT `idtbl_vat_info`, `vat` FROM `tbl_vat_info` ORDER BY `idtbl_vat_info` DESC LIMIT 1";
+                $resultvat = $conn->query($sqlvat);
+                $rowvat = $resultvat->fetch_assoc();
+
+                $vatamount = $rowvat['vat'];
+                $productListID=$rowproduct->idtbl_product;
+
+                $sqlsaleinfo = "SELECT SUM(`tbl_invoice_detail`.`newqty`) AS `newqty`, SUM(`tbl_invoice_detail`.`refillqty`) AS `refillqty`, SUM(`emptyqty`) AS `emptyqty`, SUM(`trustqty`) AS `trustqty`, SUM(`trustreturnqty`) AS `trustreturnqty` FROM `tbl_invoice_detail` LEFT JOIN `tbl_invoice` ON `tbl_invoice`.`idtbl_invoice`=`tbl_invoice_detail`.`tbl_invoice_idtbl_invoice`";
+                if($typeSelector==2){
+                    $sqlsaleinfo.=" LEFT JOIN `tbl_customerwise_salesrep` ON `tbl_customerwise_salesrep`.`tbl_product_idtbl_product`=`tbl_invoice_detail`.`tbl_product_idtbl_product`";
+                }
+                else if($typeSelector==3){
+                    $sqlsaleinfo.=" LEFT JOIN `tbl_vehicle_load` ON `tbl_vehicle_load`.`idtbl_vehicle_load`=`tbl_invoice`.`tbl_vehicle_load_idtbl_vehicle_load`";
+                }
+                else if($typeSelector==4){
+                    $sqlsaleinfo.=" LEFT JOIN `tbl_vehicle_load` ON `tbl_vehicle_load`.`idtbl_vehicle_load`=`tbl_invoice`.`tbl_vehicle_load_idtbl_vehicle_load`";
+                }
+                else if($typeSelector==5){
+                    $sqlsaleinfo.=" LEFT JOIN `tbl_customer` ON `tbl_customer`.`idtbl_customer`=`tbl_invoice`.`tbl_customer_idtbl_customer`";
+                }
+                $sqlsaleinfo .= " WHERE `tbl_invoice_detail`.`status`=1 AND `tbl_invoice_detail`.`tbl_product_idtbl_product`='$productListID' AND `tbl_invoice`.`status`=1 AND `tbl_invoice`.`tbl_customer_idtbl_customer`='$customerID' AND `tbl_invoice`.`date` BETWEEN '$validfrom' AND '$validto'";
+                if($typeSelector==2){
+                    $sqlsaleinfo.=" AND `tbl_customerwise_salesrep`.`tbl_product_idtbl_product`='$productListID' AND `tbl_customerwise_salesrep`.`tbl_employee_idtbl_employee`='$dataselector' AND `tbl_customerwise_salesrep`.`tbl_customer_idtbl_customer`='$customerID'";
+                }
+                else if($typeSelector==3){
+                    $sqlsaleinfo.=" AND `tbl_vehicle_load`.`lorryid`='$dataselector'";
+                }
+                else if($typeSelector==4){
+                    $sqlsaleinfo.=" AND `tbl_vehicle_load`.`driverid`='$dataselector'";
+                }
+                else if($typeSelector==5){
+                    $sqlsaleinfo.=" AND `tbl_customer`.`tbl_area_idtbl_area`='$dataselector'";
+                }
+
+                $resultsaleinfo = $conn->query($sqlsaleinfo);
+                $rowsaleinfo = $resultsaleinfo->fetch_assoc();
+
+                $obj=new stdClass();
+                $obj->product_id=$productListID;
+                $obj->trustreturnqty=$rowsaleinfo['trustreturnqty'] != 0 ? $rowsaleinfo['trustreturnqty'] : '0';
+
+                array_push($productreturntrustfull, $obj);
+                
+            ?>
+            <td class="text-center"><?php echo $rowsaleinfo['trustreturnqty'] != 0 ? $rowsaleinfo['trustreturnqty'] : '-'; ?></td>
+            <?php }} ?>
+            <?php 
             foreach ($products as $rowproduct){if($rowproduct->categoryid==2){
                 $sqlvat = "SELECT `idtbl_vat_info`, `vat` FROM `tbl_vat_info` ORDER BY `idtbl_vat_info` DESC LIMIT 1";
                 $resultvat = $conn->query($sqlvat);
@@ -454,6 +508,26 @@ while($rowproductcount = $resultproductcount->fetch_assoc()){
             foreach ($products as $rowproduct){if($rowproduct->categoryid==1){
             ?>  
             <th class="text-center"><?php echo $sumTrustQty[$rowproduct->idtbl_product] ?></th>
+            <?php }} ?>
+
+            <?php 
+            // print_r($productrefillfull);
+            $sumReturnTrustQty = [];
+
+            foreach ($productreturntrustfull as $obj) {
+                $productId = $obj->product_id;
+                $trustReturnQty = $obj->trustreturnqty;
+                if (!isset($sumReturnTrustQty[$productId])) {
+                    $sumReturnTrustQty[$productId] = 0;
+                }
+                $sumReturnTrustQty[$productId] += $trustReturnQty;
+            }
+
+            // print_r($sumRefillQty);
+
+            foreach ($products as $rowproduct){if($rowproduct->categoryid==1){
+            ?>  
+            <th class="text-center"><?php echo $sumReturnTrustQty[$rowproduct->idtbl_product] ?></th>
             <?php }} ?>
 
             <?php 

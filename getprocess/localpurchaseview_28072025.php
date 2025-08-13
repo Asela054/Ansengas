@@ -4,27 +4,10 @@ require_once('../connection/db.php');
 // Get the record ID from POST data
 $recordID = $_POST['recordID'];
 
-// Main purchase order query - updated to handle both customer types
-$sql_main = "SELECT `p`.*, 
-             CASE 
-                 WHEN p.customertype = 2 THEN lpc.name 
-                 ELSE c.name 
-             END AS customer_name,
-             CASE 
-                 WHEN p.customertype = 2 THEN lpc.address 
-                 ELSE c.address 
-             END AS customer_address,
-             CASE 
-                 WHEN p.customertype = 2 THEN lpc.phone 
-                 ELSE c.phone 
-             END AS customer_phone,
-             CASE 
-                 WHEN p.customertype = 2 THEN '' 
-                 ELSE c.email 
-             END AS customer_email
+// Main purchase order query
+$sql_main = "SELECT `p`.*, `c`.`name`, `c`.`address`, `c`.`phone`, `c`.`email` 
              FROM `tbl_local_purchase` AS `p` 
-             LEFT JOIN `tbl_customer` AS `c` ON (`c`.`idtbl_customer` = `p`.`tbl_customer_idtbl_customer` AND p.customertype = 1)
-             LEFT JOIN `tbl_local_purchase_customers` AS `lpc` ON (`lpc`.`idtbl_local_purchase_customers` = `p`.`tbl_customer_idtbl_customer` AND p.customertype = 2)
+             LEFT JOIN `tbl_customer` AS `c` ON (`c`.`idtbl_customer` = `p`.`tbl_customer_idtbl_customer`) 
              WHERE `p`.`status` = ? AND `p`.`idtbl_local_purchase` = ?";
 $stmt_main = $conn->prepare($sql_main);
 $stmt_main->bind_param("ii", $status, $recordID);
@@ -33,7 +16,7 @@ $stmt_main->execute();
 $result_main = $stmt_main->get_result();
 $purchase_data = $result_main->fetch_assoc();
 
-// Purchase details query (unchanged)
+// Purchase details query
 $sql_details = "SELECT `d`.*, `p`.`product_name`, `p`.`product_code` 
                 FROM `tbl_local_purchasedetail` AS `d` 
                 LEFT JOIN `tbl_product` AS `p` ON (`p`.`idtbl_product` = `d`.`tbl_product_idtbl_product`) 
@@ -45,17 +28,17 @@ $result_details = $stmt_details->get_result();
 
 $html = '';
 
-// Build the HTML output (layout remains exactly the same)
+// Build the HTML output
 $html .= '
 <div class="row">
     <div class="col-6 small">
         <label class="small font-weight-bold text-dark mb-1">Date:</label> '.$purchase_data['date'].'<br>
         <label class="small font-weight-bold text-dark mb-1">Local Purchase No:</label> '.'LP-'.$purchase_data['idtbl_local_purchase'].'<br>
-        <label class="small font-weight-bold text-dark mb-1">Customer:</label> '.$purchase_data['customer_name'].'
+        <label class="small font-weight-bold text-dark mb-1">Customer:</label> '.$purchase_data['name'].'
     </div>
     <div class="col-6 small">
-        <label class="small font-weight-bold text-dark mb-1">Address:</label> '.$purchase_data['customer_address'].'<br>
-        <label class="small font-weight-bold text-dark mb-1">Contact:</label> '.$purchase_data['customer_phone'].'<br>
+        <label class="small font-weight-bold text-dark mb-1">Address:</label> '.$purchase_data['address'].'<br>
+        <label class="small font-weight-bold text-dark mb-1">Contact:</label> '.$purchase_data['phone'].'<br>
     </div>
 </div>
 <hr class="border-dark">
@@ -71,10 +54,10 @@ $showEmptyColumns = false;
 // Check all rows to determine which columns to show
 $result_details->data_seek(0); // Reset pointer to beginning
 while ($row = $result_details->fetch_assoc()) {
-    if ($row['fullqty'] > 0 || $row['full_unitprice_withoutvat'] > 0) {
+    if ($row['fullqty'] > 0 || $row['full_unitprice'] > 0) {
         $showFullColumns = true;
     }
-    if ($row['emptyqty'] > 0 || $row['empty_unitprice_withoutvat'] > 0) {
+    if ($row['emptyqty'] > 0 || $row['empty_unitprice'] > 0) {
         $showEmptyColumns = true;
     }
     
@@ -110,19 +93,19 @@ $result_details->data_seek(0);
 
 // Loop through purchase details
 while ($row = $result_details->fetch_assoc()) {
-    $total = ($row['fullqty'] * $row['full_unitprice_withoutvat']) + ($row['emptyqty'] * $row['empty_unitprice_withoutvat']);
+    $total = ($row['fullqty'] * $row['full_unitprice']) + ($row['emptyqty'] * $row['empty_unitprice']);
     
     $html .= '<tr>
         <td>'.$row['product_name'].'</td>';
     
     if ($showFullColumns) {
         $html .= '<td class="text-right">'.($row['fullqty'] > 0 ? $row['fullqty'] : '0').'</td>
-                  <td class="text-right">'.($row['full_unitprice_withoutvat'] > 0 ? number_format($row['full_unitprice_withoutvat'], 2) : '0.00').'</td>';
+                  <td class="text-right">'.($row['full_unitprice'] > 0 ? number_format($row['full_unitprice'], 2) : '0.00').'</td>';
     }
     
     if ($showEmptyColumns) {
         $html .= '<td class="text-right">'.($row['emptyqty'] > 0 ? $row['emptyqty'] : '0').'</td>
-                  <td class="text-right">'.($row['empty_unitprice_withoutvat'] > 0 ? number_format($row['empty_unitprice_withoutvat'], 2) : '0.00').'</td>';
+                  <td class="text-right">'.($row['empty_unitprice'] > 0 ? number_format($row['empty_unitprice'], 2) : '0.00').'</td>';
     }
     
     $html .= '<td class="text-right">'.number_format($total, 2).'</td>
@@ -137,11 +120,9 @@ $html .= '</tbody>
     <div class="col-12 text-right">
         <h3 class="font-weight-normal">
             <strong>Total</strong> &nbsp; &nbsp;
-            <b>Rs. '.number_format($purchase_data['total'], 2).'</b>
+            <b>Rs. '.number_format($purchase_data['nettotal'], 2).'</b>
         </h3>
     </div>
-    <div class="col-12"><h6 class="title-style"><span>Remark Information</span></h6></div>
-    <p class="col-12">'.$purchase_data['remark'].'</p>
 </div>';
 
 echo $html;

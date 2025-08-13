@@ -68,7 +68,7 @@ include "include/topnavbar.php";
                                         </select>
                                     </div>
                                     <div class="form-group">
-                                        <label class="small font-weight-bold text-dark">Emplyee Type*</label>
+                                        <label class="small font-weight-bold text-dark">Employee Type*</label>
                                         <select class="form-control form-control-sm" name="emptype" id="emptype" required>
                                             <option value="">Select</option>
                                             <?php if($resultusertypeuser->num_rows > 0) {while ($rowusertypeuser = $resultusertypeuser-> fetch_assoc()) { ?>

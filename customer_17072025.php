@@ -10,9 +10,6 @@ $resultproductaddrep =$conn-> query($sqlproductaddrep);
 $sqlsalesrep="SELECT `idtbl_employee`, `name` FROM `tbl_employee` WHERE `status`=1 AND `tbl_user_type_idtbl_user_type`=7";
 $resultsalesrep =$conn-> query($sqlsalesrep); 
 
-$sqlgroupcategory="SELECT * FROM `tbl_group_category` WHERE `status`=1";
-$resultgroupcategory =$conn-> query($sqlgroupcategory); 
-
 $productarray=array();
 $sqlproduct="SELECT `idtbl_product`, `product_name` FROM `tbl_product` WHERE `status`=1";
 $resultproduct =$conn-> query($sqlproduct); 
@@ -100,30 +97,17 @@ include "include/topnavbar.php";
                                                 <option value="1">Commercial</option>
                                                 <option value="2">Dealer</option>
                                             </select>
-                                        </div>  
-                                        <div class="col">
-                                            <label class="small font-weight-bold text-dark">Group Category</label>
-                                            <select name="groupcategory" id="groupcategory"
-                                                class="form-control form-control-sm">
-                                                <option value="">Select</option>
-                                                <?php if($resultgroupcategory->num_rows > 0) {while ($rowgroupcategory = $resultgroupcategory-> fetch_assoc()) { ?>
-                                                <option value="<?php echo $rowgroupcategory['idtbl_group_category'] ?>">
-                                                    <?php echo $rowgroupcategory['category'] ?></option>
-                                                <?php }} ?>
-                                            </select>
-                                        </div>                          
-                                    </div>
-                                    <div class="form-row mb-1">
+                                        </div>                            
                                         <div class="col">
                                         <label class="small font-weight-bold text-dark">NIC</label>
                                             <input type="text" class="form-control form-control-sm" id="cusNic" name="cusNic" placeholder="">
                                         </div>
+                                    </div>
+                                    <div class="form-row mb-1">
                                         <div class="col">
                                             <label class="small font-weight-bold text-dark">Contact*</label>
                                             <input type="text" class="form-control form-control-sm" id="cusContact" name="cusContact" required>
                                         </div>
-                                    </div>
-                                    <div class="form-row mb-1">
                                         <div class="col">
                                             <label class="small font-weight-bold text-dark">Area*</label>
                                             <select name="cusArea" id="cusArea" class="form-control form-control-sm"
@@ -135,7 +119,8 @@ include "include/topnavbar.php";
                                                 <?php } ?>
                                             </select>
                                         </div>
-                                        <div class="col">
+                                    </div>
+                                    <div class="form-group mb-1">
                                         <label class="small font-weight-bold text-dark">Other Area List</label>
                                         <select name="cusAreaOther[]" id="cusAreaOther" class="form-control form-control-sm" multiple>
                                             <?php foreach($arealistarray as $areadatalist) { ?>
@@ -143,7 +128,6 @@ include "include/topnavbar.php";
                                                 <?php echo $areadatalist->area ?></option>
                                             <?php } ?>
                                         </select>
-                                        </div>
                                     </div>
                                     <div class="form-group mb-1">
                                         <label class="small font-weight-bold text-dark">Address of Shop/Company</label>
@@ -736,9 +720,9 @@ include "include/topnavbar.php";
                         "render": function (data, type, full) {
                             var html = '';
                             if (full['type'] == 1) {
-                                html += 'Commercial';
+                                html += 'Co-operate';
                             } else if (full['type'] == 2) {
-                                html += 'Dealer';
+                                html += 'Retail';
                             } else {
                                 html += 'Laugfs Agent';
                             }
@@ -826,7 +810,6 @@ include "include/topnavbar.php";
                         var obj = JSON.parse(result);
                         $('#recordID').val(obj.id);
                         $('#cusType').val(obj.type);  
-                        $('#groupcategory').val(obj.groupcategory);  
                         $('#cmpName').val(obj.name);
                         $('#pv_num').val(obj.pv_num);
                         $('#owner_name').val(obj.owner_name);

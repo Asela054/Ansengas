@@ -136,7 +136,7 @@ th[rowspan] {
                             <div class="col-12">
                                 <div class="card shadow-none h-100">
                                     <div class="card-body">
-                                        <h6 class="small title-style"><span>Vehicle stock summery on <?php echo date('Y-m-d') ?></span></h6>
+                                        <h6 class="small title-style"><span>Vehicle stock summary on <?php echo date('Y-m-d') ?></span></h6>
                                         <span class="badge bg-success-soft px-2 mt-2">&nbsp;</span> Unload vehicle load
                                         <div class="scrollbar pb-3" id="style-2">
                                             <table class="table table-striped table-bordered table-sm small mt-3" id="loadstocktable">
@@ -174,7 +174,7 @@ th[rowspan] {
                             <div class="col-12">
                                 <div class="card shadow-none h-100">
                                     <div class="card-body">
-                                        <h6 class="small title-style"><span>Stock summery on <?php echo date('Y-m-d') ?></span></h6>
+                                        <h6 class="small title-style"><span>Stock summary on <?php echo date('Y-m-d') ?></span></h6>
                                         <table class="table table-striped table-bordered table-sm small" id="mainstocksummerytable">
                                             <thead class="thead-dark">
                                                 <tr class="">

@@ -1,8 +1,8 @@
 <?php 
 include "include/header.php";  
 
-$sqlcustomer="SELECT `idtbl_customer`, `name` FROM `tbl_customer` WHERE `status`=1";
-$resultcustomer =$conn-> query($sqlcustomer);
+$sqlgroup="SELECT `idtbl_group_category`, `category` FROM `tbl_group_category` WHERE `status`=1";
+$resultgroup =$conn-> query($sqlgroup);
 
 include "include/topnavbar.php"; 
 ?>
@@ -50,7 +50,15 @@ include "include/topnavbar.php";
                                                 <option value="5">Area</option>
                                             </select>
                                         </div>
-
+                                        <div class="col-2 d-none" id="divgroupcategory">
+                                            <label class="small font-weight-bold text-dark">Group Category</label>
+                                            <select class="form-control form-control-sm" name="groupcategory" id="groupcategory">
+                                                <option value="">Select</option>
+                                                <?php if($resultgroup->num_rows > 0) {while ($rowgroup = $resultgroup-> fetch_assoc()) { ?>
+                                                <option value="<?php echo $rowgroup['idtbl_group_category'] ?>"><?php echo $rowgroup['category'] ?></option>
+                                                <?php }} ?>
+                                            </select>
+                                        </div>
                                         <div id="customerDropdown" class="col-3">
                                             <label class="small font-weight-bold text-dark">Customer | Sales Excutive | Lorry | Driver | Area</label>
                                             <select class="form-control form-control-sm" name="dataselector" id="dataselector" required>
@@ -73,7 +81,7 @@ include "include/topnavbar.php";
                                     <input type="submit" class="d-none" id="hidesubmit">
                                 </form>
                             </div>
-                            <div class="col-12">
+                            <div class="col-12 mt-2">
                                 <form action="export/exportsalesreportmonthly.php" method="post" id="convert_form">
                                     <div class="row">
                                         <div class="col-12 text-right">
@@ -117,8 +125,15 @@ include "include/topnavbar.php";
 
         $('#typeSelector').change(function(){
             $('#dataselector').val(null).trigger('change');
-            if($(this).val()==1){$('#dataselector').prop('required', false);}
-            else{$('#dataselector').prop('required', true);}
+            $('#groupcategory').val('');
+            if($(this).val()==1){
+                $('#dataselector').prop('required', false);
+                $('#divgroupcategory').removeClass('d-none');
+            }
+            else{
+                $('#dataselector').prop('required', true);
+                $('#divgroupcategory').addClass('d-none');
+            }
         });
         $("#dataselector").select2({
             ajax: {
@@ -129,7 +144,8 @@ include "include/topnavbar.php";
                 data: function (params) {
                     return {
                         searchTerm: params.term, // search term
-                        type: $('#typeSelector').val()
+                        type: $('#typeSelector').val(),
+                        groupcategory: $('#groupcategory').val()
                     };
                 },
                 processResults: function (response) {//console.log(response);
@@ -152,6 +168,7 @@ include "include/topnavbar.php";
                 var typeSelector = $('#typeSelector').val();
                 var dataselector = $('#dataselector').val();
                 var cusType = $('#cusType').val();
+                var groupcategory = $('#groupcategory').val();
 
                 $('#targetviewdetail').html('<div class="card border-0 shadow-none bg-transparent"><div class="card-body text-center"><img src="images/spinner.gif" alt="" srcset=""></div></div>');
 
@@ -162,7 +179,8 @@ include "include/topnavbar.php";
                         validto: validto,
                         typeSelector: typeSelector,
                         dataselector: dataselector,
-                        cusType: cusType
+                        cusType: cusType,
+                        groupcategory: groupcategory
                     },
                     url: 'getprocess/getmonthlysalereport.php',
                     success: function(result) {//alert(result);

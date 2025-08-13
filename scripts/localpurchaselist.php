@@ -1,63 +1,59 @@
 <?php
-
 /*
  * DataTables example server-side processing script.
- *
- * Please note that this script is intentionally extremely simply to show how
- * server-side processing can be implemented, and probably shouldn't be used as
- * the basis for a large complex system. It is suitable for simple use cases as
- * for learning.
- *
- * See http://datatables.net/usage/server-side for full details on the server-
- * side processing requirements of DataTables.
- *
- * @license MIT - http://datatables.net/license_mit
  */
-
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- * Easy set variables
- */
-
-// DB table to use
 $table = 'tbl_local_purchase';
-
-// Table's primary key
 $primaryKey = 'idtbl_local_purchase';
 
-// Array of database columns which should be read and sent back to DataTables.
-// The `db` parameter represents the column name in the database, while the `dt`
-// parameter represents the DataTables column identifier. In this case simple
-// indexes
 $columns = array(
-	array( 'db' => '`u`.`idtbl_local_purchase`', 'dt' => 'idtbl_local_purchase', 'field' => 'idtbl_local_purchase' ),
-	array( 'db' => '`u`.`date`', 'dt' => 'date', 'field' => 'date' ),
-	array( 'db' => '`u`.`nettotal`', 'dt' => 'nettotal', 'field' => 'nettotal' ),
-	array( 'db' => '`u`.`approvestatus`', 'dt' => 'approvestatus', 'field' => 'approvestatus' ),
-	array( 'db' => '`ua`.`name`', 'dt' => 'name', 'field' => 'name' ),
-	array( 'db' => '`u`.`status`',   'dt' => 'status', 'field' => 'status' )
+    array( 'db' => '`main`.`idtbl_local_purchase`', 'dt' => 'idtbl_local_purchase', 'field' => 'idtbl_local_purchase' ),
+    array( 'db' => '`main`.`date`', 'dt' => 'date', 'field' => 'date' ),
+    array( 'db' => '`main`.`total`', 'dt' => 'total', 'field' => 'total' ),
+    array( 'db' => '`main`.`approvestatus`', 'dt' => 'approvestatus', 'field' => 'approvestatus' ),
+    array( 
+        'db' => '`main`.`customer_name`', 
+        'dt' => 'customer_name',  // Changed to match DataTables config
+        'field' => 'customer_name'
+    ),
+    array( 'db' => '`main`.`status`', 'dt' => 'status', 'field' => 'status' )
 );
 
-// SQL server connection information
 require('config.php');
 $sql_details = array(
-	'user' => $db_username,
-	'pass' => $db_password,
-	'db'   => $db_name,
-	'host' => $db_host
+    'user' => $db_username,
+    'pass' => $db_password,
+    'db'   => $db_name,
+    'host' => $db_host
 );
 
-/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- * If you just want to use the basic configuration for DataTables with PHP
- * server-side, there is no need to edit below this line.
- */
+require('ssp.customized.class.php');
 
-// require( 'ssp.class.php' );
-require('ssp.customized.class.php' );
+$joinQuery = "
+    FROM (
+        SELECT 
+            u.idtbl_local_purchase,
+            u.date,
+            u.total,
+            u.approvestatus,
+            u.status,
+            COALESCE(
+                CASE WHEN u.customertype = 2 THEN lpc.name END,
+                CASE WHEN u.customertype = 1 THEN c.name END,
+                'Unknown Customer'
+            ) AS customer_name
+        FROM 
+            `tbl_local_purchase` AS `u`
+        LEFT JOIN 
+            `tbl_customer` AS `c` 
+            ON (`c`.`idtbl_customer` = `u`.`tbl_customer_idtbl_customer`)
+        LEFT JOIN 
+            `tbl_local_purchase_customers` AS `lpc` 
+            ON (`lpc`.`idtbl_local_purchase_customers` = `u`.`tbl_customer_idtbl_customer`)
+        WHERE u.status = 1
+    ) AS main";
 
-$joinQuery = "FROM `tbl_local_purchase` AS `u` LEFT JOIN `tbl_customer` AS `ua` ON (`ua`.`idtbl_customer` = `u`.`tbl_customer_idtbl_customer`)";
-
-$extraWhere = "`u`.`status`=1";
+$extraWhere = "";
 
 echo json_encode(
-	SSP::simple( $_POST, $sql_details, $table, $primaryKey, $columns, $joinQuery, $extraWhere)
+    SSP::simple($_POST, $sql_details, $table, $primaryKey, $columns, $joinQuery, $extraWhere)
 );

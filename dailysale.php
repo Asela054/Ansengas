@@ -48,7 +48,7 @@ include "include/topnavbar.php";
                                                 <label class="small font-weight-bold text-dark">&nbsp;</label><br>
                                                 <input type="checkbox" class="custom-control-input" id="advance">
                                                 <label class="custom-control-label font-weight-bold"
-                                                    for="advance">Summery Report</label>
+                                                    for="advance">Summary Report</label>
                                             </div>
                                         </div>
                                         <div class="col">
@@ -167,7 +167,7 @@ include "include/topnavbar.php";
             var accedatalist = $('#accedatalist').val();
             var objfirst = JSON.parse(accedatalist);
 
-            const datacollist = ['New', 'Refill', 'Empty', 'Trust', 'New', 'Refill', 'Empty', 'Trust', 'New', 'Refill', 'Empty', 'Trust', 'New', 'Refill', 'Empty', 'Trust']
+            const datacollist = ['New', 'Refill', 'Empty', 'Trust', 'Trust Return', 'New', 'Refill', 'Empty', 'Trust', 'Trust Return', 'New', 'Refill', 'Empty', 'Trust', 'Trust Return', 'New', 'Refill', 'Empty', 'Trust', 'Trust Return']
 
             $.each(objfirst, function (i, item) {
                 datacollist.push(objfirst[i].access);
@@ -176,7 +176,12 @@ include "include/topnavbar.php";
             datacollist.push('Amount');
 
             var { jsPDF } = window.jspdf;
-            var doc = new jsPDF('l', 'pt', 'legal');
+
+            var customWidth = 1400;  // Example: 800pt (~11.11 inches)
+            var customHeight = 600; // Example: 600pt (~8.33 inches)
+
+            // var doc = new jsPDF('l', 'pt', 'legal');
+            var doc = new jsPDF('l', 'pt', [customWidth, customHeight]);
 
             if(type==''){var title = 'Ansen Gas Distributor PVT Ltd all vehicle day sale information';}
             else{var title = 'Ansen Gas Distributor PVT Ltd '+cusexname+' sale summery '+fromdate;}
@@ -232,10 +237,10 @@ include "include/topnavbar.php";
                     [
                         {content: 'Invoice', rowSpan: 2, styles: {halign: 'center', fillColor: [41, 128, 185]}}, 
                         {content: 'Customer', rowSpan: 2, styles: {halign: 'center', fillColor: [41, 128, 185]}}, 
-                        {content: '2 KG', colSpan: 4, styles: {halign: 'center', fillColor: [41, 128, 185]}}, 
-                        {content: '5 KG', colSpan: 4, styles: {halign: 'center', fillColor: [41, 128, 185]}}, 
-                        {content: '12.5 KG', colSpan: 4, styles: {halign: 'center', fillColor: [41, 128, 185]}}, 
-                        {content: '37.5 KG', colSpan: 4, styles: {halign: 'center', fillColor: [41, 128, 185]}},
+                        {content: '2 KG', colSpan: 5, styles: {halign: 'center', fillColor: [41, 128, 185]}}, 
+                        {content: '5 KG', colSpan: 5, styles: {halign: 'center', fillColor: [41, 128, 185]}}, 
+                        {content: '12.5 KG', colSpan: 5, styles: {halign: 'center', fillColor: [41, 128, 185]}}, 
+                        {content: '37.5 KG', colSpan: 5, styles: {halign: 'center', fillColor: [41, 128, 185]}},
                         {content: 'Accessories', colSpan: objfirst.length, styles: {halign: 'center', fillColor: [41, 128, 185]}}, 
                         {content: 'Cash', rowSpan: 2, styles: {halign: 'center', fillColor: [41, 128, 185]}}, 
                         {content: 'Cheque', colSpan: 0, styles: {halign: 'center', fillColor: [41, 128, 185]}},
@@ -270,10 +275,14 @@ include "include/topnavbar.php";
                         15: { halign: 'center' }, 
                         16: { halign: 'center' }, 
                         17: { halign: 'center' }, 
-                        18: { halign: 'right' }, 
-                        19: { halign: 'right' }, 
-                        20: { halign: 'right' }, 
-                        21: { halign: 'right' },
+                        18: { halign: 'center' }, 
+                        19: { halign: 'center' }, 
+                        20: { halign: 'center' }, 
+                        21: { halign: 'center' },
+                        22: { halign: 'right' }, 
+                        23: { halign: 'right' }, 
+                        24: { halign: 'right' }, 
+                        25: { halign: 'right' },
                     }
                 });
             }

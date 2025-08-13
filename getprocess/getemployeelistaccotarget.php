@@ -2,6 +2,7 @@
 require_once('../connection/db.php');
 
 $reporttype=$_POST['reporttype'];
+if(!empty($_POST['groupcategory'])){$groupcategory=$_POST['groupcategory'];}
 $arraylist=array();
 
 if($reporttype == 1 || $reporttype == 2) {
@@ -30,6 +31,10 @@ else if($reporttype == 3) {
 }
 else if($reporttype == 4) {
     $sql = "SELECT `idtbl_customer`, `name` FROM `tbl_customer` WHERE `status`=1";
+    if(!empty($_POST['groupcategory'])){
+        $groupcategory = $_POST['groupcategory'];
+        $sql .= " AND `tbl_group_category_idtbl_group_category`='$groupcategory'";
+    }
     if(!empty($_POST['searchTerm'])){
         $search = $_POST['searchTerm'];
         $sql .= " AND `name` LIKE '%$search%' ORDER BY `name` ASC";

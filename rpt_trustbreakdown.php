@@ -1,6 +1,9 @@
 <?php 
 include "include/header.php";  
 
+$sqlgroup="SELECT `idtbl_group_category`, `category` FROM `tbl_group_category` WHERE `status`=1";
+$resultgroup =$conn-> query($sqlgroup);
+
 include "include/topnavbar.php"; 
 ?>
 <div id="layoutSidenav">
@@ -26,6 +29,15 @@ include "include/topnavbar.php";
                             <div class="col-10">
                             <form id="searchform">
                                 <div class="form-row">
+                                    <div class="col-2">
+                                        <label class="small font-weight-bold text-dark">Group Category</label>
+                                        <select class="form-control form-control-sm" name="groupcategory" id="groupcategory">
+                                            <option value="">Select</option>
+                                            <?php if($resultgroup->num_rows > 0) {while ($rowgroup = $resultgroup-> fetch_assoc()) { ?>
+                                            <option value="<?php echo $rowgroup['idtbl_group_category'] ?>"><?php echo $rowgroup['category'] ?></option>
+                                            <?php }} ?>
+                                        </select>
+                                    </div>
                                     <div class="col-3">
                                         <label class="small font-weight-bold text-dark">Customer*</label>
                                         <select class="form-control form-control-sm" name="customer" id="customer">
@@ -75,7 +87,8 @@ include "include/topnavbar.php";
                 delay: 250,
                 data: function (params) {
                     return {
-                        searchTerm: params.term 
+                        searchTerm: params.term,
+                        groupcategory: $('#groupcategory').val()
                     };
                 },
                 processResults: function (response) {
@@ -95,13 +108,15 @@ include "include/topnavbar.php";
                 $("#hidesubmit").click();
             } else {
                 var customer = $('#customer').val();
+                var groupcategory = $('#groupcategory').val();
 
                 $('#targetviewdetail').html('<div class="card border-0 shadow-none bg-transparent"><div class="card-body text-center"><img src="images/spinner.gif" alt="" srcset=""></div></div>');
 
                 $.ajax({
                     type: "POST",
                     data: {
-                        customer: customer
+                        customer: customer,
+                        groupcategory: groupcategory
                     },
                     url: 'getprocess/getrustbreakdownreport.php',
                     success: function (result) {

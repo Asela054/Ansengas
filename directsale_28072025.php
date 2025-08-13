@@ -11,9 +11,6 @@ $resultbank =$conn-> query($sqlbank);
 
 $sqlreflist="SELECT `idtbl_employee`, `name` FROM `tbl_employee` WHERE `tbl_user_type_idtbl_user_type`=7 AND `status`=1";
 $resultreflist =$conn-> query($sqlreflist);
-
-$sqlloadinglist="SELECT tbl_vehicle_load.idtbl_vehicle_load, tbl_vehicle.vehicleno FROM `tbl_vehicle_load` LEFT JOIN `tbl_vehicle` ON tbl_vehicle.idtbl_vehicle = tbl_vehicle_load.lorryid WHERE tbl_vehicle_load.lorryid = 12 AND tbl_vehicle_load.status = 1 AND tbl_vehicle_load.unloadstatus = 0";
-$resultloadinglist =$conn-> query($sqlloadinglist);
 ?>
 <style>
     .pointer {cursor: pointer;}
@@ -36,23 +33,13 @@ $resultloadinglist =$conn-> query($sqlloadinglist);
                                         <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample">
                                             <div class="card-body border rounded" style="height: 460px; overflow-y:auto;" id="style-2">
                                                 	<div class="form-row mb-1">
-														<div class="col-3">
+														<div class="col-6">
 															<label class="small font-weight-bold text-dark">Executive Name*</label>
                                                             <select name="refname" id="refname" class="form-control form-control-sm" required autofocus>
                                                                 <option value="">Select</option>
                                                                 <?php if($resultreflist->num_rows > 0) {while ($rowreflist = $resultreflist-> fetch_assoc()) { ?>
                                                                 <option value="<?php echo $rowreflist['idtbl_employee'] ?>">
                                                                     <?php echo $rowreflist['name'] ?></option>
-                                                                <?php }} ?>
-                                                            </select>
-														</div>
-                                                        <div class="col-3">
-															<label class="small font-weight-bold text-dark">Loading*</label>
-                                                            <select name="loading" id="loading" class="form-control form-control-sm" required autofocus>
-                                                                <option value="">Select</option>
-                                                                <?php if($resultloadinglist->num_rows > 0) {while ($rowloadinglist = $resultloadinglist-> fetch_assoc()) { ?>
-                                                                <option value="<?php echo $rowloadinglist['idtbl_vehicle_load'] ?>">
-                                                                    <?php echo 'VL-'. $rowloadinglist['idtbl_vehicle_load'] . '/'. $rowloadinglist['vehicleno']?></option>
                                                                 <?php }} ?>
                                                             </select>
 														</div>
@@ -229,11 +216,11 @@ $resultloadinglist =$conn-> query($sqlloadinglist);
                                         <input type="tel" name="qtycount" id="qtycount" class="form-control" required>
                                     </div>
                                     <div class="form-group mb-1">
-                                        <label class="small font-weight-bold text-dark d-none">Discount*</label>
+                                        <label class="small font-weight-bold text-dark">Discount*</label>
                                         <div class="input-group flex-nowrap">
-                                            <input type="number" name="discountpresentage" id="discountpresentage" class="form-control d-none" value="0" required>
+                                            <input type="number" name="discountpresentage" id="discountpresentage" class="form-control" value="0" required>
                                             <div class="input-group-append">
-                                                <span class="input-group-text d-none" id="addon-wrapping">%</span>
+                                                <span class="input-group-text" id="addon-wrapping">%</span>
                                             </div>
                                         </div>
                                     </div>
@@ -1014,7 +1001,6 @@ $resultloadinglist =$conn-> query($sqlloadinglist);
         }        
         var total = $('#hiddenfulltotal').val();
         var refname = $('#refname').val();
-        var loading = $('#loading').val();
         var distotal = $('#hiddenfulldistotal').val();
         var nettotal = $('#hiddenfullnettotal').val();
         var paytotal = $('#hidepaymenttotal').val();
@@ -1049,7 +1035,6 @@ $resultloadinglist =$conn-> query($sqlloadinglist);
                     cusmobile: cusmobile,
                     cusID: cusID,
                     refname: refname,
-                    loading: loading,
                     priceeditstatus: priceeditstatus,
                     billapproveuser: billapproveuser
                 },

@@ -2,6 +2,7 @@
 require_once('../connection/db.php');
 
 $customer=$_POST['customer'];
+if(!empty($_POST['groupcategory'])){$groupcategory=$_POST['groupcategory'];}
 
 // $sql="SELECT 
 //     c.name AS Customer,
@@ -92,6 +93,9 @@ WHERE
 ";
 if($customer != "") {
     $sql.=" AND c.idtbl_customer = '$customer'";
+}
+if(!empty($_POST['groupcategory'])){
+    $sql.=" AND c.tbl_group_category_idtbl_group_category = '$groupcategory'";
 }
 $sql.=" GROUP BY 
     c.idtbl_customer
