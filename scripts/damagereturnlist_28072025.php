@@ -31,7 +31,6 @@ $primaryKey = 'idtbl_damage_return';
 $columns = array(
 	array( 'db' => '`main`.`idtbl_damage_return`', 'dt' => 'idtbl_damage_return', 'field' => 'idtbl_damage_return' ),
 	array( 'db' => '`main`.`returndate`', 'dt' => 'returndate', 'field' => 'returndate' ),
-    array( 'db' => '`main`.`tank_type`', 'dt' => 'tank_type', 'field' => 'tank_type' ),
 	array( 'db' => '`main`.`qty`', 'dt' => 'qty', 'field' => 'qty' ),
 	array( 'db' => '`main`.`comsendstatus`', 'dt' => 'comsendstatus', 'field' => 'comsendstatus' ),
 	array( 'db' => '`main`.`comsenddate`',   'dt' => 'comsenddate', 'field' => 'comsenddate' ),
@@ -73,7 +72,6 @@ $joinQuery = "
             END AS customer_name,
             u.idtbl_damage_return,
             u.returndate,
-            u.tank_type,
             u.qty,
             u.comsendstatus,
             u.comsenddate,

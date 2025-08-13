@@ -95,10 +95,10 @@ if($advance==0){
             <tr>
                 <th nowrap rowspan="2" class="text-left align-top">Invoice</th>
                 <th nowrap rowspan="2" class="text-left align-top">Customer</th>
-                <th nowrap colspan="4">2 KG</th>
-                <th nowrap colspan="4">5 KG</th>
-                <th nowrap colspan="4">12.5 KG</th>
-                <th nowrap colspan="4">37.5 KG</th>
+                <th nowrap colspan="5">2 KG</th>
+                <th nowrap colspan="5">5 KG</th>
+                <th nowrap colspan="5">12.5 KG</th>
+                <th nowrap colspan="5">37.5 KG</th>
                 <?php if (!empty($accessoriesarray)) { ?>
                     <th nowrap colspan="<?php echo count($accessoriesarray); ?>">Accessories</th>
                 <?php } ?>
@@ -112,18 +112,22 @@ if($advance==0){
                 <th nowrap>Refill</th>
                 <th nowrap>Empty</th>
                 <th nowrap>Trust</th>
+                <th nowrap>Trust Return</th>
                 <th nowrap>New</th>
                 <th nowrap>Refill</th>
                 <th nowrap>Empty</th>
                 <th nowrap>Trust</th>
+                <th nowrap>Trust Return</th>
                 <th nowrap>New</th>
                 <th nowrap>Refill</th>
                 <th nowrap>Empty</th>
                 <th nowrap>Trust</th>
+                <th nowrap>Trust Return</th>
                 <th nowrap>New</th>
                 <th nowrap>Refill</th>
                 <th nowrap>Empty</th>
                 <th nowrap>Trust</th>
+                <th nowrap>Trust Return</th>
                 <?php foreach($accessoriesarray as $rowaccessoriesarray){ ?>
                 <th nowrap><?php echo $rowaccessoriesarray->access ?></th>
                 <?php } ?>
@@ -136,21 +140,25 @@ if($advance==0){
             $ponerefillqty=0;
             $poneemptyqty=0;
             $ponetrustqty=0;
+            $ponetrustreturnqty=0;
 
             $ptwonewqty=0;
             $ptworefillqty=0;
             $ptwoemptyqty=0;
             $ptwotrustqty=0;
+            $ptwotrustreturnqty=0;
 
             $pthreenewqty=0;
             $pthreerefillqty=0;
             $pthreeemptyqty=0;
             $pthreetrustqty=0;
+            $pthreetrustreturnqty=0;
 
             $pfournewqty=0;
             $pfourrefillqty=0;
             $pfouremptyqty=0;
             $pfourtrustqty=0;
+            $pfourtrustreturnqty=0;
 
             $totalamount=0;
             $totalcash=0;
@@ -182,19 +190,19 @@ if($advance==0){
                     $discount_amount=0;
                 }      
 
-                $sqlproductone="SELECT `newqty`, `refillqty`, `emptyqty`, `trustqty` FROM `tbl_invoice_detail` WHERE `status`=1 AND `tbl_product_idtbl_product`='6' AND `tbl_invoice_idtbl_invoice`='$invoiceID'";
+                $sqlproductone="SELECT `newqty`, `refillqty`, `emptyqty`, `trustqty`, `trustreturnqty` FROM `tbl_invoice_detail` WHERE `status`=1 AND `tbl_product_idtbl_product`='6' AND `tbl_invoice_idtbl_invoice`='$invoiceID'";
                 $resultproductone =$conn-> query($sqlproductone);   
                 $rowproductone = $resultproductone-> fetch_assoc();
 
-                $sqlproducttwo="SELECT `newqty`, `refillqty`, `emptyqty`, `trustqty` FROM `tbl_invoice_detail` WHERE `status`=1 AND `tbl_product_idtbl_product`='4' AND `tbl_invoice_idtbl_invoice`='$invoiceID'";
+                $sqlproducttwo="SELECT `newqty`, `refillqty`, `emptyqty`, `trustqty`, `trustreturnqty` FROM `tbl_invoice_detail` WHERE `status`=1 AND `tbl_product_idtbl_product`='4' AND `tbl_invoice_idtbl_invoice`='$invoiceID'";
                 $resultproducttwo =$conn-> query($sqlproducttwo);   
                 $rowproducttwo = $resultproducttwo-> fetch_assoc();
 
-                $sqlproductthree="SELECT `newqty`, `refillqty`, `emptyqty`, `trustqty` FROM `tbl_invoice_detail` WHERE `status`=1 AND `tbl_product_idtbl_product`='1' AND `tbl_invoice_idtbl_invoice`='$invoiceID'";
+                $sqlproductthree="SELECT `newqty`, `refillqty`, `emptyqty`, `trustqty`, `trustreturnqty` FROM `tbl_invoice_detail` WHERE `status`=1 AND `tbl_product_idtbl_product`='1' AND `tbl_invoice_idtbl_invoice`='$invoiceID'";
                 $resultproductthree =$conn-> query($sqlproductthree);   
                 $rowproductthree = $resultproductthree-> fetch_assoc();
 
-                $sqlproductfour="SELECT `newqty`, `refillqty`, `emptyqty`, `trustqty` FROM `tbl_invoice_detail` WHERE `status`=1 AND `tbl_product_idtbl_product`='2' AND `tbl_invoice_idtbl_invoice`='$invoiceID'";
+                $sqlproductfour="SELECT `newqty`, `refillqty`, `emptyqty`, `trustqty`, `trustreturnqty` FROM `tbl_invoice_detail` WHERE `status`=1 AND `tbl_product_idtbl_product`='2' AND `tbl_invoice_idtbl_invoice`='$invoiceID'";
                 $resultproductfour =$conn-> query($sqlproductfour);   
                 $rowproductfour = $resultproductfour-> fetch_assoc();
 
@@ -243,18 +251,22 @@ if($advance==0){
                 <td nowrap><?php echo ($rowproductone['refillqty'] != 0) ? $rowproductone['refillqty'] : '-'; $ponerefillqty=$ponerefillqty+$rowproductone['refillqty']; ?></td>
                 <td nowrap><?php echo ($rowproductone['emptyqty'] != 0) ? $rowproductone['emptyqty'] : '-'; $poneemptyqty=$poneemptyqty+$rowproductone['emptyqty']; ?></td>
                 <td nowrap><?php echo ($rowproductone['trustqty'] != 0) ? $rowproductone['trustqty'] : '-'; $ponetrustqty=$ponetrustqty+$rowproductone['trustqty']; ?></td>
+                <td nowrap><?php echo ($rowproductone['trustreturnqty'] != 0) ? $rowproductone['trustreturnqty'] : '-'; $ponetrustreturnqty=$ponetrustreturnqty+$rowproductone['trustreturnqty']; ?></td>
                 <td nowrap><?php echo ($rowproducttwo['newqty'] != 0) ? $rowproducttwo['newqty'] : '-'; $ptwonewqty=$ptwonewqty+$rowproducttwo['newqty']; ?></td>
                 <td nowrap><?php echo ($rowproducttwo['refillqty'] != 0) ? $rowproducttwo['refillqty'] : '-'; $ptworefillqty=$ptworefillqty+$rowproducttwo['refillqty']; ?></td>
                 <td nowrap><?php echo ($rowproducttwo['emptyqty'] != 0) ? $rowproducttwo['emptyqty'] : '-'; $ptwoemptyqty=$ptwoemptyqty+$rowproducttwo['emptyqty']; ?></td>
                 <td nowrap><?php echo ($rowproducttwo['trustqty'] != 0) ? $rowproducttwo['trustqty'] : '-'; $ptwotrustqty=$ptwotrustqty+$rowproducttwo['trustqty']; ?></td>
+                <td nowrap><?php echo ($rowproducttwo['trustreturnqty'] != 0) ? $rowproducttwo['trustreturnqty'] : '-'; $ptwotrustreturnqty=$ptwotrustreturnqty+$rowproducttwo['trustreturnqty']; ?></td>
                 <td nowrap><?php echo ($rowproductthree['newqty'] != 0) ? $rowproductthree['newqty'] : '-'; $pthreenewqty=$pthreenewqty+$rowproductthree['newqty']; ?></td>
                 <td nowrap><?php echo ($rowproductthree['refillqty'] != 0) ? $rowproductthree['refillqty'] : '-'; $pthreerefillqty=$pthreerefillqty+$rowproductthree['refillqty']; ?></td>
                 <td nowrap><?php echo ($rowproductthree['emptyqty'] != 0) ? $rowproductthree['emptyqty'] : '-'; $pthreeemptyqty=$pthreeemptyqty+$rowproductthree['emptyqty']; ?></td>
                 <td nowrap><?php echo ($rowproductthree['trustqty'] != 0) ? $rowproductthree['trustqty'] : '-'; $pthreetrustqty=$pthreetrustqty+$rowproductthree['trustqty']; ?></td>
+                <td nowrap><?php echo ($rowproductthree['trustreturnqty'] != 0) ? $rowproductthree['trustreturnqty'] : '-'; $pthreetrustreturnqty=$pthreetrustreturnqty+$rowproductthree['trustreturnqty']; ?></td>
                 <td nowrap><?php echo ($rowproductfour['newqty'] != 0) ? $rowproductfour['newqty'] : '-'; $pfournewqty=$pfournewqty+$rowproductfour['newqty']; ?></td>
                 <td nowrap><?php echo ($rowproductfour['refillqty'] != 0) ? $rowproductfour['refillqty'] : '-'; $pfourrefillqty=$pfourrefillqty+$rowproductfour['refillqty']; ?></td>
                 <td nowrap><?php echo ($rowproductfour['emptyqty'] != 0) ? $rowproductfour['emptyqty'] : '-'; $pfouremptyqty=$pfouremptyqty+$rowproductfour['emptyqty']; ?></td>
                 <td nowrap><?php echo ($rowproductfour['trustqty'] != 0) ? $rowproductfour['trustqty'] : '-'; $pfourtrustqty=$pfourtrustqty+$rowproductfour['trustqty']; ?></td>
+                <td nowrap><?php echo ($rowproductfour['trustreturnqty'] != 0) ? $rowproductfour['trustreturnqty'] : '-'; $pfourtrustreturnqty=$pfourtrustreturnqty+$rowproductfour['trustreturnqty']; ?></td>
                 <?php 
                 foreach($accessoriesarray as $rowaccessoriesarray){ 
                     $accessoriesID=$rowaccessoriesarray->accessID;
@@ -290,18 +302,22 @@ if($advance==0){
                 <th><?php echo ($ponerefillqty != 0) ? $ponerefillqty : '-'; ?></th>
                 <th><?php echo ($poneemptyqty != 0) ? $poneemptyqty : '-'; ?></th>
                 <th><?php echo ($ponetrustqty != 0) ? $ponetrustqty : '-'; ?></th>
+                <th><?php echo ($ponetrustreturnqty != 0) ? $ponetrustreturnqty : '-'; ?></th>
                 <th><?php echo ($ptwonewqty != 0) ? $ptwonewqty : '-'; ?></th>
                 <th><?php echo ($ptworefillqty != 0) ? $ptworefillqty : '-'; ?></th>
                 <th><?php echo ($ptwoemptyqty != 0) ? $ptwoemptyqty : '-'; ?></th>
                 <th><?php echo ($ptwotrustqty != 0) ? $ptwotrustqty : '-'; ?></th>
+                <th><?php echo ($ptwotrustreturnqty != 0) ? $ptwotrustreturnqty : '-'; ?></th>
                 <th><?php echo ($pthreenewqty != 0) ? $pthreenewqty : '-'; ?></th>
                 <th><?php echo ($pthreerefillqty != 0) ? $pthreerefillqty : '-'; ?></th>
                 <th><?php echo ($pthreeemptyqty != 0) ? $pthreeemptyqty : '-'; ?></th>
                 <th><?php echo ($pthreetrustqty != 0) ? $pthreetrustqty : '-'; ?></th>
+                <th><?php echo ($pthreetrustreturnqty != 0) ? $pthreetrustreturnqty : '-'; ?></th>
                 <th><?php echo ($pfournewqty != 0) ? $pfournewqty : '-'; ?></th>
                 <th><?php echo ($pfourrefillqty != 0) ? $pfourrefillqty : '-'; ?></th>
                 <th><?php echo ($pfouremptyqty != 0) ? $pfouremptyqty : '-'; ?></th>
                 <th><?php echo ($pfourtrustqty != 0) ? $pfourtrustqty : '-'; ?></th>
+                <th><?php echo ($pfourtrustreturnqty != 0) ? $pfourtrustreturnqty : '-'; ?></th>
                 <?php 
                 $totals = [];
 

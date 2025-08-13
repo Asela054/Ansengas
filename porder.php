@@ -61,7 +61,7 @@ include "include/topnavbar.php";
                             <div class="col-12">
                                 <div class="row">
                                     <div class="col">
-                                        <button type="button" class="btn btn-outline-primary btn-sm fa-pull-right" id="btnordercreate"><i class="fas fa-plus"></i>&nbsp;Create Purchsing Order</button>
+                                        <button type="button" class="btn btn-outline-primary btn-sm fa-pull-right" id="btnordercreate"><i class="fas fa-plus"></i>&nbsp;Create Purchasing Order</button>
                                     </div>
                                 </div>
                                 <hr>

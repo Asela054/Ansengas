@@ -6,6 +6,7 @@ $validfrom = date('Y-m-01', strtotime($month));
 $validto = date('Y-m-t', strtotime($month));
 $employee=$_POST['employee'];
 $reporttype=$_POST['reporttype'];
+if(!empty($_POST['groupcategory'])){$groupcategory=$_POST['groupcategory'];}
 
 if($reporttype == 1 || $reporttype == 2) {
     if($reporttype == 1){$empType= 7;} // For Executive
@@ -157,7 +158,7 @@ if($reporttype == 1 || $reporttype == 2) {
     if ($result->num_rows > 0) {
         $html.='<div class="scrollbar pb-3" id="style-2">
         <table class="table table-striped table-bordered table-sm small" id="table_content">
-            <thead class="table-dark">
+            <thead class="thead-dark">
                 <tr>
                     <th nowrap rowspan="2">Driver</th>
                     <th nowrap colspan="5" class="text-center">2KG</th>
@@ -368,7 +369,7 @@ if($reporttype == 1 || $reporttype == 2) {
     if ($result->num_rows > 0) {
         $html.='<div class="scrollbar pb-3" id="style-2">
         <table class="table table-striped table-bordered table-sm small" id="table_content">
-            <thead class="table-dark">
+            <thead class="thead-dark">
                 <tr>
                     <th nowrap rowspan="2">Area</th>
                     <th nowrap colspan="5" class="text-center">2KG</th>
@@ -550,6 +551,9 @@ if($reporttype == 1 || $reporttype == 2) {
             if(!empty($employee)) {
                 $sql .= " AND tbl_customer.idtbl_customer = '$employee'";
             }
+            if(!empty($_POST['groupcategory'])){
+                $sql .= " AND tbl_customer.tbl_group_category_idtbl_group_category = '$groupcategory'";
+            }
             $sql .= " AND tbl_invoice.date BETWEEN '$validfrom' AND '$validto'
         GROUP BY 
             tbl_customer.idtbl_customer, tbl_invoice_detail.tbl_product_idtbl_product
@@ -579,7 +583,7 @@ if($reporttype == 1 || $reporttype == 2) {
     if ($result->num_rows > 0) {
         $html.='<div class="scrollbar pb-3" id="style-2">
         <table class="table table-striped table-bordered table-sm small" id="table_content">
-            <thead class="table-dark">
+            <thead class="thead-dark">
                 <tr>
                     <th nowrap rowspan="2">Customer</th>
                     <th nowrap colspan="5" class="text-center">2KG</th>
@@ -790,7 +794,7 @@ if($reporttype == 1 || $reporttype == 2) {
     if ($result->num_rows > 0) {
         $html.='<div class="scrollbar pb-3" id="style-2">
         <table class="table table-striped table-bordered table-sm small" id="table_content">
-            <thead class="table-dark">
+            <thead class="thead-dark">
                 <tr>
                     <th nowrap rowspan="2">Vehicle</th>
                     <th nowrap colspan="5" class="text-center">2KG</th>

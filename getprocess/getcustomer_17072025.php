@@ -51,7 +51,6 @@ $obj->credittype=$row['credittype'];
 $obj->creditperiod=$row['creditperiod'];
 $obj->specialcusstatus=$row['specialcus_status'];
 $obj->mainarea=$row['main_area'];
-$obj->groupcategory=$row['tbl_group_category_idtbl_group_category'];
 $obj->feqno=$row['feqno'];
 $obj->dayslist=$daysArray;
 $obj->otherarealist=$otherareaarray;

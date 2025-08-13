@@ -1,6 +1,9 @@
 <?php 
 include "include/header.php";  
 
+$sqlgroup="SELECT `idtbl_group_category`, `category` FROM `tbl_group_category` WHERE `status`=1";
+$resultgroup =$conn-> query($sqlgroup);
+
 include "include/topnavbar.php"; 
 ?>
 <div id="layoutSidenav">
@@ -39,6 +42,15 @@ include "include/topnavbar.php";
                                             <option value="3">Lorry</option>
                                             <option value="4">Driver</option>
                                             <option value="5">Area</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-2 d-none" id="divgroupcategory">
+                                        <label class="small font-weight-bold text-dark">Group Category</label>
+                                        <select class="form-control form-control-sm" name="groupcategory" id="groupcategory">
+                                            <option value="">Select</option>
+                                            <?php if($resultgroup->num_rows > 0) {while ($rowgroup = $resultgroup-> fetch_assoc()) { ?>
+                                            <option value="<?php echo $rowgroup['idtbl_group_category'] ?>"><?php echo $rowgroup['category'] ?></option>
+                                            <?php }} ?>
                                         </select>
                                     </div>
                                     <div class="col-3">
@@ -81,7 +93,18 @@ include "include/topnavbar.php";
 </div>
 <?php include "include/footerscripts.php"; ?>
 <script>
+
     $(document).ready(function() {
+        $('#typeSelector').change(function(){
+            $('#customer').val(null).trigger('change');
+            $('#groupcategory').val('');
+            if($(this).val()==1){
+                $('#divgroupcategory').removeClass('d-none');
+            }
+            else{
+                $('#divgroupcategory').addClass('d-none');
+            }
+        });
         $("#customer").select2({
             ajax: {
                 url: 'getprocess/fetch_data.php',
@@ -91,7 +114,8 @@ include "include/topnavbar.php";
                 data: function (params) {
                     return {
                         searchTerm: params.term,
-                        type: $('#typeSelector').val() 
+                        type: $('#typeSelector').val(),
+                        groupcategory: $('#groupcategory').val()
                     };
                 },
                 processResults: function (response) {
@@ -113,6 +137,7 @@ include "include/topnavbar.php";
                 var customer = $('#customer').val();
                 var type = $('#typeSelector').val();
                 var date = $('#date').val();
+                var groupcategory = $('#groupcategory').val();
 
                 $('#targetviewdetail').html('<div class="card border-0 shadow-none bg-transparent"><div class="card-body text-center"><img src="images/spinner.gif" alt="" srcset=""></div></div>');
 
@@ -121,7 +146,8 @@ include "include/topnavbar.php";
                     data: {
                         customer: customer,
                         type: type,
-                        date: date
+                        date: date,
+                        groupcategory: groupcategory
                     },
                     url: 'getprocess/getbufferreportaccoperiod.php',
                     success: function (result) {

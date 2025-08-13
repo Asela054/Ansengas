@@ -6,6 +6,7 @@ $validto = isset($_POST['validto']) ? $_POST['validto'] : null;
 $typeSelector = isset($_POST['typeSelector']) ? $_POST['typeSelector'] : null;
 $dataselector = isset($_POST['dataselector']) ? $_POST['dataselector'] : null;
 $cusType = $_POST['cusType'];
+if(!empty($_POST['groupcategory'])){$groupcategory=$_POST['groupcategory'];}
 
 $productarray = array();
 // $sqlproductlist = "SELECT `idtbl_product`, `product_name` FROM `tbl_product` WHERE `tbl_product_category_idtbl_product_category`=1 AND `status`=1 ORDER BY `tbl_product`.`orderlevel`";
@@ -31,6 +32,7 @@ $html .= '<table class="table table-striped table-bordered table-sm small" id="t
             <th class="text-center">Refill Qty</th>
             <th class="text-center">Empty Qty</th>
             <th class="text-center">Trust Qty</th>
+            <th class="text-center">Trust Return Qty</th>
         </tr>
     </thead>
     <tbody>';
@@ -42,11 +44,15 @@ foreach ($productarray as $rowproductarray) {
     $totalsumarray=array();
 
     if ($typeSelector == 1) {
-        $sqlsalecount = "SELECT SUM(`newqty`) AS `newqty`, SUM(`refillqty`) AS `refillqty`, SUM(`emptyqty`) AS `emptyqty`, SUM(`trustqty`) AS `trustqty` FROM `tbl_invoice_detail` 
-        WHERE `status`=1 AND `tbl_product_idtbl_product`='$productID' AND `tbl_invoice_idtbl_invoice` IN (SELECT `idtbl_invoice` FROM `tbl_invoice` WHERE `status`=1 AND `date` BETWEEN '$validfrom' AND '$validto'";
+        $sqlsalecount = "SELECT SUM(`newqty`) AS `newqty`, SUM(`refillqty`) AS `refillqty`, SUM(`emptyqty`) AS `emptyqty`, SUM(`trustqty`) AS `trustqty`, SUM(`trustreturnqty`) AS `trustreturnqty` FROM `tbl_invoice_detail` 
+        WHERE `status`=1 AND `tbl_product_idtbl_product`='$productID' AND `tbl_invoice_idtbl_invoice` IN (SELECT `idtbl_invoice` FROM `tbl_invoice` LEFT JOIN `tbl_customer` ON `tbl_customer`.`idtbl_customer`=`tbl_invoice`.`tbl_customer_idtbl_customer` WHERE `tbl_invoice`.`status`=1 AND `tbl_invoice`.`date` BETWEEN '$validfrom' AND '$validto'";
         if (!empty($dataselector)) {
-            $sqlsalecount .= " AND `tbl_customer_idtbl_customer`=$dataselector";
+            $sqlsalecount .= " AND `tbl_invoice`.`tbl_customer_idtbl_customer`=$dataselector";
         }
+        if(!empty($_POST['groupcategory'])){
+            $sqlsalecount .= " AND `tbl_customer`.`tbl_group_category_idtbl_group_category`=$groupcategory";
+        }
+
         $sqlsalecount .= ")";
         $resultsalecount = $conn->query($sqlsalecount);
     }
@@ -55,19 +61,21 @@ foreach ($productarray as $rowproductarray) {
         $totrefilqty=0;
         $totemptyqty=0;
         $tottrustqty=0;
+        $tottrustreturnqty=0;
 
         $sql = "SELECT `idtbl_customer`, `name`, `phone`, `address`, `tbl_area`.`area` FROM `tbl_customer` LEFT JOIN `tbl_area` ON `tbl_area`.`idtbl_area`=`tbl_customer`.`tbl_area_idtbl_area` LEFT JOIN `tbl_customerwise_salesrep` ON `tbl_customerwise_salesrep`.`tbl_customer_idtbl_customer`=`tbl_customer`.`idtbl_customer` WHERE `tbl_customerwise_salesrep`.`status`=1 AND `tbl_customerwise_salesrep`.`tbl_employee_idtbl_employee`='$dataselector' "; if(!empty($cusType)){$sql.="AND `tbl_customer`.`type`='$cusType' ";} $sql.="GROUP BY `tbl_customerwise_salesrep`.`tbl_customer_idtbl_customer` ORDER BY `tbl_customer`.`tbl_area_idtbl_area` ASC";
         $result = $conn->query($sql);
         while ($row = $result->fetch_assoc()) { 
             $customerID = $row['idtbl_customer'];
 
-            $sqlsaleinfo="SELECT SUM(`tbl_invoice_detail`.`newqty`) AS `newqty`, SUM(`tbl_invoice_detail`.`refillqty`) AS `refillqty`, SUM(`tbl_invoice_detail`.`emptyqty`) AS `emptyqty`, SUM(`tbl_invoice_detail`.`trustqty`) AS `trustqty` FROM `tbl_invoice_detail` LEFT JOIN `tbl_invoice` ON `tbl_invoice`.`idtbl_invoice`=`tbl_invoice_detail`.`tbl_invoice_idtbl_invoice` LEFT JOIN `tbl_customerwise_salesrep` ON `tbl_customerwise_salesrep`.`tbl_product_idtbl_product`=`tbl_invoice_detail`.`tbl_product_idtbl_product` WHERE `tbl_invoice_detail`.`status`=1 AND `tbl_invoice_detail`.`tbl_product_idtbl_product`='$productID' AND `tbl_invoice`.`status`=1 AND `tbl_invoice`.`tbl_customer_idtbl_customer`='$customerID' AND `tbl_invoice`.`date` BETWEEN '$validfrom' AND '$validto' AND `tbl_customerwise_salesrep`.`tbl_product_idtbl_product`='$productID' AND `tbl_customerwise_salesrep`.`tbl_employee_idtbl_employee`='$dataselector' AND `tbl_customerwise_salesrep`.`tbl_customer_idtbl_customer`='$customerID'";
+            $sqlsaleinfo="SELECT SUM(`tbl_invoice_detail`.`newqty`) AS `newqty`, SUM(`tbl_invoice_detail`.`refillqty`) AS `refillqty`, SUM(`tbl_invoice_detail`.`emptyqty`) AS `emptyqty`, SUM(`tbl_invoice_detail`.`trustqty`) AS `trustqty`, SUM(`tbl_invoice_detail`.`trustreturnqty`) AS `trustreturnqty` FROM `tbl_invoice_detail` LEFT JOIN `tbl_invoice` ON `tbl_invoice`.`idtbl_invoice`=`tbl_invoice_detail`.`tbl_invoice_idtbl_invoice` LEFT JOIN `tbl_customerwise_salesrep` ON `tbl_customerwise_salesrep`.`tbl_product_idtbl_product`=`tbl_invoice_detail`.`tbl_product_idtbl_product` WHERE `tbl_invoice_detail`.`status`=1 AND `tbl_invoice_detail`.`tbl_product_idtbl_product`='$productID' AND `tbl_invoice`.`status`=1 AND `tbl_invoice`.`tbl_customer_idtbl_customer`='$customerID' AND `tbl_invoice`.`date` BETWEEN '$validfrom' AND '$validto' AND `tbl_customerwise_salesrep`.`tbl_product_idtbl_product`='$productID' AND `tbl_customerwise_salesrep`.`tbl_employee_idtbl_employee`='$dataselector' AND `tbl_customerwise_salesrep`.`tbl_customer_idtbl_customer`='$customerID'";
             $resultsaleinfo = $conn->query($sqlsaleinfo);
             while($rowsaleinfo = $resultsaleinfo->fetch_assoc()){
                 $totnewqty+=$rowsaleinfo['newqty'];
                 $totrefilqty+=$rowsaleinfo['refillqty'];
                 $totemptyqty+=$rowsaleinfo['emptyqty'];
                 $tottrustqty+=$rowsaleinfo['trustqty'];
+                $tottrustreturnqty+=$rowsaleinfo['trustreturnqty'];
             }
         }
 
@@ -78,6 +86,7 @@ foreach ($productarray as $rowproductarray) {
         $obj->totrefilqty=$totrefilqty;
         $obj->totemptyqty=$totemptyqty;
         $obj->tottrustqty=$tottrustqty;
+        $obj->tottrustretunqty=$tottrustreturnqty;
 
         array_push($totalsumarray, $obj);
     } else if ($typeSelector == 3) {
@@ -85,6 +94,7 @@ foreach ($productarray as $rowproductarray) {
         $totrefilqty=0;
         $totemptyqty=0;
         $tottrustqty=0;
+        $tottrustreturnqty=0;
 
         $sql = "SELECT `idtbl_customer`, `name`, `phone`, `address`, `tbl_area`.`area` FROM `tbl_customer` LEFT JOIN `tbl_area` ON `tbl_area`.`idtbl_area`=`tbl_customer`.`tbl_area_idtbl_area` LEFT JOIN `tbl_invoice` ON `tbl_invoice`.`tbl_customer_idtbl_customer`=`tbl_customer`.`idtbl_customer` LEFT JOIN `tbl_vehicle_load` ON `tbl_vehicle_load`.`idtbl_vehicle_load`=`tbl_invoice`.`tbl_vehicle_load_idtbl_vehicle_load`WHERE `tbl_customer`.`status`=1 AND `tbl_vehicle_load`.`lorryid`='$dataselector' AND `tbl_invoice`.`status`=1 AND `tbl_invoice`.`date` BETWEEN '$validfrom' AND '$validto' GROUP BY `tbl_invoice`.`tbl_customer_idtbl_customer` ORDER BY `tbl_customer`.`tbl_area_idtbl_area` ASC";
         $result = $conn->query($sql);
@@ -92,13 +102,14 @@ foreach ($productarray as $rowproductarray) {
             $customerID = $row['idtbl_customer'];
 
             // $sqlsalecount = "SELECT SUM(`newqty`) AS `newqty`, SUM(`refillqty`) AS `refillqty`, SUM(`emptyqty`) AS `emptyqty`, SUM(`trustqty`) AS `trustqty` FROM `tbl_invoice_detail` WHERE `status`=1 AND `tbl_product_idtbl_product`='$productID' AND `tbl_invoice_idtbl_invoice` IN (SELECT `idtbl_invoice` FROM `tbl_invoice` LEFT JOIN `tbl_vehicle_load` ON `tbl_vehicle_load`.`idtbl_vehicle_load`=`tbl_invoice`.`tbl_vehicle_load_idtbl_vehicle_load` WHERE `tbl_invoice`.`status`=1 AND `tbl_invoice`.`date` BETWEEN '$validfrom' AND '$validto' AND `tbl_vehicle_load`.`lorryid`=$dataselector AND `tbl_invoice`.`tbl_customer_idtbl_customer`='$customerID')";
-            $sqlsalecount = "SELECT SUM(`newqty`) AS `newqty`, SUM(`refillqty`) AS `refillqty`, SUM(`emptyqty`) AS `emptyqty`, SUM(`trustqty`) AS `trustqty` FROM `tbl_invoice_detail` LEFT JOIN `tbl_invoice` ON `tbl_invoice`.`idtbl_invoice`=`tbl_invoice_detail`.`tbl_invoice_idtbl_invoice` LEFT JOIN `tbl_vehicle_load` ON `tbl_vehicle_load`.`idtbl_vehicle_load`=`tbl_invoice`.`tbl_vehicle_load_idtbl_vehicle_load` WHERE `tbl_invoice_detail`.`status`=1 AND `tbl_invoice_detail`.`tbl_product_idtbl_product`='$productID' AND `tbl_invoice`.`status`=1 AND `tbl_invoice`.`tbl_customer_idtbl_customer`='$customerID' AND `tbl_invoice`.`date` BETWEEN '$validfrom' AND '$validto' AND `tbl_vehicle_load`.`lorryid`='$dataselector'";
+            $sqlsalecount = "SELECT SUM(`newqty`) AS `newqty`, SUM(`refillqty`) AS `refillqty`, SUM(`emptyqty`) AS `emptyqty`, SUM(`trustqty`) AS `trustqty`, SUM(`trustreturnqty`) AS `trustreturnqty` FROM `tbl_invoice_detail` LEFT JOIN `tbl_invoice` ON `tbl_invoice`.`idtbl_invoice`=`tbl_invoice_detail`.`tbl_invoice_idtbl_invoice` LEFT JOIN `tbl_vehicle_load` ON `tbl_vehicle_load`.`idtbl_vehicle_load`=`tbl_invoice`.`tbl_vehicle_load_idtbl_vehicle_load` WHERE `tbl_invoice_detail`.`status`=1 AND `tbl_invoice_detail`.`tbl_product_idtbl_product`='$productID' AND `tbl_invoice`.`status`=1 AND `tbl_invoice`.`tbl_customer_idtbl_customer`='$customerID' AND `tbl_invoice`.`date` BETWEEN '$validfrom' AND '$validto' AND `tbl_vehicle_load`.`lorryid`='$dataselector'";
             $resultsalecount = $conn->query($sqlsalecount);
             while($rowsalecount = $resultsalecount->fetch_assoc()){
                 $totnewqty+=$rowsalecount['newqty'];
                 $totrefilqty+=$rowsalecount['refillqty'];
                 $totemptyqty+=$rowsalecount['emptyqty'];
                 $tottrustqty+=$rowsalecount['trustqty'];
+                $tottrustreturnqty+=$rowsalecount['trustreturnqty'];
             }
         }
 
@@ -109,6 +120,7 @@ foreach ($productarray as $rowproductarray) {
         $obj->totrefilqty=$totrefilqty;
         $obj->totemptyqty=$totemptyqty;
         $obj->tottrustqty=$tottrustqty;
+        $obj->tottrustretunqty=$tottrustreturnqty;
 
         array_push($totalsumarray, $obj);
     } else if ($typeSelector == 4) {
@@ -116,6 +128,7 @@ foreach ($productarray as $rowproductarray) {
         $totrefilqty=0;
         $totemptyqty=0;
         $tottrustqty=0;
+        $tottrustreturnqty=0;
 
         $sql = "SELECT `idtbl_customer`, `name`, `phone`, `address`, `tbl_area`.`area` FROM `tbl_customer` LEFT JOIN `tbl_area` ON `tbl_area`.`idtbl_area`=`tbl_customer`.`tbl_area_idtbl_area` LEFT JOIN `tbl_invoice` ON `tbl_invoice`.`tbl_customer_idtbl_customer`=`tbl_customer`.`idtbl_customer` LEFT JOIN `tbl_vehicle_load` ON `tbl_vehicle_load`.`idtbl_vehicle_load`=`tbl_invoice`.`tbl_vehicle_load_idtbl_vehicle_load`WHERE `tbl_customer`.`status`=1 AND `tbl_vehicle_load`.`driverid`='$dataselector' AND `tbl_invoice`.`status`=1 AND `tbl_invoice`.`date` BETWEEN '$validfrom' AND '$validto' GROUP BY `tbl_invoice`.`tbl_customer_idtbl_customer` ORDER BY `tbl_customer`.`tbl_area_idtbl_area` ASC";
         $result = $conn->query($sql);
@@ -123,13 +136,14 @@ foreach ($productarray as $rowproductarray) {
             $customerID = $row['idtbl_customer'];
 
             // $sqlsalecount = "SELECT SUM(`newqty`) AS `newqty`, SUM(`refillqty`) AS `refillqty`, SUM(`emptyqty`) AS `emptyqty`, SUM(`trustqty`) AS `trustqty` FROM `tbl_invoice_detail` WHERE `status`=1 AND `tbl_product_idtbl_product`='$productID' AND `tbl_invoice_idtbl_invoice` IN (SELECT `idtbl_invoice` FROM `tbl_invoice` LEFT JOIN `tbl_vehicle_load` ON `tbl_vehicle_load`.`idtbl_vehicle_load`=`tbl_invoice`.`tbl_vehicle_load_idtbl_vehicle_load` WHERE `tbl_invoice`.`status`=1 AND `tbl_invoice`.`date` BETWEEN '$validfrom' AND '$validto' AND `tbl_vehicle_load`.`driverid`=$dataselector AND `tbl_invoice`.`tbl_customer_idtbl_customer`='$customerID')";
-            $sqlsalecount = "SELECT SUM(`newqty`) AS `newqty`, SUM(`refillqty`) AS `refillqty`, SUM(`emptyqty`) AS `emptyqty`, SUM(`trustqty`) AS `trustqty` FROM  `tbl_invoice_detail` LEFT JOIN `tbl_invoice` ON `tbl_invoice`.`idtbl_invoice`=`tbl_invoice_detail`.`tbl_invoice_idtbl_invoice` LEFT JOIN `tbl_vehicle_load` ON `tbl_vehicle_load`.`idtbl_vehicle_load`=`tbl_invoice`.`tbl_vehicle_load_idtbl_vehicle_load` WHERE `tbl_invoice_detail`.`status`=1 AND `tbl_invoice_detail`.`tbl_product_idtbl_product`='$productID' AND `tbl_invoice`.`status`=1 AND `tbl_invoice`.`tbl_customer_idtbl_customer`='$customerID' AND `tbl_invoice`.`date` BETWEEN '$validfrom' AND '$validto' AND `tbl_vehicle_load`.`driverid`='$dataselector'";
+            $sqlsalecount = "SELECT SUM(`newqty`) AS `newqty`, SUM(`refillqty`) AS `refillqty`, SUM(`emptyqty`) AS `emptyqty`, SUM(`trustqty`) AS `trustqty`, SUM(`trustreturnqty`) AS `trustreturnqty` FROM  `tbl_invoice_detail` LEFT JOIN `tbl_invoice` ON `tbl_invoice`.`idtbl_invoice`=`tbl_invoice_detail`.`tbl_invoice_idtbl_invoice` LEFT JOIN `tbl_vehicle_load` ON `tbl_vehicle_load`.`idtbl_vehicle_load`=`tbl_invoice`.`tbl_vehicle_load_idtbl_vehicle_load` WHERE `tbl_invoice_detail`.`status`=1 AND `tbl_invoice_detail`.`tbl_product_idtbl_product`='$productID' AND `tbl_invoice`.`status`=1 AND `tbl_invoice`.`tbl_customer_idtbl_customer`='$customerID' AND `tbl_invoice`.`date` BETWEEN '$validfrom' AND '$validto' AND `tbl_vehicle_load`.`driverid`='$dataselector'";
             $resultsalecount = $conn->query($sqlsalecount);
             while($rowsalecount = $resultsalecount->fetch_assoc()){
                 $totnewqty+=$rowsalecount['newqty'];
                 $totrefilqty+=$rowsalecount['refillqty'];
                 $totemptyqty+=$rowsalecount['emptyqty'];
                 $tottrustqty+=$rowsalecount['trustqty'];
+                $tottrustreturnqty+=$rowsalecount['trustreturnqty'];
             }
         }
 
@@ -140,6 +154,7 @@ foreach ($productarray as $rowproductarray) {
         $obj->totrefilqty=$totrefilqty;
         $obj->totemptyqty=$totemptyqty;
         $obj->tottrustqty=$tottrustqty;
+        $obj->tottrustretunqty=$tottrustreturnqty;
 
         array_push($totalsumarray, $obj);
     } else if ($typeSelector == 5) {
@@ -147,6 +162,7 @@ foreach ($productarray as $rowproductarray) {
         $totrefilqty=0;
         $totemptyqty=0;
         $tottrustqty=0;
+        $tottrustreturnqty=0;
         
         $sql = "SELECT `idtbl_customer`, `name`, `phone`, `address`, `tbl_area`.`area` FROM `tbl_customer` LEFT JOIN `tbl_area` ON `tbl_area`.`idtbl_area`=`tbl_customer`.`tbl_area_idtbl_area` LEFT JOIN `tbl_invoice` ON `tbl_invoice`.`tbl_customer_idtbl_customer`=`tbl_customer`.`idtbl_customer` LEFT JOIN `tbl_vehicle_load` ON `tbl_vehicle_load`.`idtbl_vehicle_load`=`tbl_invoice`.`tbl_vehicle_load_idtbl_vehicle_load`WHERE `tbl_customer`.`status`=1 AND `tbl_customer`.`tbl_area_idtbl_area`='$dataselector' AND `tbl_invoice`.`status`=1 AND `tbl_invoice`.`date` BETWEEN '$validfrom' AND '$validto' GROUP BY `tbl_invoice`.`tbl_customer_idtbl_customer` ORDER BY `tbl_customer`.`tbl_area_idtbl_area` ASC";
         $result = $conn->query($sql);
@@ -154,13 +170,14 @@ foreach ($productarray as $rowproductarray) {
             $customerID = $row['idtbl_customer'];
 
             // $sqlsalecount = "SELECT SUM(`newqty`) AS `newqty`, SUM(`refillqty`) AS `refillqty`, SUM(`emptyqty`) AS `emptyqty`, SUM(`trustqty`) AS `trustqty` FROM `tbl_invoice_detail` WHERE `status`=1 AND `tbl_product_idtbl_product`='$productID' AND `tbl_invoice_idtbl_invoice` IN (SELECT `idtbl_invoice` FROM `tbl_invoice` LEFT JOIN `tbl_vehicle_load` ON `tbl_vehicle_load`.`idtbl_vehicle_load`=`tbl_invoice`.`tbl_vehicle_load_idtbl_vehicle_load` WHERE `tbl_invoice`.`status`=1 AND `tbl_invoice`.`date` BETWEEN '$validfrom' AND '$validto' AND `tbl_vehicle_load`.`tbl_area_idtbl_area`=$dataselector AND `tbl_invoice`.`tbl_customer_idtbl_customer`='$customerID')";
-            $sqlsalecount = "SELECT SUM(`newqty`) AS `newqty`, SUM(`refillqty`) AS `refillqty`, SUM(`emptyqty`) AS `emptyqty`, SUM(`trustqty`) AS `trustqty` FROM  `tbl_invoice_detail` LEFT JOIN `tbl_invoice` ON `tbl_invoice`.`idtbl_invoice`=`tbl_invoice_detail`.`tbl_invoice_idtbl_invoice` LEFT JOIN `tbl_customer` ON `tbl_customer`.`idtbl_customer`=`tbl_invoice`.`tbl_customer_idtbl_customer` WHERE `tbl_invoice_detail`.`status`=1 AND `tbl_invoice_detail`.`tbl_product_idtbl_product`='$productID' AND `tbl_invoice`.`status`=1 AND `tbl_invoice`.`tbl_customer_idtbl_customer`='$customerID' AND `tbl_invoice`.`date` BETWEEN '$validfrom' AND '$validto' AND `tbl_customer`.`tbl_area_idtbl_area`='$dataselector'";
+            $sqlsalecount = "SELECT SUM(`newqty`) AS `newqty`, SUM(`refillqty`) AS `refillqty`, SUM(`emptyqty`) AS `emptyqty`, SUM(`trustqty`) AS `trustqty`, SUM(`trustreturnqty`) AS `trustreturnqty` FROM  `tbl_invoice_detail` LEFT JOIN `tbl_invoice` ON `tbl_invoice`.`idtbl_invoice`=`tbl_invoice_detail`.`tbl_invoice_idtbl_invoice` LEFT JOIN `tbl_customer` ON `tbl_customer`.`idtbl_customer`=`tbl_invoice`.`tbl_customer_idtbl_customer` WHERE `tbl_invoice_detail`.`status`=1 AND `tbl_invoice_detail`.`tbl_product_idtbl_product`='$productID' AND `tbl_invoice`.`status`=1 AND `tbl_invoice`.`tbl_customer_idtbl_customer`='$customerID' AND `tbl_invoice`.`date` BETWEEN '$validfrom' AND '$validto' AND `tbl_customer`.`tbl_area_idtbl_area`='$dataselector'";
             $resultsalecount = $conn->query($sqlsalecount);
             while($rowsalecount = $resultsalecount->fetch_assoc()){
                 $totnewqty+=$rowsalecount['newqty'];
                 $totrefilqty+=$rowsalecount['refillqty'];
                 $totemptyqty+=$rowsalecount['emptyqty'];
                 $tottrustqty+=$rowsalecount['trustqty'];
+                $tottrustreturnqty+=$rowsalecount['trustreturnqty'];
             }
         }
 
@@ -171,6 +188,7 @@ foreach ($productarray as $rowproductarray) {
         $obj->totrefilqty=$totrefilqty;
         $obj->totemptyqty=$totemptyqty;
         $obj->tottrustqty=$tottrustqty;
+        $obj->tottrustretunqty=$tottrustreturnqty;
 
         array_push($totalsumarray, $obj);
     }
@@ -183,6 +201,7 @@ foreach ($productarray as $rowproductarray) {
                 <td class="text-center">' . (isset($rowsummerylist->totrefilqty) ? $rowsummerylist->totrefilqty : '-') . '</td>
                 <td class="text-center">' . (isset($rowsummerylist->totemptyqty) ? $rowsummerylist->totemptyqty : '-') . '</td>
                 <td class="text-center">' . (isset($rowsummerylist->tottrustqty) ? $rowsummerylist->tottrustqty : '-') . '</td>
+                <td class="text-center">' . (isset($rowsummerylist->trustreturnqty) ? $rowsummerylist->trustreturnqty : '-') . '</td>
             </tr>';
         }
     }
@@ -196,6 +215,7 @@ foreach ($productarray as $rowproductarray) {
                 <td class="text-center">' . (isset($rowsalecount['refillqty']) ? $rowsalecount['refillqty'] : '-') . '</td>
                 <td class="text-center">' . (isset($rowsalecount['emptyqty']) ? $rowsalecount['emptyqty'] : '-') . '</td>
                 <td class="text-center">' . (isset($rowsalecount['trustqty']) ? $rowsalecount['trustqty'] : '-') . '</td>
+                <td class="text-center">' . (isset($rowsalecount['trustreturnqty']) ? $rowsalecount['trustreturnqty'] : '-') . '</td>
             </tr>';
         }
     }

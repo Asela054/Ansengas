@@ -4,6 +4,9 @@ include "include/header.php";
 // $sqlcustomer="SELECT `idtbl_customer`, `name` FROM `tbl_customer` WHERE `status`=1 ORDER BY `name` ASC";
 // $resultcustomer =$conn-> query($sqlcustomer);
 
+$sqlgroup="SELECT `idtbl_group_category`, `category` FROM `tbl_group_category` WHERE `status`=1";
+$resultgroup =$conn-> query($sqlgroup);
+
 include "include/topnavbar.php"; 
 ?>
 <div id="layoutSidenav">
@@ -47,8 +50,16 @@ include "include/topnavbar.php";
                                                 <option value="2">Sales Executive</option>
                                             </select>
                                         </div>
-
-                                        <div id="customerDropdown" class="col-3">
+                                        <div class="col-2 d-none" id="divgroupcategory">
+                                            <label class="small font-weight-bold text-dark">Group Category</label>
+                                            <select class="form-control form-control-sm" name="groupcategory" id="groupcategory">
+                                                <option value="">Select</option>
+                                                <?php if($resultgroup->num_rows > 0) {while ($rowgroup = $resultgroup-> fetch_assoc()) { ?>
+                                                <option value="<?php echo $rowgroup['idtbl_group_category'] ?>"><?php echo $rowgroup['category'] ?></option>
+                                                <?php }} ?>
+                                            </select>
+                                        </div>
+                                        <div id="customerDropdown" class="col-2">
                                             <label class="small font-weight-bold text-dark">Customer | Sales Excutive</label>
                                             <select class="form-control form-control-sm" name="dataselector" id="dataselector" required>
                                                 <option value="">Select</option>
@@ -63,7 +74,7 @@ include "include/topnavbar.php";
                                                 <?php //}} ?>
                                             </select>
                                         </div> -->
-                                        <div class="col-3">
+                                        <div class="col-2">
                                             <label class="small font-weight-bold text-dark">&nbsp;</label><br>
                                             <button class="btn btn-outline-dark btn-sm" type="button" id="formSearchBtn"><i class="fas fa-search"></i>&nbsp;Search</button>
                                             <button class="btn btn-outline-danger btn-sm" type="button" id="formAllSearchBtn"><i class="fas fa-list"></i>&nbsp;All Outstanding</button>
@@ -71,10 +82,6 @@ include "include/topnavbar.php";
                                     </div>
                                     <input type="submit" class="d-none" id="hidesubmit">
                                 </form>
-                            </div>
-                            <div class="col-2">
-                                <!-- <label class="small font-weight-bold text-dark">&nbsp;</label><br>
-                                <button class="btn btn-success btn-sm float-right" onclick="exportToExcel()"><i class="fas fa-file-csv mr-2"></i> Export Excel</button> -->
                             </div>
                             <div class="col-12" id="printtable">
                                 <hr class="border-dark">
@@ -151,8 +158,15 @@ include "include/topnavbar.php";
 
         $('#typeSelector').change(function(){
             $('#dataselector').val(null).trigger('change');
-            if($(this).val()==1){$('#dataselector').prop('required', false);}
-            else{$('#dataselector').prop('required', true);}
+            $('#groupcategory').val('');
+            if($(this).val()==1){
+                $('#dataselector').prop('required', false);
+                $('#divgroupcategory').removeClass('d-none');
+            }
+            else{
+                $('#dataselector').prop('required', true);
+                $('#divgroupcategory').addClass('d-none');
+            }
         });
         $("#dataselector").select2({
             ajax: {
@@ -163,7 +177,8 @@ include "include/topnavbar.php";
                 data: function (params) {
                     return {
                         searchTerm: params.term, // search term
-                        type: $('#typeSelector').val()
+                        type: $('#typeSelector').val(),
+                        groupcategory: $('#groupcategory').val()
                     };
                 },
                 processResults: function (response) {//console.log(response);
@@ -206,6 +221,7 @@ include "include/topnavbar.php";
                 var validto = $('#todate').val();
                 var customer = $('#dataselector').val();
                 var type = $('#typeSelector').val();
+                var groupcategory = $('#groupcategory').val();
 
                 $('#targetviewdetail').html('<div class="card border-0 shadow-none bg-transparent"><div class="card-body text-center"><img src="images/spinner.gif" alt="" srcset=""></div></div>');
 
@@ -215,7 +231,8 @@ include "include/topnavbar.php";
                         validfrom: validfrom,
                         validto: validto,
                         customer: customer,
-                        type: type
+                        type: type,
+                        groupcategory: groupcategory
                     },
                     url: 'getprocess/getoutstandingreport.php',
                     success: function(result) {//alert(result);

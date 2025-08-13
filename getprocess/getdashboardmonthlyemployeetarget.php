@@ -216,6 +216,10 @@ $emplistID=0;
 
 if ($result && $result->num_rows > 0) {
     while ($rowinfo = $result->fetch_assoc()) {
+        if($rowinfo['balance_percentage_2kg'] <= 0 && $rowinfo['target_2kg'] != ''):$overcom2_kg = ceil(($rowinfo['completed_2kg']/$rowinfo['target_2kg']) * 100);else:$overcom2_kg = 0;endif;
+        if($rowinfo['balance_percentage_5kg'] <= 0 && $rowinfo['target_5kg'] != ''):$overcom5_kg = ceil(($rowinfo['completed_5kg']/$rowinfo['target_5kg']) * 100);else:$overcom5_kg = 0;endif;
+        if($rowinfo['balance_percentage_12_5kg'] <= 0 && $rowinfo['target_12_5kg'] != ''):$overcom_12_5_kg = ceil(($rowinfo['completed_12_5kg']/$rowinfo['target_12_5kg']) * 100);else:$overcom_12_5_kg = 0;endif;
+        if($rowinfo['balance_percentage_37_5kg'] <= 0 && $rowinfo['target_37_5kg'] != ''):$overcom_37_5_kg = ceil(($rowinfo['completed_37_5kg']/$rowinfo['target_37_5kg']) * 100);else:$overcom_37_5_kg = 0;endif;
         $html.='<tr>
             <td nowrap>'.$rowinfo['employee_name'].'</td>
             
@@ -223,28 +227,28 @@ if ($result && $result->num_rows > 0) {
             <td class="text-center '.($rowinfo['balance_percentage_2kg'] <= 0 && $rowinfo['target_2kg'] != '' ? 'table-success' : '').'">'.$rowinfo['target_2kg'].'</td>
             <td class="text-center '.($rowinfo['balance_percentage_2kg'] <= 0 && $rowinfo['target_2kg'] != '' ? 'table-success' : '').'">'.$rowinfo['completed_2kg'].'</td>
             <td class="text-center '.($rowinfo['balance_percentage_2kg'] <= 0 && $rowinfo['target_2kg'] != '' ? 'table-success' : '').'">'.($rowinfo['balance_2kg'] <= 0 ? '' : ceil($rowinfo['balance_2kg'])).'</td>
-            <td class="text-center '.($rowinfo['balance_percentage_2kg'] <= 0 && $rowinfo['target_2kg'] != '' ? 'table-success' : '').'">'.($rowinfo['balance_percentage_2kg'] <= 0 ? '0%' : ceil($rowinfo['balance_percentage_2kg']).'%').'</td>
+            <td class="text-center '.($rowinfo['balance_percentage_2kg'] <= 0 && $rowinfo['target_2kg'] != '' ? 'table-success font-weight-bold text-primary' : '').'">'.($rowinfo['balance_percentage_2kg'] <= 0 ? $overcom2_kg.'%' : ceil($rowinfo['balance_percentage_2kg']).'%').'</td>
             <td class="text-center '.($rowinfo['balance_percentage_2kg'] <= 0 && $rowinfo['target_2kg'] != '' ? 'table-success' : '').'">'.($rowinfo['balance_2kg'] <= 0 ? '0' : ceil($rowinfo['avg_day_2kg'])).'</td>
             
             <!-- 5KG Columns -->
             <td class="text-center '.($rowinfo['balance_percentage_5kg'] <= 0 && $rowinfo['target_5kg'] != '' ? 'table-success' : '').'">'.$rowinfo['target_5kg'].'</td>
             <td class="text-center '.($rowinfo['balance_percentage_5kg'] <= 0 && $rowinfo['target_5kg'] != '' ? 'table-success' : '').'">'.$rowinfo['completed_5kg'].'</td>
             <td class="text-center '.($rowinfo['balance_percentage_5kg'] <= 0 && $rowinfo['target_5kg'] != '' ? 'table-success' : '').'">'.($rowinfo['balance_5kg'] <= 0 ? '' : ceil($rowinfo['balance_5kg'])).'</td>
-            <td class="text-center '.($rowinfo['balance_percentage_5kg'] <= 0 && $rowinfo['target_5kg'] != '' ? 'table-success' : '').'">'.($rowinfo['balance_percentage_5kg'] <= 0 ? '0%' : ceil($rowinfo['balance_percentage_5kg']).'%').'</td>
+            <td class="text-center '.($rowinfo['balance_percentage_5kg'] <= 0 && $rowinfo['target_5kg'] != '' ? 'table-success font-weight-bold text-primary' : '').'">'.($rowinfo['balance_percentage_5kg'] <= 0 ? $overcom5_kg.'%' : ceil($rowinfo['balance_percentage_5kg']).'%').'</td>
             <td class="text-center '.($rowinfo['balance_percentage_5kg'] <= 0 && $rowinfo['target_5kg'] != '' ? 'table-success' : '').'">'.($rowinfo['balance_5kg'] <= 0 ? '' : ceil($rowinfo['avg_day_5kg'])).'</td>
             
             <!-- 12.5KG Columns -->
             <td class="text-center '.($rowinfo['balance_percentage_12_5kg'] <= 0 && $rowinfo['target_12_5kg'] != '' ? 'table-success' : '').'">'.$rowinfo['target_12_5kg'].'</td>
             <td class="text-center '.($rowinfo['balance_percentage_12_5kg'] <= 0 && $rowinfo['target_12_5kg'] != '' ? 'table-success' : '').'">'.$rowinfo['completed_12_5kg'].'</td>
             <td class="text-center '.($rowinfo['balance_percentage_12_5kg'] <= 0 && $rowinfo['target_12_5kg'] != '' ? 'table-success' : '').'">'.($rowinfo['balance_12_5kg'] <= 0 ? '' : ceil($rowinfo['balance_12_5kg'])).'</td>
-            <td class="text-center '.($rowinfo['balance_percentage_12_5kg'] <= 0 && $rowinfo['target_12_5kg'] != '' ? 'table-success' : '').'">'.($rowinfo['balance_percentage_12_5kg'] <= 0 ? '0%' : ceil($rowinfo['balance_percentage_12_5kg']).'%').'</td>
+            <td class="text-center '.($rowinfo['balance_percentage_12_5kg'] <= 0 && $rowinfo['target_12_5kg'] != '' ? 'table-success font-weight-bold text-primary' : '').'">'.($rowinfo['balance_percentage_12_5kg'] <= 0 ? $overcom_12_5_kg.'%' : ceil($rowinfo['balance_percentage_12_5kg']).'%').'</td>
             <td class="text-center '.($rowinfo['balance_percentage_12_5kg'] <= 0 && $rowinfo['target_12_5kg'] != '' ? 'table-success' : '').'">'.($rowinfo['balance_12_5kg'] <= 0 ? '0' : ceil($rowinfo['avg_day_12_5kg'])).'</td>
             
             <!-- 37.5KG Columns -->
             <td class="text-center '.($rowinfo['balance_percentage_37_5kg'] <= 0 && $rowinfo['target_37_5kg'] != '' ? 'table-success' : '').'">'.$rowinfo['target_37_5kg'].'</td>
             <td class="text-center '.($rowinfo['balance_percentage_37_5kg'] <= 0 && $rowinfo['target_37_5kg'] != '' ? 'table-success' : '').'">'.$rowinfo['completed_37_5kg'].'</td>
             <td class="text-center '.($rowinfo['balance_percentage_37_5kg'] <= 0 && $rowinfo['target_37_5kg'] != '' ? 'table-success' : '').'">'.($rowinfo['balance_37_5kg'] <= 0 ? '' : ceil($rowinfo['balance_37_5kg'])).'</td>
-            <td class="text-center '.($rowinfo['balance_percentage_37_5kg'] <= 0 && $rowinfo['target_37_5kg'] != '' ? 'table-success' : '').'">'.($rowinfo['balance_percentage_37_5kg'] <= 0 ? '0%' : ceil($rowinfo['balance_percentage_37_5kg']).'%').'</td>
+            <td class="text-center '.($rowinfo['balance_percentage_37_5kg'] <= 0 && $rowinfo['target_37_5kg'] != '' ? 'table-success font-weight-bold text-primary' : '').'">'.($rowinfo['balance_percentage_37_5kg'] <= 0 ? $overcom_37_5_kg.'%' : ceil($rowinfo['balance_percentage_37_5kg']).'%').'</td>
             <td class="text-center '.($rowinfo['balance_percentage_37_5kg'] <= 0 && $rowinfo['target_37_5kg'] != '' ? 'table-success' : '').'">'.($rowinfo['balance_37_5kg'] <= 0 ? '0' : ceil($rowinfo['avg_day_37_5kg'])).'</td>';
             
             // Render accessory product columns
@@ -269,12 +273,14 @@ function renderAccessoryColumns($row, $colName) {
     if ($hasData) {
         $isComplete = ($row['balance_percentage_'.$colName] <= 0 && $row['target_'.$colName] != '');
         $successClass = $isComplete ? 'table-success' : '';
+
+        if($row['balance_percentage_'.$colName] <= 0 && $row['target_'.$colName] != ''): $overcom = ceil(($row['target_'.$colName]/$row['completed_'.$colName]) * 100);else:$overcom = 0;endif;
         
         return '
             <td class="text-center '.$successClass.'">'.$row['target_'.$colName].'</td>
             <td class="text-center '.$successClass.'">'.$row['completed_'.$colName].'</td>
             <td class="text-center '.$successClass.'">'.($row['balance_'.$colName] > 0 ? ceil($row['balance_'.$colName]) : '').'</td>
-            <td class="text-center '.$successClass.'">'.($row['balance_percentage_'.$colName] <= 0 ? '0%' : ceil($row['balance_percentage_'.$colName]).'%').'</td>
+            <td class="text-center '.$successClass.'">'.($row['balance_percentage_'.$colName] <= 0 ? $overcom.'%' : ceil($row['balance_percentage_'.$colName]).'%').'</td>
             <td class="text-center '.$successClass.'">'.($row['balance_'.$colName] > 0 ? ceil($row['avg_day_'.$colName]) : '0').'</td>';
     } else {
         // Return empty columns if no data exists for this accessory

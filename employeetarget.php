@@ -1,8 +1,8 @@
 <?php 
 include "include/header.php";  
 
-$sqlemployee="SELECT `idtbl_employee`, `name` FROM `tbl_employee` WHERE `status`=1 ORDER BY `name` ASC";
-$resultemployee =$conn-> query($sqlemployee);
+$sqlgroup="SELECT `idtbl_group_category`, `category` FROM `tbl_group_category` WHERE `status`=1";
+$resultgroup =$conn-> query($sqlgroup);
 
 include "include/topnavbar.php"; 
 ?>
@@ -45,6 +45,15 @@ include "include/topnavbar.php";
                                                 <option value="5">Vehicle</option>
                                             </select>
                                         </div>
+                                        <div class="col-2 d-none" id="divgroupcategory">
+                                            <label class="small font-weight-bold text-dark">Group Category</label>
+                                            <select class="form-control form-control-sm" name="groupcategory" id="groupcategory">
+                                                <option value="">Select</option>
+                                                <?php if($resultgroup->num_rows > 0) {while ($rowgroup = $resultgroup-> fetch_assoc()) { ?>
+                                                <option value="<?php echo $rowgroup['idtbl_group_category'] ?>"><?php echo $rowgroup['category'] ?></option>
+                                                <?php }} ?>
+                                            </select>
+                                        </div>
                                         <div class="col-3">
                                             <label class="small font-weight-bold text-dark">Executive | Driver | Area | Customer | Vehicle</label>
                                             <select class="form-control form-control-sm" name="employee" id="employee">
@@ -85,6 +94,13 @@ include "include/topnavbar.php";
     $(document).ready(function() {
         $('#reporttype').change(function() {
             $("#employee").val('').trigger('change');
+            $("#groupcategory").val('');
+            if($(this).val()==4){
+                $('#divgroupcategory').removeClass('d-none');
+            }
+            else{
+                $('#divgroupcategory').addClass('d-none');
+            }
         });
         $("#employee").select2({
             ajax: {
@@ -95,7 +111,8 @@ include "include/topnavbar.php";
                 data: function (params) {
                     return {
                         searchTerm: params.term, // search term
-                        reporttype: $('#reporttype').val() // report type
+                        reporttype: $('#reporttype').val(), // report type
+                        groupcategory: $('#groupcategory').val() // report type
                     };
                 },
                 processResults: function (response) {
@@ -116,6 +133,7 @@ include "include/topnavbar.php";
                 var month = $('#month').val();
                 var employee = $('#employee').val();
                 var reporttype = $('#reporttype').val();
+                var groupcategory = $('#groupcategory').val();
 
                 $('#targetviewdetail').html('<div class="card border-0 shadow-none bg-transparent"><div class="card-body text-center"><img src="images/spinner.gif" alt="" srcset=""></div></div>');
 
@@ -124,7 +142,8 @@ include "include/topnavbar.php";
                     data: {
                         month: month,
                         employee: employee,
-                        reporttype: reporttype
+                        reporttype: reporttype,
+                        groupcategory: groupcategory
                     },
                     url: 'getprocess/getemployeetargetreport.php',
                     success: function(result) {//alert(result);

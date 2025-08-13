@@ -6,14 +6,25 @@ $validfrom=$_POST['validfrom'];
 $validto=$_POST['validto'];
 $customer=$_POST['customer'];
 $type=$_POST['type'];
+if(!empty($_POST['groupcategory'])){$groupcategory=$_POST['groupcategory'];}
 
 if($type==1){
     if(!empty($_POST['customer'])){
-        $sqlcustomer="SELECT `idtbl_customer`, `name`, `creditperiod`, `discount_status` FROM `tbl_customer` WHERE `status`=1 AND `idtbl_customer`='$customer'";
+        $sqlcustomer="SELECT `idtbl_customer`, `name`, `creditperiod`, `discount_status` FROM `tbl_customer` WHERE 1=1";
+        if(!empty($_POST['groupcategory'])){ 
+            $groupcategory = $_POST['groupcategory'];
+            $sqlcustomer.=" AND `tbl_group_category_idtbl_group_category`='$groupcategory'";
+        }
+        $sqlcustomer.=" AND `status`=1 AND `idtbl_customer`='$customer'";
         $resultcustomer =$conn-> query($sqlcustomer);
     }
     else{
-        $sqlcustomer="SELECT `idtbl_customer`, `name`, `creditperiod`, `discount_status` FROM `tbl_customer` WHERE `status`=1 ORDER BY `name` ASC";
+        $sqlcustomer="SELECT `idtbl_customer`, `name`, `creditperiod`, `discount_status` FROM `tbl_customer` WHERE 1=1";
+        if(!empty($_POST['groupcategory'])){ 
+            $groupcategory = $_POST['groupcategory'];
+            $sqlcustomer.=" AND `tbl_group_category_idtbl_group_category`='$groupcategory'";
+        }
+        $sqlcustomer.=" AND `status`=1 ORDER BY `name` ASC";
         $resultcustomer =$conn-> query($sqlcustomer);
     }
 }

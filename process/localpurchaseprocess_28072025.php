@@ -10,39 +10,26 @@ require_once('../connection/db.php');
 $userID = $_SESSION['userid'];
 
 $purchasedate = $conn->real_escape_string($_POST['purchasedate']);
+$customer = (int)$_POST['customer'];
 $remark = $conn->real_escape_string($_POST['remark']);
 $orderDetails = json_decode($_POST['orderDetails'], true);
 $total = (float)str_replace(',', '', $_POST['total']);
+$totalwithoutvat = (float)str_replace(',', '', $_POST['totalwithoutvat']);
 $updatedatetime = date('Y-m-d H:i:s');
-$customerType = $_POST['customer_type']; 
+
+if (!is_numeric($total) || !is_numeric($totalwithoutvat)) {
+    die(json_encode(['error' => 'Invalid total or total without VAT amount']));
+}
+
+$tax_amount = $total - $totalwithoutvat;
 
 $conn->begin_transaction();
 
 try {
-    $customerID = null;
-    $customerTypeValue = ($customerType === 'new') ? 2 : 1; 
-    
-    if ($customerType === 'new') {
-        $name = $conn->real_escape_string($_POST['new_customer_name']);
-        $phone = $conn->real_escape_string($_POST['new_customer_phone']);
-        $address = $conn->real_escape_string($_POST['new_customer_address'] ?? '');
-        
-        $insertCustomerQuery = "INSERT INTO `tbl_local_purchase_customers` 
-            (`name`, `phone`, `address`, `status`, `insertdatetime`, `tbl_user_idtbl_user`) 
-            VALUES ('$name', '$phone', '$address', 1, '$updatedatetime', $userID)";
-        
-        if (!$conn->query($insertCustomerQuery)) {
-            throw new Exception("Error creating new customer: " . $conn->error);
-        }
-        
-        $customerID = $conn->insert_id;
-    } else {
-        $customerID = (int)$_POST['customer'];
-    }
-
+    // Insert master purchase record
     $insertOrderQuery = "INSERT INTO `tbl_local_purchase` 
-        (`date`, `total`, `taxamount`, `nettotal`, `remark`, `status`, `updatedatetime`, `customertype`, `tbl_customer_idtbl_customer`, `tbl_user_idtbl_user`) 
-        VALUES ('$purchasedate', $total, '0', '0', '$remark', 1, '$updatedatetime', $customerTypeValue, $customerID, $userID)";
+        (`date`, `total`, `taxamount`, `nettotal`, `remark`, `status`, `updatedatetime`, `tbl_customer_idtbl_customer`, `tbl_user_idtbl_user`) 
+        VALUES ('$purchasedate', $totalwithoutvat, $tax_amount, $total, '$remark', 1, '$updatedatetime', $customer, $userID)";
     
     if (!$conn->query($insertOrderQuery)) {
         throw new Exception("Error inserting purchase record: " . $conn->error);
@@ -54,7 +41,9 @@ try {
         $productId = (int)$detail['productId'];
         $fullQty = (int)str_replace(',', '', $detail['fullQty']);
         $emptyQty = (int)str_replace(',', '', $detail['emptyQty']);
+        $fullprice = (float)str_replace(',', '', $detail['fullprice']);
         $fullpricewithoutvat = (float)str_replace(',', '', $detail['fullpricewithoutvat']);
+        $emptyprice = (float)str_replace(',', '', $detail['emptyprice']);
         $emptypricewithoutvat = (float)str_replace(',', '', $detail['emptypricewithoutvat']);
 
         if ($fullQty == 0 && $emptyQty == 0) {
@@ -67,7 +56,7 @@ try {
              `empty_unitprice`, `empty_unitprice_withoutvat`, `status`, 
              `updatedatetime`, `tbl_user_idtbl_user`, 
              `tbl_local_purchase_idtbl_local_purchase`, `tbl_product_idtbl_product`) 
-             VALUES ($fullQty, $emptyQty, '0', $fullpricewithoutvat, '0', $emptypricewithoutvat, 1, '$updatedatetime', $userID, $purchaseID, $productId)";
+             VALUES ($fullQty, $emptyQty, $fullprice, $fullpricewithoutvat, $emptyprice, $emptypricewithoutvat, 1, '$updatedatetime', $userID, $purchaseID, $productId)";
         
         if (!$conn->query($insertDetailQuery)) {
             throw new Exception("Error inserting order detail: " . $conn->error);

@@ -47,7 +47,8 @@ include "include/topnavbar.php";
                                             <th>Local Purchase</th>
                                             <th>Customer</th>
                                             <th>Date</th>
-                                            <th class="text-right">Total</th>
+                                            <th>User</th>
+                                            <th class="text-right">Nettotal</th>
                                             <th>Status</th>
                                             <th class="text-right">Actions</th>
                                         </tr>
@@ -87,26 +88,9 @@ include "include/topnavbar.php";
                                     </div>
                                 </div>
                                 <div class="col-3">
-                                    <label class="small font-weight-bold text-dark">Customer Type*</label><br>
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input customer-type" type="radio" name="customer_type"
-                                            id="existing_customer" value="existing" checked>
-                                        <label class="form-check-label" for="existing_customer">Existing
-                                            Customer</label>
-                                    </div>
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input customer-type" type="radio" name="customer_type"
-                                            id="new_customer" value="new">
-                                        <label class="form-check-label" for="new_customer">New Customer</label>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="form-row mb-1" id="existing-customer-section">
-                                <div class="col-3">
                                     <label class="small font-weight-bold text-dark">Customer*</label><br>
                                     <select name="customer" id="customer" class="form-control form-control-sm"
-                                        style="width:100%;">
+                                        style="width:100%;" required>
                                         <option value="">Select</option>
                                         <?php if($resultcustomer->num_rows > 0) {while ($rowcustomer = $resultcustomer-> fetch_assoc()) { ?>
                                         <option value="<?php echo $rowcustomer['idtbl_customer'] ?>">
@@ -115,25 +99,6 @@ include "include/topnavbar.php";
                                     </select>
                                 </div>
                             </div>
-
-                            <div class="form-row mb-1 d-none" id="new-customer-section">
-                                <div class="col-3">
-                                    <label class="small font-weight-bold text-dark">Customer Name*</label>
-                                    <input type="text" class="form-control form-control-sm" id="new_customer_name"
-                                        name="new_customer_name">
-                                </div>
-                                <div class="col-3">
-                                    <label class="small font-weight-bold text-dark">Phone*</label>
-                                    <input type="text" class="form-control form-control-sm" id="new_customer_phone"
-                                        name="new_customer_phone">
-                                </div>
-                                <div class="col-3">
-                                    <label class="small font-weight-bold text-dark">Address</label>
-                                    <textarea class="form-control form-control-sm" id="new_customer_address"
-                                        name="new_customer_address" rows="1"></textarea>
-                                </div>
-                            </div>
-
                             <input type="hidden" name="unitprice" id="unitprice" value="">
                             <input type="hidden" name="saleprice" id="saleprice" value="">
                             <input type="hidden" name="refillprice" id="refillprice" value="">
@@ -148,11 +113,15 @@ include "include/topnavbar.php";
                                     <th style="width: 100px;">Product</th>
                                     <th class="d-none" style="width: 100px;">ProductID</th>
                                     <th style="width: 100px;">Full price</th>
+                                    <th style="width: 100px;">Full price + VAT</th>
                                     <th style="width: 100px;">Empty price</th>
+                                    <th style="width: 100px;">Empty price + VAT</th>
                                     <th class="text-center" style="width: 50px;">Full Qty</th>
                                     <th class="text-center" style="width: 50px;">Empty Qty</th>
+                                    <th class="text-center" style="width: 50px;">VAT</th>
                                     <th class="d-none" style="width: 100px;">HideTotal</th>
                                     <th class="text-right" style="width: 100px;">Total</th>
+                                    <th class="d-none" style="width: 100px;">Hide Total Without Vat</th>
                                 </tr>
                             </thead>
                             <tbody id="tableBody"></tbody>
@@ -165,6 +134,8 @@ include "include/topnavbar.php";
                                 <h1 class="font-weight-600" id="divtotal">Rs. 0.00</h1>
                             </div>
                             <input type="hidden" id="hidetotalorder" value="0">
+                            <input type="hidden" id="hidetotalorderwithoutvat" value="0">
+
                         </div>
                         <hr>
                         <div class="form-group col-6 ">
@@ -263,27 +234,8 @@ include "include/topnavbar.php";
 <script>
     $(document).ready(function() {
 
-        $('.customer-type').change(function () {
-            if ($(this).val() === 'existing') {
-                $('#existing-customer-section').removeClass('d-none');
-                $('#new-customer-section').addClass('d-none');
-                // Make existing customer select required
-                $('#customer').prop('required', true);
-                // Make new customer fields not required
-                $('#new_customer_name, #new_customer_phone').prop('required', false);
-            } else {
-                $('#existing-customer-section').addClass('d-none');
-                $('#new-customer-section').removeClass('d-none');
-                // Make existing customer select not required
-                $('#customer').prop('required', false);
-                // Make new customer name and phone required
-                $('#new_customer_name, #new_customer_phone').prop('required', true);
-            }
-        });
-
         $("#customer").select2({
             dropdownParent: $('#modalcreateorder'),
-
             ajax: {
                 url: 'getprocess/getcustomerlist.php',
                 type: "post",
@@ -336,17 +288,20 @@ include "include/topnavbar.php";
                     }
                 },
                 {
-                    "data": "customer_name"
+                    "data": "name"
                 },
                 {
                     "data": "date"
+                },
+                {
+                    "data": "name"
                 },
                 {
                     "targets": -1,
                     "className": 'text-right',
                     "data": null,
                     "render": function(data, type, full) {
-                        return parseFloat(full['total']).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                        return parseFloat(full['nettotal']).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
                     }
                 },
                 {
@@ -463,7 +418,7 @@ include "include/topnavbar.php";
         });
 
         // Create order part
-    $('#btnordercreate').click(function () {
+     $('#btnordercreate').click(function () {
         $('#modalcreateorder').modal('show');
         $('#modalcreateorder').on('shown.bs.modal', function () {
             $('#orderdate').trigger('focus');
@@ -476,6 +431,9 @@ include "include/topnavbar.php";
                     var tableBody = $('#tableBody');
                     tableBody.empty();
 
+                    var vatPercentage = parseFloat(data.vat) || 0;
+                    var vatValue = vatPercentage + '%';
+
                     $.each(data, function (index, product) {
                         if (index === 'vat') return;
 
@@ -485,11 +443,14 @@ include "include/topnavbar.php";
                             '<td>' + product.product_name + '</td>' +
                             '<td class="d-none">' + product.idtbl_product + '</td>' +
                             '<td><input type="text" class="input-integer-decimal form-control form-control-sm custom-width full-price-input" name="full_price[]" value="0"></td>' +
+                            '<td><input type="text" class="input-integer-decimal form-control form-control-sm custom-width full-price-with-vat-input" name="full_price_with_vat[]" value="0" readonly></td>' +
                             '<td><input type="text" class="input-integer-decimal form-control form-control-sm custom-width empty-price-input" name="empty_price[]" value="0" ' + (parseInt(product.tbl_product_category_idtbl_product_category) === 2 ? 'readonly' : '') + '></td>' +
+                            '<td><input type="text" class="input-integer-decimal form-control form-control-sm custom-width empty-price-with-vat-input" name="empty_price_with_vat[]" value="0" readonly></td>' +
                             '<td class="text-center"><input type="text" class="input-integer form-control form-control-sm custom-width full-qty-input" name="full_quantity[]" value="0"></td>' +
                             '<td class="text-center"><input type="text" class="input-integer form-control form-control-sm custom-width empty-qty-input" name="empty_quantity[]" value="0" ' + (parseInt(product.tbl_product_category_idtbl_product_category) === 2 ? 'readonly' : '') + '></td>' +
-                            '<td class="text-right d-none"><input type="number" class="input-integer-decimal form-control form-control-sm custom-width" name="total_quantity[]" value="0" readonly></td>' +
-                            '<td class="text-right total-display">0.00</td>' +
+                            '<td class="text-center"><input type="text" class="form-control form-control-sm custom-width" name="vat_amount[]" value="' + vatValue + '" readonly></td>' +
+                            '<td class="text-right total-column"><input type="number" class="input-integer-decimal form-control form-control-sm custom-width" name="total_quantity[]" value="0" readonly></td>' +
+                            '<td class="d-none"><input type="number" class="form-control form-control-sm custom-width" name="total_without_vat[]" value="0"></td>' +
                             '</tr>');
                     });
 
@@ -519,104 +480,125 @@ include "include/topnavbar.php";
             if ($(this).val() === '') $(this).val('0');
         });
 
-        $('#tableBody').on('input', '.full-price-input, .empty-price-input, .full-qty-input, .empty-qty-input', function() {
+        $('#tableBody').on('input', '.full-price-input', function() {
+            var row = $(this).closest('tr');
+            var price = parseFloat($(this).val()) || 0;
+            var vat = parseFloat(row.find('input[name^="vat_amount"]').val()) || 0;
+            var priceWithVat = price * (1 + vat/100);
+            row.find('.full-price-with-vat-input').val(priceWithVat.toFixed(2));
+            updateRowTotals(row);
+        });
+
+        $('#tableBody').on('input', '.empty-price-input', function() {
+            var row = $(this).closest('tr');
+            var price = parseFloat($(this).val()) || 0;
+            var vat = parseFloat(row.find('input[name^="vat_amount"]').val()) || 0;
+            var priceWithVat = price * (1 + vat/100);
+            row.find('.empty-price-with-vat-input').val(priceWithVat.toFixed(2));
+            updateRowTotals(row);
+        });
+
+        $('#tableBody').on('input', '.full-qty-input, .empty-qty-input', function() {
             updateRowTotals($(this).closest('tr'));
         });
     }
 
     function updateRowTotals(row) {
         var fullPrice = parseFloat(row.find('.full-price-input').val()) || 0;
+        var fullPriceWithVat = parseFloat(row.find('.full-price-with-vat-input').val()) || 0;
         var fullQty = parseFloat(row.find('.full-qty-input').val()) || 0;
         
         var emptyPrice = parseFloat(row.find('.empty-price-input').val()) || 0;
+        var emptyPriceWithVat = parseFloat(row.find('.empty-price-with-vat-input').val()) || 0;
         var emptyQty = parseFloat(row.find('.empty-qty-input').val()) || 0;
 
-        var fullTotal = fullPrice * fullQty;
-        var emptyTotal = emptyPrice * emptyQty;
-        var rowTotal = fullTotal + emptyTotal;
-
-        // Update hidden numeric field (for form submission)
-        row.find('input[name^="total_quantity"]').val(rowTotal.toFixed(2));
+        var fullTotalWithVat = fullPriceWithVat * fullQty;
+        var emptyTotalWithVat = emptyPriceWithVat * emptyQty;
+        var rowTotalWithVat = fullTotalWithVat + emptyTotalWithVat;
         
-        // Update visible display field with commas
-        row.find('.total-display').text(addCommas(rowTotal.toFixed(2)));
+        var fullTotalWithoutVat = fullPrice * fullQty;
+        var emptyTotalWithoutVat = emptyPrice * emptyQty;
+        var rowTotalWithoutVat = fullTotalWithoutVat + emptyTotalWithoutVat;
+
+        row.find('input[name^="total_quantity"]').val(rowTotalWithVat.toFixed(2));
+        row.find('input[name^="total_without_vat"]').val(rowTotalWithoutVat.toFixed(2));
 
         updateGrandTotals();
     }
 
     function updateGrandTotals() {
-        var grandTotal = 0;
+        var grandTotalWithVat = 0;
+        var grandTotalWithoutVat = 0;
 
         $('#tableBody').find('input[name^="total_quantity"]').each(function () {
-            grandTotal += parseFloat($(this).val()) || 0;
+            grandTotalWithVat += parseFloat($(this).val()) || 0;
         });
 
-        $('#divtotal').text('Rs. ' + addCommas(grandTotal.toFixed(2)));
-        $('#hidetotalorder').val(grandTotal.toFixed(2));
+        $('#tableBody').find('input[name^="total_without_vat"]').each(function () {
+            grandTotalWithoutVat += parseFloat($(this).val()) || 0;
+        });
+
+        $('#divtotal').text('Rs. ' + addCommas(grandTotalWithVat.toFixed(2)));
+        $('#hidetotalorder').val(grandTotalWithVat.toFixed(2));
+        $('#hidetotalorderwithoutvat').val(grandTotalWithoutVat.toFixed(2));
     }
 
     $(document).on('change', '.show-accessories-checkbox', function() {
         $('.accessory-row').toggle($(this).prop('checked'));
     });
 
-        $('#btncreateorder').click(function () {
-            var purchasedate = $('#purchasedate').val();
-            var customerType = $('input[name="customer_type"]:checked').val();
-            var remark = $('#remark').val();
-            var total = $('#hidetotalorder').val();
+       $('#btncreateorder').click(function () {
+           var purchasedate = $('#purchasedate').val();
+           var customer = $('#customer').val();
+           var remark = $('#remark').val();
+           var total = $('#hidetotalorder').val();
+           var totalwithoutvat = $('#hidetotalorderwithoutvat').val();
 
-            var orderDetails = [];
-            $('#tableBody tr').each(function () {
-                var row = $(this);
-                var productId = row.find('td:eq(1)').text();
-                var fullpricewithoutvat = row.find('.full-price-input').val();
-                var emptypricewithoutvat = row.find('.empty-price-input').val();
-                var fullQty = row.find('.full-qty-input').val();
-                var emptyQty = row.find('.empty-qty-input').val();
+           var orderDetails = [];
+           $('#tableBody tr').each(function () {
+               var row = $(this);
+               var productId = row.find('td:eq(1)').text();
+               var fullpricewithoutvat = row.find('.full-price-input').val();
+               var fullprice = row.find('.full-price-with-vat-input').val();
+               var emptypricewithoutvat = row.find('.empty-price-input').val();
+               var emptyprice = row.find('.empty-price-with-vat-input').val();
+               var fullQty = row.find('.full-qty-input').val();
+               var emptyQty = row.find('.empty-qty-input').val();
 
-                orderDetails.push({
-                    productId: productId,
-                    fullpricewithoutvat: fullpricewithoutvat,
-                    emptypricewithoutvat: emptypricewithoutvat,
-                    fullQty: fullQty,
-                    emptyQty: emptyQty
-                });
-            });
+               orderDetails.push({
+                   productId: productId,
+                   fullpricewithoutvat: fullpricewithoutvat,
+                   fullprice: fullprice,
+                   emptypricewithoutvat: emptypricewithoutvat,
+                   emptyprice: emptyprice,
+                   fullQty: fullQty,
+                   emptyQty: emptyQty
+               });
+           });
 
-            // Prepare the data object
-            var data = {
-                purchasedate: purchasedate,
-                remark: remark,
-                total: total,
-                orderDetails: JSON.stringify(orderDetails),
-                customer_type: customerType
-            };
-
-            // Add customer data based on type
-            if (customerType === 'existing') {
-                data.customer = $('#customer').val();
-            } else {
-                data.new_customer_name = $('#new_customer_name').val();
-                data.new_customer_phone = $('#new_customer_phone').val();
-                data.new_customer_address = $('#new_customer_address').val();
-            }
-
-            $.ajax({
-                url: 'process/localpurchaseprocess.php',
-                type: 'POST',
-                dataType: 'json',
-                data: data,
-                success: function (result) {
-                    $('#modalcreateorder').modal('hide');
-                    action(JSON.stringify(result));
-                    location.reload();
-                },
-                error: function (xhr, status, error) {
-                    console.error("AJAX Error:", status, error);
-                    alert("Error saving order. Please check console for details.");
-                }
-            });
-        });
+           $.ajax({
+               url: 'process/localpurchaseprocess.php',
+               type: 'POST',
+               dataType: 'json',
+               data: {
+                   purchasedate: purchasedate,
+                   customer: customer,
+                   remark: remark,
+                   total: total,
+                   totalwithoutvat: totalwithoutvat,
+                   orderDetails: JSON.stringify(orderDetails)
+               },
+               success: function (result) {
+                   $('#modalcreateorder').modal('hide');
+                   action(JSON.stringify(result));
+                   location.reload();
+               },
+               error: function (xhr, status, error) {
+                   console.error("AJAX Error:", status, error);
+                   alert("Error saving order. Please check console for details.");
+               }
+           });
+       });
     });
 
     function action(data) { //alert(data);

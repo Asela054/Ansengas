@@ -25,7 +25,7 @@ for ($i = 1; $i <= $dayscount; $i++) {
             $refillsalecount = 0;
 
             $invdate = date('Y-m-') . $i;
-            $sqlsaleproduct = "SELECT SUM(`newqty`) AS `newqty`, SUM(`refillqty`) AS `refillqty` FROM `tbl_invoice_detail` WHERE `tbl_invoice_idtbl_invoice` IN (SELECT `idtbl_invoice` FROM `tbl_invoice` WHERE `date`='$invdate' AND `status`=1) AND `status`=1 AND `tbl_product_idtbl_product`='$rowproduct'";
+            $sqlsaleproduct = "SELECT SUM(`newqty`) AS `newqty`, SUM(`refillqty`) AS `refillqty`, SUM(`trustqty`) AS `trustqty` FROM `tbl_invoice_detail` WHERE `tbl_invoice_idtbl_invoice` IN (SELECT `idtbl_invoice` FROM `tbl_invoice` WHERE `date`='$invdate' AND `status`=1) AND `status`=1 AND `tbl_product_idtbl_product`='$rowproduct'";
             $resultsaleproduct = $conn->query($sqlsaleproduct);
             $rowsaleproduct = $resultsaleproduct->fetch_assoc();
 
@@ -35,8 +35,11 @@ for ($i = 1; $i <= $dayscount; $i++) {
             if (!empty($rowsaleproduct['refillqty'])) {
                 $refillsalecount = $rowsaleproduct['refillqty'];
             }
+            if (!empty($rowsaleproduct['trustqty'])) {
+                $trustqtysalecount = $rowsaleproduct['trustqty'];
+            }
 
-            $totsalecount = $newsalecount + $refillsalecount;
+            $totsalecount = $newsalecount + $refillsalecount + $trustqtysalecount;
 
             if ($totsalecount > 0) {
                 if ($rowproduct == 1) {

@@ -2,21 +2,37 @@
 require_once('../connection/db.php');
 
 $type = $_POST['type'];
+if(!empty($_POST['groupcategory'])){$groupcategory=$_POST['groupcategory'];}
 
 if ($type === '1') {
     if(!isset($_POST["searchTerm"])){
-        $sql="SELECT `idtbl_customer`, `name` FROM `tbl_customer` WHERE `status`=1 LIMIT 5";
+        $sql="SELECT `idtbl_customer`, `name` FROM `tbl_customer` WHERE 1=1";
+        if(!empty($_POST['groupcategory'])){ 
+            $groupcategory = $_POST['groupcategory'];
+            $sql.=" AND `tbl_group_category_idtbl_group_category`='$groupcategory'";
+        }
+        $sql.=" AND `status`=1 LIMIT 5";
         $result=$conn->query($sql);
     }
     else{
         $searchTerm=$_POST["searchTerm"];
         
         if(!empty($searchTerm)){
-            $sql="SELECT `idtbl_customer`, `name` FROM `tbl_customer` WHERE `status`=1 AND `name` LIKE '%$searchTerm%'";
+            $sql="SELECT `idtbl_customer`, `name` FROM `tbl_customer` WHERE 1=1";
+            if(!empty($_POST['groupcategory'])){ 
+                $groupcategory = $_POST['groupcategory'];
+                $sql.=" AND `tbl_group_category_idtbl_group_category`='$groupcategory'";
+            }
+            $sql.=" AND `status`=1 AND `name` LIKE '%$searchTerm%'";
             $result=$conn->query($sql);
         }
         else{
-            $sql="SELECT `idtbl_customer`, `name` FROM `tbl_customer` WHERE `status`=1 LIMIT 5";
+            $sql="SELECT `idtbl_customer`, `name` FROM `tbl_customer` WHERE 1=1";
+            if(!empty($_POST['groupcategory'])){ 
+                $groupcategory = $_POST['groupcategory'];
+                $sql.=" AND `tbl_group_category_idtbl_group_category`='$groupcategory'";
+            }
+            $sql.=" AND `status`=1 LIMIT 5";
             $result=$conn->query($sql);
         }
     }

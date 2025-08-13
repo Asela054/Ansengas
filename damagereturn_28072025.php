@@ -50,7 +50,6 @@ include "include/topnavbar.php";
                                                 class="custom-control-input" value="2">
                                             <label class="custom-control-label" for="exist">Exist Customer</label>
                                         </div>
-                                        <input type="hidden" name="customerform" id="customerform" value="1">
                                     </div>
                                     <div id="existCustomerForm" style="display:none;">
                                         <div class="form-group mb-1 mt-3">
@@ -122,7 +121,7 @@ include "include/topnavbar.php";
                                     </div>
                                     <div class="form-row mb-1 mt-3">
                                         <div class="col">
-                                            <label class="small font-weight-bold text-dark">Reference Number</label>
+                                            <label class="small font-weight-bold text-dark">Referance Number</label>
                                             <input type="text" class="form-control form-control-sm" name="ref_num"
                                                 id="ref_num">
                                         </div>
@@ -139,14 +138,6 @@ include "include/topnavbar.php";
                                             <option value="">Select</option>
                                             <option value="1">Gas Leak</option>
                                             <option value="2">Tank Damage</option>
-                                        </select>
-                                    </div>
-                                    <div class="form-group mb-1">
-                                        <label class="small font-weight-bold">Tank Type</label>
-                                        <select class="form-control form-control-sm" name="tank_type" id="tank_type" required>
-                                            <option value="" selected>Select Tank Type</option>
-                                            <option value="1">Full Tank</option>
-                                            <option value="2">Empty Tank</option>
                                         </select>
                                     </div>
                                     <div class="form-group mb-1">
@@ -186,7 +177,7 @@ include "include/topnavbar.php";
                                                 <th>Product</th>
                                                 <th>Qty</th>
                                                 <th>Serial No</th>
-                                                <th>Reference No</th>
+                                                <th>Referance No</th>
                                                 <th>Send Company</th>
                                                 <th>Back Wharehouse</th>
                                                 <th>Return Customer</th>
@@ -222,7 +213,6 @@ include "include/topnavbar.php";
                         <div class="form-group mb-1">
                                 <label class="small font-weight-bold">Qty</label>
                                 <input type="text" class="form-control form-control-sm" name="send_qty" id="send_qty" required readonly>
-                                <input type="hidden" class="form-control form-control-sm" name="hidden_tank_type" id="hidden_tank_type" required readonly>
                             </div>
                             <div class="form-group mb-1">
                                 <label class="small font-weight-bold">Date</label>
@@ -262,7 +252,7 @@ include "include/topnavbar.php";
                             </div>
                             <div class="form-group mb-1">
                                 <label class="small font-weight-bold">Tank Type</label>
-                                <select class="form-control form-control-sm" name="wh_tank_type" id="wh_tank_type" required>
+                                <select class="form-control form-control-sm" name="tank_type" id="tank_type" required>
                                     <option value="" selected>Select Tank Type</option>
                                     <option value="1">Full Tank</option>
                                     <option value="2">Empty Tank</option>
@@ -301,11 +291,6 @@ include "include/topnavbar.php";
                     <div class="col-12">
                         <form id="addcustomerform" autocomplete="off">
                             <div class="form-group mb-1">
-                                <label class="small font-weight-bold">Qty</label>
-                                <input type="text" class="form-control form-control-sm" name="return_qty" id="return_qty" required readonly>
-                                <input type="hidden" class="form-control form-control-sm" name="hidden_return_tank_type" id="hidden_return_tank_type" required readonly>
-                            </div>
-                            <div class="form-group mb-1">
                                 <label class="small font-weight-bold">Date</label>
                                 <input type="date" class="form-control form-control-sm" name="date_customer" id="date_customer">
                                 <input type="hidden" class="form-control form-control-sm" id="hiddenid3" name="hiddenid3">
@@ -342,12 +327,6 @@ include "include/topnavbar.php";
                 newCustomerForm.style.display = "none";
                 existCustomerForm.style.display = "block";
             }
-        });
-    });
-    // Add this to your existing JavaScript
-    document.querySelectorAll('input[name="customerform"]').forEach(radio => {
-        radio.addEventListener('change', function() {
-            document.getElementById('customerform').value = this.value;
         });
     });
     $(document).ready(function() {
@@ -439,9 +418,9 @@ include "include/topnavbar.php";
                     "data": null,
                     "render": function(data, type, full) {
                         var button='';
-                        button+='<button class="btn btn-outline-orange btn-sm btnsendcompany mr-1" id="'+full['idtbl_damage_return']+'" qty="'+full['qty']+'" type="'+full['tank_type']+'" data-toggle="tooltip" data-placement="bottom" title="Send to company"><i class="fas fa-sign-out-alt"></i></button>';
+                        button+='<button class="btn btn-outline-orange btn-sm btnsendcompany mr-1" id="'+full['idtbl_damage_return']+'" qty="'+full['qty']+'" data-toggle="tooltip" data-placement="bottom" title="Send to company"><i class="fas fa-sign-out-alt"></i></button>';
                         button+='<button class="btn btn-outline-pink btn-sm btnbackwarehouse mr-1" id="'+full['idtbl_damage_return']+'" back_wh_qty="'+full['qty']+'" data-toggle="tooltip" data-placement="bottom" title="Back to warehouse"><i class="fas fa-warehouse"></i></button>';
-                        button+='<button class="btn btn-outline-purple btn-sm btnreturncutomer mr-1" id="'+full['idtbl_damage_return']+'" return_qty="'+full['qty']+'" return_type="'+full['tank_type']+'" data-toggle="tooltip" data-placement="bottom" title="Return to customer"><i class="fas fa-user"></i></button>';
+                        button+='<button class="btn btn-outline-purple btn-sm btnreturncutomer mr-1" id="'+full['idtbl_damage_return']+'" data-toggle="tooltip" data-placement="bottom" title="Return to customer"><i class="fas fa-user"></i></button>';
                         // button+='<button class="btn btn-outline-primary btn-sm btnEdit mr-1 ';if(editcheck==0){button+='d-none';}button+='" id="'+full['idtbl_damage_return']+'"><i class="fas fa-pen"></i></button>';
                         if(full['status']==1){
                         button+='<a href="process/statusdamagereturn.php?record='+full['idtbl_damage_return']+'&type=2" onclick="return deactive_confirm()" target="_self" class="btn btn-outline-success btn-sm mr-1 ';if(statuscheck==0){button+='d-none';}button+='"><i class="fas fa-check"></i></a>';
@@ -483,10 +462,8 @@ include "include/topnavbar.php";
         $('#dataTable tbody').on('click', '.btnsendcompany', function() {
                 var id = $(this).attr('id');
                 var qty = $(this).attr('qty');
-                var type = $(this).attr('type');
                 $("#hiddenid1").val(id);
                 $("#send_qty").val(qty);
-                $("#hidden_tank_type").val(type);
 
                 $('#companymodal').modal('show');
 
@@ -502,11 +479,7 @@ include "include/topnavbar.php";
         });
         $('#dataTable tbody').on('click', '.btnreturncutomer', function() {
                 var id = $(this).attr('id');
-                var qty = $(this).attr('return_qty');
-                var type = $(this).attr('return_type');
                 $("#hiddenid3").val(id);
-                $("#return_qty").val(qty);
-                $("#hidden_return_tank_type").val(type);
 
                 $('#customermodal').modal('show');
 
@@ -519,7 +492,6 @@ include "include/topnavbar.php";
             } else {   
                 var date_company = $('#date_company').val();
                 var sendqty = $('#send_qty').val();
-                var tanktype = $('#hidden_tank_type').val();
                 var hiddenID = $('#hiddenid1').val();
 
                 $.ajax({
@@ -527,7 +499,6 @@ include "include/topnavbar.php";
                     data: {
                         date_company: date_company,
                         sendqty: sendqty,
-                        tanktype: tanktype,
                         hiddenID: hiddenID
 
                     },
@@ -547,7 +518,7 @@ include "include/topnavbar.php";
                 var date_warehouse = $('#date_warehouse').val();
                 var hiddenID = $('#hiddenid2').val();
                 var backqty = $('#back_qty').val();
-                var tanktype = $('#wh_tank_type').val();
+                var tanktype = $('#tank_type').val();
 
                 $.ajax({
                     type: "POST",
@@ -560,7 +531,7 @@ include "include/topnavbar.php";
                     },
                     url: 'process/backwarehouseprocess.php',
                     success: function(result) { //alert(result);
-                        // action(result);
+                        action(result);
                     }
                 });
             }
@@ -572,8 +543,6 @@ include "include/topnavbar.php";
                 $("#hidesubmitcustomer").click();
             } else {   
                 var date_customer = $('#date_customer').val();
-                var returnqty = $('#return_qty').val();
-                var returntanktype = $('#hidden_return_tank_type').val();
                 var hiddenID = $('#hiddenid3').val();
 
 
@@ -581,8 +550,6 @@ include "include/topnavbar.php";
                     type: "POST",
                     data: {
                         date_customer: date_customer,
-                        returnqty: returnqty,
-                        returntanktype: returntanktype,
                         hiddenID: hiddenID
                     },
                     url: 'process/returncustomerprocess.php',

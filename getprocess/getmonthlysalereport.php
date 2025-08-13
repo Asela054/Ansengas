@@ -7,6 +7,7 @@ $monthTo = $_POST['validto'] ?? date('Y-m');
 $cusType = $_POST['cusType'];
 $dataselector = $_POST['dataselector'];
 $typeSelector = $_POST['typeSelector'];
+if(!empty($_POST['groupcategory'])){$groupcategory=$_POST['groupcategory'];}
 
 // First, get all accessory products
 $accessoryProducts = $conn->query("
@@ -126,6 +127,9 @@ WHERE
 
 if($typeSelector==1 && !empty($dataselector)){
     $sql .= " AND c.idtbl_customer = '$dataselector'";
+}
+if($typeSelector==1 && !empty($_POST['groupcategory'])){
+    $sql .= " AND c.tbl_group_category_idtbl_group_category = '$groupcategory'";
 }
 if ($typeSelector==2 && !empty($cusType)) {
     $sql .= " AND c.type = '$cusType'";

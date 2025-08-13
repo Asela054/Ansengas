@@ -4,6 +4,7 @@ require_once('../connection/db.php');
 $date = $_POST['date'];
 $customerID = $_POST['customer'];
 $type = $_POST['type'];
+if(!empty($_POST['groupcategory'])){$groupcategory=$_POST['groupcategory'];}
 
 // $sqlCustomerBufferStock = "
 //     SELECT  `tbl_customer_buffer_stock`.`idtbl_customer_buffer_stock`,`tbl_customer_buffer_stock`.`fullqty`,  `tbl_customer_buffer_stock`.`emptyqty`,  `tbl_customer_buffer_stock`.`tbl_customer_idtbl_customer`,  `tbl_customer`.`name` as customer_name FROM  `tbl_customer_buffer_stock` JOIN 
@@ -63,6 +64,9 @@ $sql .= " WHERE
 if ($type == '1' && !empty($customerID)) {
     $sql .= " AND c.idtbl_customer = '$customerID'";
 }   
+if($type == '1' && !empty($_POST['groupcategory'])){
+    $sql .= " AND c.tbl_group_category_idtbl_group_category = '$groupcategory'";
+}
 if ($type == '2' && !empty($customerID)) {
     $sql .= " AND cs.tbl_employee_idtbl_employee = '$customerID'";
 }
@@ -167,7 +171,7 @@ $html='';
     $html.='</tbody>
         <tfoot class="">
             <tr>
-                <th nowrap>Total</th>
+                <th colspan="2" nowrap>Total</th>
                 <th class="text-center">'.($totals['2KG_Full'] <= 0 ? '' : ceil($totals['2KG_Full'])).'</th>
                 <th class="text-center">'.($totals['2KG_Empty'] <= 0 ? '' : ceil($totals['2KG_Empty'])).'</th>
                 <th class="text-center">'.($totals['5KG_Full'] <= 0 ? '' : ceil($totals['5KG_Full'])).'</th>
