@@ -1,10 +1,8 @@
 <?php
 require_once('../connection/db.php');
 
-// Get the record ID from POST data
 $recordID = $_POST['recordID'];
 
-// Main purchase order query - updated to handle both customer types
 $sql_main = "SELECT `p`.*, 
              CASE 
                  WHEN p.customertype = 2 THEN lpc.name 
@@ -33,7 +31,6 @@ $stmt_main->execute();
 $result_main = $stmt_main->get_result();
 $purchase_data = $result_main->fetch_assoc();
 
-// Purchase details query (unchanged)
 $sql_details = "SELECT `d`.*, `p`.`product_name`, `p`.`product_code` 
                 FROM `tbl_local_purchasedetail` AS `d` 
                 LEFT JOIN `tbl_product` AS `p` ON (`p`.`idtbl_product` = `d`.`tbl_product_idtbl_product`) 
@@ -45,7 +42,6 @@ $result_details = $stmt_details->get_result();
 
 $html = '';
 
-// Build the HTML output (layout remains exactly the same)
 $html .= '
 <div class="row">
     <div class="col-6 small">
@@ -64,12 +60,10 @@ $html .= '
     <div class="col-12">
         <hr>';
 
-// Determine which columns we need to show
 $showFullColumns = false;
 $showEmptyColumns = false;
 
-// Check all rows to determine which columns to show
-$result_details->data_seek(0); // Reset pointer to beginning
+$result_details->data_seek(0);
 while ($row = $result_details->fetch_assoc()) {
     if ($row['fullqty'] > 0 || $row['full_unitprice_withoutvat'] > 0) {
         $showFullColumns = true;
@@ -78,13 +72,11 @@ while ($row = $result_details->fetch_assoc()) {
         $showEmptyColumns = true;
     }
     
-    // If we've found both, no need to continue checking
     if ($showFullColumns && $showEmptyColumns) {
         break;
     }
 }
 
-// Build the table header
 $html .= '<table class="table table-striped table-bordered table-sm">
             <thead>
                 <tr>
@@ -105,10 +97,8 @@ $html .= '<th class="text-right">Total</th>
             </thead>
             <tbody>';
 
-// Reset pointer to beginning again for the data loop
 $result_details->data_seek(0);
 
-// Loop through purchase details
 while ($row = $result_details->fetch_assoc()) {
     $total = ($row['fullqty'] * $row['full_unitprice_withoutvat']) + ($row['emptyqty'] * $row['empty_unitprice_withoutvat']);
     
@@ -146,7 +136,6 @@ $html .= '</tbody>
 
 echo $html;
 
-// Close statements and connection
 $stmt_main->close();
 $stmt_details->close();
 $conn->close();
