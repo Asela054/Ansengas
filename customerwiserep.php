@@ -1,9 +1,6 @@
 <?php 
 include "include/header.php";  
 
-$sql="SELECT `tbl_customerwise_salesrep`.`idtbl_customerwise_salesrep`,`tbl_customerwise_salesrep`.`status` AS status_customerrep, `tbl_customer`.`name` AS customer_name, `tbl_employee`.`name` AS employee_name, `tbl_product`.`product_name` ,`tbl_customerwise_salesrep`.`status` AS table_status FROM `tbl_customerwise_salesrep` LEFT JOIN `tbl_customer` ON `tbl_customer`.`idtbl_customer`=`tbl_customerwise_salesrep`.`tbl_customer_idtbl_customer` LEFT JOIN `tbl_employee` ON `tbl_employee`.`idtbl_employee`=`tbl_customerwise_salesrep`.`tbl_employee_idtbl_employee` LEFT JOIN `tbl_product` ON `tbl_product`.`idtbl_product`=`tbl_customerwise_salesrep`.`tbl_product_idtbl_product` WHERE `tbl_customerwise_salesrep`.`status` IN (1,2)";
-$result =$conn-> query($sql); 
-
 $sqlproduct="SELECT `idtbl_product`, `product_name` FROM `tbl_product` WHERE `status`=1";
 $resultproduct =$conn-> query($sqlproduct); 
 
@@ -49,9 +46,6 @@ include "include/topnavbar.php";
                                 <div class="form-group mb-1">
                                         <label class="small font-weight-bold text-dark">Customer*</label>
                                         <select type="text" class="form-control form-control-sm" name="customer[]" id="customer" required multiple>
-                                            <?php if($resultcustomer->num_rows > 0) {while ($rowcustomer = $resultcustomer-> fetch_assoc()) { ?>
-                                            <option value="<?php echo $rowcustomer['idtbl_customer'] ?>"><?php echo $rowcustomer['name'] ?></option>
-                                            <?php }} ?>
                                         </select>
                                     </div>
                                     <div class="form-group mb-1">
@@ -90,25 +84,6 @@ include "include/topnavbar.php";
                                             <th class="text-right">Actions</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
-                                        <?php if($result->num_rows > 0) {while ($row = $result-> fetch_assoc()) { ?>
-                                        <tr>
-                                            <td><?php echo $row['idtbl_customerwise_salesrep'] ?></td>
-                                            <td><?php echo $row['customer_name'] ?></td>
-                                            <td><?php echo $row['product_name'] ?></td>
-                                            <td><?php echo $row['employee_name'] ?></td>
-                                            <td class="text-right">
-                                                <button class="btn btn-outline-primary btn-sm btnEdit <?php if($editcheck==0){echo 'd-none';} ?>" id="<?php echo $row['idtbl_customerwise_salesrep'] ?>"><i data-feather="edit-2"></i></button>
-                                                <?php if($row['status_customerrep']==1){ ?>
-                                                <a href="process/statuscustomerwiserep.php?record=<?php echo $row['idtbl_customerwise_salesrep'] ?>&type=2" onclick="return confirm('Are you sure you want to deactive this?');" target="_self" class="btn btn-outline-success btn-sm <?php if($statuscheck==0){echo 'd-none';} ?>"><i data-feather="check"></i></a>
-                                                <?php }else{ ?>
-                                                <a href="process/statuscustomerwiserep.php?record=<?php echo $row['idtbl_customerwise_salesrep'] ?>&type=1" onclick="return confirm('Are you sure you want to active this?');" target="_self" class="btn btn-outline-warning btn-sm <?php if($statuscheck==0){echo 'd-none';} ?>"><i data-feather="x-square"></i></a>
-                                                <?php } ?>
-                                                <a href="process/statuscustomerwiserep.php?record=<?php echo $row['idtbl_customerwise_salesrep'] ?>&type=3" onclick="return confirm('Are you sure you want to remove this?');" target="_self" class="btn btn-outline-danger btn-sm <?php if($deletecheck==0){echo 'd-none';} ?>"><i data-feather="trash-2"></i></a>
-                                            </td>
-                                        </tr>
-                                        <?php }} ?>
-                                    </tbody>
                                 </table>
                             </div>
                         </div>
@@ -122,6 +97,11 @@ include "include/topnavbar.php";
 <?php include "include/footerscripts.php"; ?>
 <script>
     $(document).ready(function() {
+        var addcheck='<?php echo $addcheck; ?>';
+        var editcheck='<?php echo $editcheck; ?>';
+        var statuscheck='<?php echo $statuscheck; ?>';
+        var deletecheck='<?php echo $deletecheck; ?>';
+
         $("#product").select2();
         $("#customer").select2({
             ajax: {
@@ -169,9 +149,50 @@ include "include/topnavbar.php";
                 }
             });
         });
-        $('#dataTable').DataTable();
-        $('#dataTable tbody').on('click', '.btnEdit', function() {
-            var r = confirm("Are you sure, You want to Edit this ? ");
+
+        $('#dataTable').DataTable( {
+            "destroy": true,
+            "processing": true,
+            "serverSide": true,
+            ajax: {
+                url: "scripts/customerwisereplist.php",
+                type: "POST", // you can use GET
+            },
+            "order": [[ 0, "desc" ]],
+            "columns": [
+                {
+                    "data": "idtbl_customerwise_salesrep"
+                },
+                {
+                    "data": "customer_name"
+                },
+                {
+                    "data": "product_name"
+                },
+                {
+                    "data": "employee_name"
+                },
+                {
+                    "targets": -1,
+                    "className": 'text-right',
+                    "data": null,
+                    "render": function(data, type, full) {
+                        var button='';
+                        button+='<button class="btn btn-outline-primary btn-sm btnEdit mr-1 ';if(editcheck==0){button+='d-none';}button+='" id="'+full['idtbl_customerwise_salesrep']+'"><i class="fas fa-pen"></i></button>';
+                        if(full['status']==1){
+                        button+='<a href="process/statuscustomerwiserep.php?record='+full['idtbl_customerwise_salesrep']+'&type=2" onclick="return deactive_confirm()" target="_self" class="btn btn-outline-success btn-sm mr-1 ';if(statuscheck==0){button+='d-none';}button+='"><i class="fas fa-check"></i></a>';
+                        }else{
+                        button+='<a href="process/statuscustomerwiserep.php?record='+full['idtbl_customerwise_salesrep']+'&type=1" onclick="return active_confirm()" target="_self" class="btn btn-outline-warning btn-sm mr-1 ';if(statuscheck==0){button+='d-none';}button+='"><i class="fas fa-times"></i></a>';
+                        }
+                        button+='<a href="process/statuscustomerwiserep.php?record='+full['idtbl_customerwise_salesrep']+'&type=3" onclick="return delete_confirm()" target="_self" class="btn btn-outline-danger btn-sm ';if(deletecheck==0){button+='d-none';}button+='"><i class="far fa-trash-alt"></i></a>';
+                        return button;
+                    }
+                }
+            ]
+        } );
+
+        $('#dataTable tbody').on('click', '.btnEdit', function () {
+            var r = confirm("Are you sure, You want to Edit this?");
             if (r == true) {
                 var id = $(this).attr('id');
                 $.ajax({
@@ -180,14 +201,27 @@ include "include/topnavbar.php";
                         recordID: id
                     },
                     url: 'getprocess/getcustomerwiserep.php',
-                    success: function(result) { //alert(result);
+                    success: function (result) {
                         var obj = JSON.parse(result);
                         $('#recordID').val(obj.id);
-                        $('#customer').val(obj.customer).trigger('change.select2');
-                        $('#product').val(obj.product);       
-                        $('#salesrep').val(obj.employee);                       
-                
 
+                        if (obj.customer) {
+                            var cust = obj.customer;
+
+                            if ($("#customer option[value='" + cust.id + "']").length === 0) {
+                                var newOption = new Option(cust.text, cust.id, true, true);
+                                $("#customer").append(newOption).trigger('change');
+                            }
+
+                            $("#customer").val(cust.id).trigger('change');
+                        }
+                        
+                        if (obj.product) {
+                            var productValues = Array.isArray(obj.product) ? obj.product : [obj.product];
+                            $('#product').val(productValues).trigger('change.select2');
+                        }
+
+                        $('#salesrep').val(obj.employee);
                         $('#recordOption').val('2');
                         $('#submitBtn').html('<i class="far fa-save"></i>&nbsp;Update');
                     }
@@ -195,6 +229,18 @@ include "include/topnavbar.php";
             }
         });
     });
+
+    function deactive_confirm() {
+        return confirm("Are you sure you want to deactive this?");
+    }
+
+    function active_confirm() {
+        return confirm("Are you sure you want to active this?");
+    }
+
+    function delete_confirm() {
+        return confirm("Are you sure you want to remove this?");
+    }
 
 </script>
 <?php include "include/footer.php"; ?>

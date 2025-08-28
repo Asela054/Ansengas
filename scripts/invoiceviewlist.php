@@ -42,6 +42,7 @@ $columns = array(
     array( 'db' => '`main`.`repname`',   'dt' => 'repname', 'field' => 'repname' ),
     array( 'db' => '`main`.`area`',   'dt' => 'area', 'field' => 'area' ),
     array( 'db' => '`main`.`cancel_reason`',   'dt' => 'cancel_reason', 'field' => 'cancel_reason' ),
+    array( 'db' => '`main`.`tbl_customer_idtbl_customer`',   'dt' => 'tbl_customer_idtbl_customer', 'field' => 'tbl_customer_idtbl_customer' ),
     array( 'db' => '`main`.`status`',   'dt' => 'status', 'field' => 'status' )
 );
 
@@ -57,34 +58,6 @@ $sql_details = array(
 // require SSP class
 require('ssp.customized.class.php');
 
-// Define the join query and extra conditions
-// $joinQuery = "FROM(SELECT 
-// u.idtbl_invoice,
-// u.tax_invoice_num,
-// u.non_tax_invoice_num,
-// u.date,
-// u.nettotal,
-// u.paymentcomplete,
-// u.status,
-// COALESCE(SUM(pay_inv.payamount), 0) AS total_paid,
-// ua.name AS cusname,
-// ub.name AS repname,
-// uc.area,
-// (u.nettotal - COALESCE(SUM(pay_inv.payamount), 0)) AS balance_amount
-// FROM 
-// tbl_invoice AS u
-// LEFT JOIN 
-// tbl_customer AS ua ON ua.idtbl_customer = u.tbl_customer_idtbl_customer
-// LEFT JOIN 
-// tbl_employee AS ub ON ub.idtbl_employee = u.ref_id
-// LEFT JOIN 
-// tbl_area AS uc ON uc.idtbl_area = u.tbl_area_idtbl_area
-// LEFT JOIN 
-// tbl_invoice_payment_has_tbl_invoice AS pay_inv ON u.idtbl_invoice = pay_inv.tbl_invoice_idtbl_invoice
-// LEFT JOIN 
-// tbl_invoice_payment AS pay ON pay_inv.tbl_invoice_payment_idtbl_invoice_payment = pay.idtbl_invoice_payment
-// GROUP BY 
-// u.idtbl_invoice) AS main";
 $joinQuery = "FROM(SELECT 
     u.idtbl_invoice,
     CASE 
@@ -96,6 +69,7 @@ $joinQuery = "FROM(SELECT
     u.nettotal,
     u.paymentcomplete,
     u.cancel_reason,
+    u.tbl_customer_idtbl_customer,
     u.status,
     COALESCE(SUM(pay_inv.payamount), 0) AS total_paid,
     ua.name AS cusname,

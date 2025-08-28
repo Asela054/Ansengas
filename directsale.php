@@ -46,16 +46,16 @@ $resultloadinglist =$conn-> query($sqlloadinglist);
                                                                 <?php }} ?>
                                                             </select>
 														</div>
-                                                        <div class="col-3">
-															<label class="small font-weight-bold text-dark">Loading*</label>
+                                                        <!-- <div class="col-3">
+															<label class="small font-weight-bold text-dark d">Loading*</label>
                                                             <select name="loading" id="loading" class="form-control form-control-sm" required autofocus>
                                                                 <option value="">Select</option>
-                                                                <?php if($resultloadinglist->num_rows > 0) {while ($rowloadinglist = $resultloadinglist-> fetch_assoc()) { ?>
-                                                                <option value="<?php echo $rowloadinglist['idtbl_vehicle_load'] ?>">
-                                                                    <?php echo 'VL-'. $rowloadinglist['idtbl_vehicle_load'] . '/'. $rowloadinglist['vehicleno']?></option>
-                                                                <?php }} ?>
+                                                                <?php //if($resultloadinglist->num_rows > 0) {while ($rowloadinglist = $resultloadinglist-> fetch_assoc()) { ?>
+                                                                <option value="<?php //echo $rowloadinglist['idtbl_vehicle_load'] ?>">
+                                                                    <?php //echo 'VL-'. $rowloadinglist['idtbl_vehicle_load'] . '/'. $rowloadinglist['vehicleno']?></option>
+                                                                <?php //}} ?>
                                                             </select>
-														</div>
+														</div> -->
 													</div>
                                                     <hr>
                                                 <div class="row row-cols-1 row-cols-md-4">
@@ -1014,7 +1014,7 @@ $resultloadinglist =$conn-> query($sqlloadinglist);
         }        
         var total = $('#hiddenfulltotal').val();
         var refname = $('#refname').val();
-        var loading = $('#loading').val();
+        // var loading = $('#loading').val();
         var distotal = $('#hiddenfulldistotal').val();
         var nettotal = $('#hiddenfullnettotal').val();
         var paytotal = $('#hidepaymenttotal').val();
@@ -1049,7 +1049,7 @@ $resultloadinglist =$conn-> query($sqlloadinglist);
                     cusmobile: cusmobile,
                     cusID: cusID,
                     refname: refname,
-                    loading: loading,
+                    // loading: loading,
                     priceeditstatus: priceeditstatus,
                     billapproveuser: billapproveuser
                 },

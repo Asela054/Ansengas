@@ -1,6 +1,9 @@
 <?php 
 include "include/header.php";  
 
+$sql="SELECT `tbl_invoice`.`idtbl_invoice`, `tbl_invoice`.`date`, `tbl_invoice`.`total`, `tbl_invoice`.`paymentcomplete`, `tbl_customer`.`name`, `tbl_employee`.`name` AS `saleref`, `tbl_area`.`area` FROM `tbl_invoice` LEFT JOIN `tbl_customer` ON `tbl_customer`.`idtbl_customer`=`tbl_invoice`.`tbl_customer_idtbl_customer` LEFT JOIN `tbl_employee` ON `tbl_employee`.`idtbl_employee`=`tbl_invoice`.`ref_id` LEFT JOIN `tbl_area` ON `tbl_area`.`idtbl_area`=`tbl_invoice`.`tbl_area_idtbl_area` WHERE `tbl_invoice`.`status`=1";
+$result =$conn-> query($sql); 
+
 include "include/topnavbar.php"; 
 ?>
 <style>
@@ -32,7 +35,6 @@ include "include/topnavbar.php";
                                 <table class="table table-bordered table-striped table-sm nowrap" id="dataTable">
                                     <thead>
                                         <tr>
-                                            <th>#</th>
                                             <th>Invoice</th>
                                             <th>Date</th>
                                             <th>Customer</th>
@@ -90,8 +92,8 @@ include "include/topnavbar.php";
         </div>
     </div>
 </div>
-<!-- Modal Add SalesRep -->
-<div class="modal fade" id="addsalesrepmodal" data-backdrop="static" data-keyboard="false" tabindex="-1"
+<!-- Modal Add Remarks -->
+<div class="modal fade" id="addremarksmodal" data-backdrop="static" data-keyboard="false" tabindex="-1"
     aria-labelledby="staticBackdropLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-sm">
         <div class="modal-content">
@@ -124,8 +126,43 @@ include "include/topnavbar.php";
         </div>
     </div>
 </div>
+<!-- Modal Add Remarks -->
+<div class="modal fade" id="customerchangemodal" data-backdrop="static" data-keyboard="false" tabindex="-1"
+    aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="staticBackdropLabel"><i class="fas fa-marker"></i> CUSTOMER CHANGE</h4>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-12">
+                        <form id="changecustomerform" autocomplete="off">
+                            <div class="form-group mb-1">
+                                <label class="small font-weight-bold text-dark">Customer*</label>
+                                <select class="form-control form-control-sm" name="customer" id="customer" style="width:100%" required>
+                                    <option value="">Select</option>
+                                </select>
+                                <input type="hidden" class="form-control form-control-sm" id="invoiceid" name="invoiceid">
+                                <input type="hidden" class="form-control form-control-sm" id="prev_customer" name="prev_customer">
+                            </div>
+                            <div class="form-group mt-2 text-right">
+                                <button type="submit" id="submitBtnCustomer" class="btn btn-primary btn-sm px-4"><i
+                                        class="far fa-save"></i>&nbsp;Add</button>
+                                        <input type="submit" class="d-none" id="hidesubmitcustomer" value="">
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 <!-- Cancel Reason Modal -->
-<div class="modal fade" id="cancelReasonModal" data-backdrop="static" data-keyboard="false" tabindex="-1"
+    <div class="modal fade" id="cancelReasonModal" data-backdrop="static" data-keyboard="false" tabindex="-1"
     aria-labelledby="cancelReasonModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-sm">
     <div class="modal-content">
@@ -160,6 +197,26 @@ include "include/topnavbar.php";
         var statuscheck='<?php echo $statuscheck; ?>';
         var deletecheck='<?php echo $deletecheck; ?>';
 
+        $("#customer").select2({
+            ajax: {
+                url: 'getprocess/getcustomerlist.php',
+                type: "post",
+                dataType: 'json',
+                delay: 250,
+                data: function (params) {
+                    return {
+                        searchTerm: params.term
+                    };
+                },
+                processResults: function (response) {
+                    return {
+                        results: response
+                    };
+                },
+                cache: true
+            }
+        });
+
         $('#dataTable').DataTable( {
             "destroy": true,
             "processing": true,
@@ -170,25 +227,19 @@ include "include/topnavbar.php";
             },
             "order": [[ 0, "desc" ]],
             "columns": [
-                // {
-                //     "targets": -1,
-                //     "className": '',
-                //     "data": null,
-                //     "render": function(data, type, full) {
-                //         var invoiceNumber;
-                //         if (full['tax_invoice_num'] == '') {
-                //             invoiceNumber = 'INV-' + full['idtbl_invoice'];
-                //         }else {
-                //             invoiceNumber = 'AGT' + full['tax_invoice_num'];
-                //         }
-                //         return invoiceNumber;
-                //     }
-                // },
-                { 
-                    "data": "idtbl_invoice" 
-                },
-                { 
-                    "data": "invoiceNumber" 
+                {
+                    "targets": -1,
+                    "className": '',
+                    "data": null,
+                    "render": function(data, type, full) {
+                        var invoiceNumber;
+                        if (full['tax_invoice_num'] == '') {
+                            invoiceNumber = 'INV-' + full['idtbl_invoice'];
+                        }else {
+                            invoiceNumber = 'AGT' + full['tax_invoice_num'];
+                        }
+                        return invoiceNumber;
+                    }
                 },
                 { 
                     "data": "date" 
@@ -260,24 +311,14 @@ include "include/topnavbar.php";
                     "render": function(data, type, full) {
                         var button = '';
                         button+='<button class="btn btn-outline-primary btn-sm btnAddremarks mr-1" id="'+full['idtbl_invoice']+'" data-toggle="tooltip" data-placement="bottom" title="Add Salesrep"><i class="fas fa-marker"></i></button>';
+                        if (statuscheck == 1) {
+                        button+='<button class="btn btn-outline-warning btn-sm btnChangeCustomer mr-1" id="'+full['idtbl_invoice']+'" data-cus-id="'+full['tbl_customer_idtbl_customer']+'" data-toggle="tooltip" data-placement="bottom" title="Add Salesrep"><i class="fas fa-user-edit"></i></button>';
+                        }
                         button += '<button class="btn btn-outline-dark btn-sm btnView mr-1 ';
                         if (editcheck == 0) {
                             button += 'd-none';
                         }
                         button += '" id="' + full['idtbl_invoice'] + '"><i class="fas fa-eye"></i></button>';
-                        // if (full['paymentcomplete'] == 0) {
-                        //     button += '<a href="process/statusinvoice.php?record=' + full['idtbl_invoice'] + '&type=3" onclick="return delete_confirm()" target="_self" class="btn btn-outline-danger btn-sm ';
-                        //     if (deletecheck == 0) {
-                        //         button += 'd-none';
-                        //     }
-                        //     button += '"><i class="far fa-trash-alt"></i></a>';
-                        // } else {
-                        //     button += '<button class="btn btn-outline-danger btn-sm ';
-                        //     if (deletecheck == 0) {
-                        //         button += 'd-none';
-                        //     }
-                        //     button += '" data-toggle="modal" data-target="#warningModal"><i class="far fa-trash-alt"></i></button>';
-                        // }
                         if (full['paymentcomplete'] == 0) {
                             button += '<a href="#" onclick="return handleCancelInvoice(' + full['idtbl_invoice'] + ')" target="_self" class="btn btn-outline-danger btn-sm ';
                             if (deletecheck == 0 || full['status'] != 1) {  // Only show if status is 1 AND deletecheck is 1
@@ -302,11 +343,20 @@ include "include/topnavbar.php";
                 }
             }
         });
-        $('#dataTable tbody').on('click', '.btnAddremarks', function() {
-                var id = $(this).attr('id');
-                $("#hiddeninvoiceid").val(id);
+        $('#dataTable tbody').on('click', '.btnAddremarks', function () {
+            var id = $(this).attr('id');
+            $("#hiddeninvoiceid").val(id);
 
-                $('#addsalesrepmodal').modal('show');
+            $('#addremarksmodal').modal('show');
+
+        });
+        $('#dataTable tbody').on('click', '.btnChangeCustomer', function () {
+            var id = $(this).attr('id');
+            var cus_id = $(this).data('cus-id');
+            $("#invoiceid").val(id);
+            $("#prev_customer").val(cus_id);
+
+            $('#customerchangemodal').modal('show');
 
         });
         $('#submitBtnRemark').click(function(){
@@ -327,6 +377,31 @@ include "include/topnavbar.php";
                     },
                     url: 'process/addinvoiceremarkprocess.php',
                     success: function(result) { //alert(result);
+                        action(result);
+                    }
+                });
+            }
+        });
+        $('#submitBtnCustomer').click(function () {
+            if (!$("#changecustomerform")[0].checkValidity()) {
+                // If the form is invalid, submit it. The form won't actually submit;
+                // this will just cause the browser to display the native HTML5 error messages.
+                $("#hidesubmitcustomer").click();
+            } else {
+                var customer = $('#customer').val();
+                var prev_customer = $('#prev_customer').val();
+                var hiddenID = $('#invoiceid').val();
+
+                $.ajax({
+                    type: "POST",
+                    data: {
+                        customer: customer,
+                        prev_customer: prev_customer,
+                        hiddenID: hiddenID
+
+                    },
+                    url: 'process/changeinvoicecustomerprocess.php',
+                    success: function (result) { //alert(result);
                         action(result);
                     }
                 });
@@ -412,7 +487,6 @@ include "include/topnavbar.php";
         }
         return false;
     }
-    
     function print() {
         printJS({
             printable: 'viewreceiptprint',

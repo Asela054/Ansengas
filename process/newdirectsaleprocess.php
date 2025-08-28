@@ -16,7 +16,7 @@ $billtype=$_POST['billtype'];
 $cusname=$_POST['cusname'];
 $cusnic=$_POST['cusnic'];
 $refname=$_POST['refname'];
-$loading=$_POST['loading'];
+// $loading=$_POST['loading'];
 $cusmobile=$_POST['cusmobile'];
 $priceeditstatus=$_POST['priceeditstatus'];
 $billapproveuser=$_POST['billapproveuser'];
@@ -30,7 +30,7 @@ $today=date('Y-m-d');
 $updatedatetime=date('Y-m-d h:i:s');
 
 
-$insertinvoice="INSERT INTO `tbl_invoice`(`date`, `total`, `taxamount`, `nettotal`, `paymentmethod`, `paymentcomplete`, `chequesend`, `companydiffsend`, `ref_id`, `addtoaccountstatus`, `protoaccountstatus`, `status`, `updatedatetime`, `tbl_user_idtbl_user`, `tbl_area_idtbl_area`, `tbl_customer_idtbl_customer`, `tbl_vehicle_load_idtbl_vehicle_load`) VALUES ('$today','$total','0','$nettotal','0','1','0','0','$refname','0','0','1','$updatedatetime','$userID','26','848','$loading')";
+$insertinvoice="INSERT INTO `tbl_invoice`(`date`, `total`, `taxamount`, `nettotal`, `paymentmethod`, `paymentcomplete`, `chequesend`, `companydiffsend`, `ref_id`, `addtoaccountstatus`, `protoaccountstatus`, `status`, `updatedatetime`, `tbl_user_idtbl_user`, `tbl_area_idtbl_area`, `tbl_customer_idtbl_customer`, `tbl_vehicle_load_idtbl_vehicle_load`) VALUES ('$today','$total','0','$nettotal','0','1','0','0','$refname','0','0','1','$updatedatetime','$userID','26','848','45')";
 if($conn->query($insertinvoice)==true){
     $invoiceID=$conn->insert_id;
 
