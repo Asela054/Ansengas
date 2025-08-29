@@ -197,7 +197,7 @@ include "include/topnavbar.php";
         var deletecheck='<?php echo $deletecheck; ?>';
 
         $("#customer").select2({
-            dropdownParent: $('#customerchangemodal'),
+            dropdownParent: $('#staticBackdrop'),
             width: '100%',
             ajax: {
                 url: 'getprocess/getcustomerlist.php',

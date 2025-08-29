@@ -195,28 +195,27 @@ include "include/topnavbar.php";
         var editcheck='<?php echo $editcheck; ?>';
         var statuscheck='<?php echo $statuscheck; ?>';
         var deletecheck='<?php echo $deletecheck; ?>';
+                // $("#customer").select2({
 
-        $("#customer").select2({
-            dropdownParent: $('#customerchangemodal'),
-            width: '100%',
-            ajax: {
-                url: 'getprocess/getcustomerlist.php',
-                type: "post",
-                dataType: 'json',
-                delay: 250,
-                data: function (params) {
-                    return {
-                        searchTerm: params.term
-                    };
-                },
-                processResults: function (response) {
-                    return {
-                        results: response
-                    };
-                },
-                cache: true
-            }
-        });
+        // $("#customer").select2({
+        //     ajax: {
+        //         url: 'getprocess/getcustomerlist.php',
+        //         type: "post",
+        //         dataType: 'json',
+        //         delay: 250,
+        //         data: function (params) {
+        //             return {
+        //                 searchTerm: params.term
+        //             };
+        //         },
+        //         processResults: function (response) {
+        //             return {
+        //                 results: response
+        //             };
+        //         },
+        //         cache: true
+        //     }
+        // });
 
         $('#dataTable').DataTable( {
             "destroy": true,
