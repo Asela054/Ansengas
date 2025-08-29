@@ -196,27 +196,26 @@ include "include/topnavbar.php";
         var statuscheck='<?php echo $statuscheck; ?>';
         var deletecheck='<?php echo $deletecheck; ?>';
 
-        $("#customer").select2({
-            dropdownParent: $('#customerchangemodal'),
-            width: '100%',
-            ajax: {
-                url: 'getprocess/getcustomerlist.php',
-                type: "post",
-                dataType: 'json',
-                delay: 250,
-                data: function (params) {
-                    return {
-                        searchTerm: params.term
-                    };
-                },
-                processResults: function (response) {
-                    return {
-                        results: response
-                    };
-                },
-                cache: true
-            }
-        });
+$("#customer").select2({
+    ajax: {
+        url: 'getprocess/getcustomerlist.php',
+        type: "post",
+        dataType: 'json',
+        delay: 250,
+        data: function (params) {
+            return {
+                searchTerm: params.term
+            };
+        },
+        processResults: function (response) {
+            return {
+                results: response
+            };
+        },
+        cache: true
+    },
+    minimumInputLength: 1 // Allows typing after 1 character
+});
 
         $('#dataTable').DataTable( {
             "destroy": true,

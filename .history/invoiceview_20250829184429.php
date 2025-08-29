@@ -197,8 +197,6 @@ include "include/topnavbar.php";
         var deletecheck='<?php echo $deletecheck; ?>';
 
         $("#customer").select2({
-            dropdownParent: $('#customerchangemodal'),
-            width: '100%',
             ajax: {
                 url: 'getprocess/getcustomerlist.php',
                 type: "post",
@@ -217,6 +215,28 @@ include "include/topnavbar.php";
                 cache: true
             }
         });
+
+            $("#customer").select2({
+        dropdownParent: $('#staticBackdrop'),
+        width: '100%',
+        ajax: {
+                url: 'getprocess/getcustomerlist.php',
+            type: "post",
+            dataType: 'json',
+            delay: 250,
+            data: function (params) {
+                return {
+                    searchTerm: params.term 
+                };
+            },
+            processResults: function (response) {
+                return {
+                    results: response
+                };
+            },
+            cache: true
+        }
+    });
 
         $('#dataTable').DataTable( {
             "destroy": true,

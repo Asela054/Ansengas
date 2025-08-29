@@ -42,6 +42,7 @@ include "include/topnavbar.php";
                                             <th>Area</th>
                                             <th class="text-right">Total</th>
                                             <th class="text-right">Balance</th>
+                                            <!-- <th class="text-right">Excess Amount</th> -->
                                             <th>Payment</th>
                                             <th>Cancel Status</th>
                                             <th>Cancel Reason</th>
@@ -197,8 +198,6 @@ include "include/topnavbar.php";
         var deletecheck='<?php echo $deletecheck; ?>';
 
         $("#customer").select2({
-            dropdownParent: $('#customerchangemodal'),
-            width: '100%',
             ajax: {
                 url: 'getprocess/getcustomerlist.php',
                 type: "post",

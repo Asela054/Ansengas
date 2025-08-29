@@ -142,7 +142,7 @@ include "include/topnavbar.php";
                         <form id="changecustomerform" autocomplete="off">
                             <div class="form-group mb-1">
                                 <label class="small font-weight-bold text-dark">Customer*</label>
-                                <select class="form-control form-control-sm" name="customer" id="customer" style="width:100%" required>
+                                <select class="form-control form-control-sm" name="customer[]" id="customer" style="width:100%" required>
                                     <option value="">Select</option>
                                 </select>
                                 <input type="hidden" class="form-control form-control-sm" id="invoiceid" name="invoiceid">
@@ -197,8 +197,6 @@ include "include/topnavbar.php";
         var deletecheck='<?php echo $deletecheck; ?>';
 
         $("#customer").select2({
-            dropdownParent: $('#customerchangemodal'),
-            width: '100%',
             ajax: {
                 url: 'getprocess/getcustomerlist.php',
                 type: "post",
