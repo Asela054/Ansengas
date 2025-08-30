@@ -304,9 +304,16 @@ include "include/topnavbar.php";
                 },
                 url: 'process/unloadingprocess.php',
                 success: function(result) { //alert(result);
-                    $('#modalunloadinfo').modal('hide');
-                    action(result);
-                    location.reload();
+                    var obj = JSON.parse(result);
+                    if(obj.status == '1') {
+                        $('#modalunloadinfo').modal('hide');
+                        action(obj.actiondata);
+                        location.reload();
+                    }
+                    else {
+                        action(obj.actiondata);
+                        $('#btnunload').prop('disabled', false);
+                    }
                 }
             });
         });
