@@ -9,57 +9,100 @@ $tableData=$_POST['tableData'];
 
 $today=date('Y-m-d');
 $updatedatetime=date('Y-m-d h:i:s');
+$stockmismatch = true;
 
-$updateloading="UPDATE `tbl_vehicle_load` SET `unloadstatus`='1',`updatedatetime`='$updatedatetime',`tbl_user_idtbl_user`='$userID' WHERE `idtbl_vehicle_load`='$loadID'";
-if($conn->query($updateloading)==true){
-    foreach($tableData as $rowtabledata){
-        $product=$rowtabledata['col_2'];
-        $refill=$rowtabledata['col_5'];
-        $trustreturn=$rowtabledata['col_8'];
-        $balqty=$rowtabledata['col_9'];
-        $emptyqty=$rowtabledata['col_10'];
+foreach($tableData as $rowtabledata){
+    $product=$rowtabledata['col_2'];
+    $refill=$rowtabledata['col_5'];
+    $trustreturn=$rowtabledata['col_8'];
+    $balqty=$rowtabledata['col_9'];
+    $emptyqty=$rowtabledata['col_10'];
+    
+    $sqlcheckloaddetail="SELECT `qty`, `emptyqty` FROM `tbl_vehicle_load_detail` WHERE `status`=1 AND `tbl_vehicle_load_idtbl_vehicle_load`='$loadID' AND `tbl_product_idtbl_product`='$product'";
+    $resultcheckloaddetail = $conn->query($sqlcheckloaddetail);
+    $rowcheckloaddetail = $resultcheckloaddetail->fetch_assoc();
 
-        $checkStockQuery = "SELECT `fullqty`, `emptyqty` FROM tbl_stock WHERE tbl_product_idtbl_product = '$product'";
-        $result = $conn->query($checkStockQuery);
-        $rowcheckstock = $result->fetch_assoc();
-
-        //Insert tbl_stock_history start
-        $prevfullstock = $rowcheckstock['fullqty'];
-        $prevemptystock = $rowcheckstock['emptyqty'];
-        $avafullstock = $prevfullstock + $balqty;
-        $avaemptystock = $prevemptystock + $emptyqty;
-
-        $inserthistory = "INSERT INTO `tbl_stock_history`(`transtype`, `date`, `prevfullqty`, `issuefullqty`, `avafullqty`, `prevemptyqty`, `issueemptyqty`, `avaemptyqty`, `status`, `insertdatetime`, `tbl_user_idtbl_user`, `tbl_product_idtbl_product`, `record_id`) VALUES ('3','$today','$prevfullstock','$balqty','$avafullstock','$prevemptystock','$emptyqty','$avaemptystock','1','$updatedatetime','$userID','$product','$loadID')"; 
-        $conn->query($inserthistory);   
-        //Insert tbl_stock_history end
-
-        $updatestock="UPDATE `tbl_stock` SET `fullqty`=(`fullqty`+'$balqty'), `emptyqty`=(`emptyqty`+'$emptyqty') WHERE `tbl_product_idtbl_product`='$product'";
-        $conn->query($updatestock);
-
-        $updatetruststock="UPDATE `tbl_stock_trust` SET `returnqty`=(`returnqty`+'$trustreturn') WHERE `tbl_product_idtbl_product`='$product'";
-        $conn->query($updatetruststock);
+    if($rowcheckloaddetail['qty']!=$balqty || $rowcheckloaddetail['emptyqty']!=$emptyqty){
+        $stockmismatch = false;
+        break;
     }
+}
 
-    $actionObj=new stdClass();
-    $actionObj->icon='fas fa-check-circle';
-    $actionObj->title='';
-    $actionObj->message='Add Successfully';
-    $actionObj->url='';
-    $actionObj->target='_blank';
-    $actionObj->type='success';
+if($stockmismatch){
+    $updateloading="UPDATE `tbl_vehicle_load` SET `unloadstatus`='1',`updatedatetime`='$updatedatetime',`tbl_user_idtbl_user`='$userID' WHERE `idtbl_vehicle_load`='$loadID'";
+    if($conn->query($updateloading)==true){
+        foreach($tableData as $rowtabledata){
+            $product=$rowtabledata['col_2'];
+            $refill=$rowtabledata['col_5'];
+            $trustreturn=$rowtabledata['col_8'];
+            $balqty=$rowtabledata['col_9'];
+            $emptyqty=$rowtabledata['col_10'];
 
-    echo $actionJSON=json_encode($actionObj);
+            $checkStockQuery = "SELECT `fullqty`, `emptyqty` FROM tbl_stock WHERE tbl_product_idtbl_product = '$product'";
+            $result = $conn->query($checkStockQuery);
+            $rowcheckstock = $result->fetch_assoc();
+
+            //Insert tbl_stock_history start
+            $prevfullstock = $rowcheckstock['fullqty'];
+            $prevemptystock = $rowcheckstock['emptyqty'];
+            $avafullstock = $prevfullstock + $balqty;
+            $avaemptystock = $prevemptystock + $emptyqty;
+
+            $inserthistory = "INSERT INTO `tbl_stock_history`(`transtype`, `date`, `prevfullqty`, `issuefullqty`, `avafullqty`, `prevemptyqty`, `issueemptyqty`, `avaemptyqty`, `status`, `insertdatetime`, `tbl_user_idtbl_user`, `tbl_product_idtbl_product`, `record_id`) VALUES ('3','$today','$prevfullstock','$balqty','$avafullstock','$prevemptystock','$emptyqty','$avaemptystock','1','$updatedatetime','$userID','$product','$loadID')"; 
+            $conn->query($inserthistory);   
+            //Insert tbl_stock_history end
+
+            $updatestock="UPDATE `tbl_stock` SET `fullqty`=(`fullqty`+'$balqty'), `emptyqty`=(`emptyqty`+'$emptyqty') WHERE `tbl_product_idtbl_product`='$product'";
+            $conn->query($updatestock);
+
+            $updatetruststock="UPDATE `tbl_stock_trust` SET `returnqty`=(`returnqty`+'$trustreturn') WHERE `tbl_product_idtbl_product`='$product'";
+            $conn->query($updatetruststock);
+        }
+
+        $actionObj=new stdClass();
+        $actionObj->icon='fas fa-check-circle';
+        $actionObj->title='';
+        $actionObj->message='Add Successfully';
+        $actionObj->url='';
+        $actionObj->target='_blank';
+        $actionObj->type='success';
+
+        $obj=new stdClass();
+        $obj->status = '1';
+        $obj->actiondata = json_encode($actionObj);
+
+        echo $actionJSON=json_encode($obj);
+    }
+    else{
+        $actionObj=new stdClass();
+        $actionObj->icon='fas fa-exclamation-triangle';
+        $actionObj->title='';
+        $actionObj->message='Record Error';
+        $actionObj->url='';
+        $actionObj->target='_blank';
+        $actionObj->type='danger';
+
+        $obj=new stdClass();
+        $obj->status = '0';
+        $obj->actiondata = json_encode($actionObj);
+
+        echo $actionJSON=json_encode($obj);
+    }
 }
 else{
     $actionObj=new stdClass();
     $actionObj->icon='fas fa-exclamation-triangle';
     $actionObj->title='';
-    $actionObj->message='Record Error';
+    $actionObj->message='Stock Mismatch Error';
     $actionObj->url='';
     $actionObj->target='_blank';
     $actionObj->type='danger';
 
-    echo $actionJSON=json_encode($actionObj);
+    $obj=new stdClass();
+    $obj->status = '0';
+    $obj->actiondata = json_encode($actionObj);
+
+    echo $actionJSON=json_encode($obj);
 }
 
 ?>
