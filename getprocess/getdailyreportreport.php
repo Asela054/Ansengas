@@ -7,10 +7,10 @@ $lorry=$_POST['lorry'];
 
 if($advance==0){
     if($lorry==0){
-        $sqldaily="SELECT `tbl_invoice`.`idtbl_invoice`, `tbl_invoice`.`tax_invoice_num`, `tbl_invoice`.`date`, `tbl_invoice`.`nettotal`, `tbl_customer`.`name` AS `cusname`, `tbl_employee`.`name` AS `refname`, `tbl_vehicle`.`vehicleno`, `tbl_area`.`area` FROM `tbl_invoice` LEFT JOIN `tbl_customer` ON `tbl_customer`.`idtbl_customer`=`tbl_invoice`.`tbl_customer_idtbl_customer` LEFT JOIN `tbl_employee` ON `tbl_employee`.`idtbl_employee`=`tbl_invoice`.`ref_id` LEFT JOIN `tbl_vehicle_load` ON `tbl_vehicle_load`.`idtbl_vehicle_load`=`tbl_invoice`.`tbl_vehicle_load_idtbl_vehicle_load` LEFT JOIN `tbl_vehicle` ON `tbl_vehicle`.`idtbl_vehicle`=`tbl_vehicle_load`.`lorryid` LEFT JOIN `tbl_area` ON `tbl_area`.`idtbl_area`=`tbl_invoice`.`tbl_area_idtbl_area` WHERE `tbl_invoice`.`date`='$validfrom' AND `tbl_invoice`.`status`=1";
+        $sqldaily="SELECT `tbl_invoice`.`idtbl_invoice`, `tbl_invoice`.`tax_invoice_num`, `tbl_invoice`.`date`, `tbl_invoice`.`nettotal`, `tbl_customer`.`name` AS `cusname`, `tbl_employee`.`name` AS `refname`, `tbl_vehicle`.`vehicleno`, `tbl_area`.`area`, `tbl_area`.`idtbl_area` FROM `tbl_invoice` LEFT JOIN `tbl_customer` ON `tbl_customer`.`idtbl_customer`=`tbl_invoice`.`tbl_customer_idtbl_customer` LEFT JOIN `tbl_employee` ON `tbl_employee`.`idtbl_employee`=`tbl_invoice`.`ref_id` LEFT JOIN `tbl_vehicle_load` ON `tbl_vehicle_load`.`idtbl_vehicle_load`=`tbl_invoice`.`tbl_vehicle_load_idtbl_vehicle_load` LEFT JOIN `tbl_vehicle` ON `tbl_vehicle`.`idtbl_vehicle`=`tbl_vehicle_load`.`lorryid` LEFT JOIN `tbl_area` ON `tbl_area`.`idtbl_area`=`tbl_invoice`.`tbl_area_idtbl_area` WHERE `tbl_invoice`.`date`='$validfrom' AND `tbl_invoice`.`status`=1";
         $resultdaily =$conn-> query($sqldaily);
     }else{
-        $sqldaily="SELECT `tbl_invoice`.`idtbl_invoice`, `tbl_invoice`.`tax_invoice_num`, `tbl_invoice`.`date`, `tbl_invoice`.`nettotal`, `tbl_customer`.`name` AS `cusname`, `tbl_employee`.`name` AS `refname`, `tbl_vehicle`.`vehicleno`, `tbl_area`.`area` FROM `tbl_invoice` LEFT JOIN `tbl_customer` ON `tbl_customer`.`idtbl_customer`=`tbl_invoice`.`tbl_customer_idtbl_customer` LEFT JOIN `tbl_employee` ON `tbl_employee`.`idtbl_employee`=`tbl_invoice`.`ref_id` LEFT JOIN `tbl_vehicle_load` ON `tbl_vehicle_load`.`idtbl_vehicle_load`=`tbl_invoice`.`tbl_vehicle_load_idtbl_vehicle_load`  LEFT JOIN `tbl_vehicle` ON `tbl_vehicle`.`idtbl_vehicle`=`tbl_vehicle_load`.`lorryid` LEFT JOIN `tbl_area` ON `tbl_area`.`idtbl_area`=`tbl_invoice`.`tbl_area_idtbl_area` WHERE `tbl_invoice`.`date`='$validfrom' AND `tbl_vehicle_load`.`lorryid`='$lorry' AND `tbl_invoice`.`status`=1";
+        $sqldaily="SELECT `tbl_invoice`.`idtbl_invoice`, `tbl_invoice`.`tax_invoice_num`, `tbl_invoice`.`date`, `tbl_invoice`.`nettotal`, `tbl_customer`.`name` AS `cusname`, `tbl_employee`.`name` AS `refname`, `tbl_vehicle`.`vehicleno`, `tbl_area`.`area`, `tbl_area`.`idtbl_area` FROM `tbl_invoice` LEFT JOIN `tbl_customer` ON `tbl_customer`.`idtbl_customer`=`tbl_invoice`.`tbl_customer_idtbl_customer` LEFT JOIN `tbl_employee` ON `tbl_employee`.`idtbl_employee`=`tbl_invoice`.`ref_id` LEFT JOIN `tbl_vehicle_load` ON `tbl_vehicle_load`.`idtbl_vehicle_load`=`tbl_invoice`.`tbl_vehicle_load_idtbl_vehicle_load`  LEFT JOIN `tbl_vehicle` ON `tbl_vehicle`.`idtbl_vehicle`=`tbl_vehicle_load`.`lorryid` LEFT JOIN `tbl_area` ON `tbl_area`.`idtbl_area`=`tbl_invoice`.`tbl_area_idtbl_area` WHERE `tbl_invoice`.`date`='$validfrom' AND `tbl_vehicle_load`.`lorryid`='$lorry' AND `tbl_invoice`.`status`=1";
         $resultdaily =$conn-> query($sqldaily); 
     }
 
@@ -64,10 +64,10 @@ if($advance==0){
 <?php 
 } else { 
     if($lorry==0){
-        $sqldaily="SELECT `tbl_invoice`.`idtbl_invoice`, `tbl_invoice`.`tax_invoice_num`, `tbl_invoice`.`date`, `tbl_invoice`.`nettotal`, `tbl_customer`.`name` AS `cusname`, `tbl_customer`.`idtbl_customer`, `tbl_customer`.`discount_status`, `tbl_employee`.`name` AS `refname`, `tbl_vehicle`.`vehicleno`, `tbl_area`.`area` FROM `tbl_invoice` LEFT JOIN `tbl_customer` ON `tbl_customer`.`idtbl_customer`=`tbl_invoice`.`tbl_customer_idtbl_customer` LEFT JOIN `tbl_employee` ON `tbl_employee`.`idtbl_employee`=`tbl_invoice`.`ref_id` LEFT JOIN `tbl_vehicle_load` ON `tbl_vehicle_load`.`idtbl_vehicle_load`=`tbl_invoice`.`tbl_vehicle_load_idtbl_vehicle_load` LEFT JOIN `tbl_vehicle` ON `tbl_vehicle`.`idtbl_vehicle`=`tbl_vehicle_load`.`lorryid` LEFT JOIN `tbl_area` ON `tbl_area`.`idtbl_area`=`tbl_invoice`.`tbl_area_idtbl_area` WHERE `tbl_invoice`.`date`='$validfrom' AND `tbl_invoice`.`status`=1";
+        $sqldaily="SELECT `tbl_invoice`.`idtbl_invoice`, `tbl_invoice`.`tax_invoice_num`, `tbl_invoice`.`date`, `tbl_invoice`.`nettotal`, `tbl_customer`.`name` AS `cusname`, `tbl_customer`.`idtbl_customer`, `tbl_customer`.`discount_status`, `tbl_employee`.`name` AS `refname`, `tbl_vehicle`.`vehicleno`, `tbl_area`.`area`, `tbl_area`.`idtbl_area` FROM `tbl_invoice` LEFT JOIN `tbl_customer` ON `tbl_customer`.`idtbl_customer`=`tbl_invoice`.`tbl_customer_idtbl_customer` LEFT JOIN `tbl_employee` ON `tbl_employee`.`idtbl_employee`=`tbl_invoice`.`ref_id` LEFT JOIN `tbl_vehicle_load` ON `tbl_vehicle_load`.`idtbl_vehicle_load`=`tbl_invoice`.`tbl_vehicle_load_idtbl_vehicle_load` LEFT JOIN `tbl_vehicle` ON `tbl_vehicle`.`idtbl_vehicle`=`tbl_vehicle_load`.`lorryid` LEFT JOIN `tbl_area` ON `tbl_area`.`idtbl_area`=`tbl_invoice`.`tbl_area_idtbl_area` WHERE `tbl_invoice`.`date`='$validfrom' AND `tbl_invoice`.`status`=1";
         $resultdaily =$conn-> query($sqldaily); 
     }else{
-        $sqldaily="SELECT `tbl_invoice`.`idtbl_invoice`, `tbl_invoice`.`tax_invoice_num`, `tbl_invoice`.`date`, `tbl_invoice`.`nettotal`, `tbl_customer`.`name` AS `cusname`, `tbl_customer`.`idtbl_customer`, `tbl_customer`.`discount_status`, `tbl_employee`.`name` AS `refname`, `tbl_vehicle`.`vehicleno`, `tbl_area`.`area` FROM `tbl_invoice` LEFT JOIN `tbl_customer` ON `tbl_customer`.`idtbl_customer`=`tbl_invoice`.`tbl_customer_idtbl_customer` LEFT JOIN `tbl_employee` ON `tbl_employee`.`idtbl_employee`=`tbl_invoice`.`ref_id` LEFT JOIN `tbl_vehicle_load` ON `tbl_vehicle_load`.`idtbl_vehicle_load`=`tbl_invoice`.`tbl_vehicle_load_idtbl_vehicle_load` LEFT JOIN `tbl_vehicle` ON `tbl_vehicle`.`idtbl_vehicle`=`tbl_vehicle_load`.`lorryid` LEFT JOIN `tbl_area` ON `tbl_area`.`idtbl_area`=`tbl_invoice`.`tbl_area_idtbl_area` WHERE `tbl_invoice`.`date`='$validfrom'  AND `tbl_vehicle_load`.`lorryid`='$lorry' AND `tbl_invoice`.`status`=1";
+        $sqldaily="SELECT `tbl_invoice`.`idtbl_invoice`, `tbl_invoice`.`tax_invoice_num`, `tbl_invoice`.`date`, `tbl_invoice`.`nettotal`, `tbl_customer`.`name` AS `cusname`, `tbl_customer`.`idtbl_customer`, `tbl_customer`.`discount_status`, `tbl_employee`.`name` AS `refname`, `tbl_vehicle`.`vehicleno`, `tbl_area`.`area`, `tbl_area`.`idtbl_area` FROM `tbl_invoice` LEFT JOIN `tbl_customer` ON `tbl_customer`.`idtbl_customer`=`tbl_invoice`.`tbl_customer_idtbl_customer` LEFT JOIN `tbl_employee` ON `tbl_employee`.`idtbl_employee`=`tbl_invoice`.`ref_id` LEFT JOIN `tbl_vehicle_load` ON `tbl_vehicle_load`.`idtbl_vehicle_load`=`tbl_invoice`.`tbl_vehicle_load_idtbl_vehicle_load` LEFT JOIN `tbl_vehicle` ON `tbl_vehicle`.`idtbl_vehicle`=`tbl_vehicle_load`.`lorryid` LEFT JOIN `tbl_area` ON `tbl_area`.`idtbl_area`=`tbl_invoice`.`tbl_area_idtbl_area` WHERE `tbl_invoice`.`date`='$validfrom'  AND `tbl_vehicle_load`.`lorryid`='$lorry' AND `tbl_invoice`.`status`=1";
     $resultdaily =$conn-> query($sqldaily); 
     }
 
@@ -167,10 +167,13 @@ if($advance==0){
             $total_discount = 0;
             $accetotalarray=array();
 
+            $specialdiscountstatus = 0;
+
             if($resultdaily->num_rows>0){while($rowdaily = $resultdaily-> fetch_assoc()){ 
                 $invoiceID=$rowdaily['idtbl_invoice'];
                 $customerID=$rowdaily['idtbl_customer'];
                 $discountstatus=$rowdaily['discount_status'];
+                $areaID=$rowdaily['idtbl_area'];
 
                 $sqlinvdetail="SELECT `refillqty`, `trustqty`, `encustomer_refillprice`, `tbl_product_idtbl_product`, `discount_price` FROM `tbl_invoice_detail` WHERE `tbl_invoice_idtbl_invoice`='$invoiceID' AND `status`=1 AND `tbl_product_idtbl_product`=1";
                 $resultinvdetail = $conn->query($sqlinvdetail);
@@ -188,6 +191,38 @@ if($advance==0){
                 }
                 else{
                     $discount_amount=0;
+
+                    if($rowdaily['date']>='2025-09-18'):
+                        $sqlinvdetail="SELECT `refillqty`, `trustqty`, `encustomer_refillprice`, `tbl_product_idtbl_product`, `discount_price` FROM `tbl_invoice_detail` WHERE `tbl_invoice_idtbl_invoice`='$invoiceID' AND `status`=1 ";
+                        $resultinvdetail = $conn->query($sqlinvdetail);
+                        while($rowinvdetail = $resultinvdetail->fetch_assoc()){ 
+                            $pID = $rowinvdetail['tbl_product_idtbl_product'];
+
+                            $sqlcheckprice="SELECT ap.encustomer_refillprice, cd.discount_amount FROM tbl_product p 
+                            LEFT JOIN tbl_areawise_product ap ON p.idtbl_product = ap.tbl_product_idtbl_product 
+                            LEFT JOIN `tbl_customer_discount` cd ON cd.tbl_product_idtbl_product = p.idtbl_product AND cd.tbl_customer_idtbl_customer = '$customerID'
+                            JOIN `tbl_main_area` ma ON ap.`tbl_main_area_idtbl_main_area` = ma.`idtbl_main_area` 
+                            JOIN `tbl_area` sa ON ap.`tbl_main_area_idtbl_main_area` = sa.`tbl_main_area_idtbl_main_area`
+                            WHERE `ap`.`status` = 1 AND p.tbl_product_category_idtbl_product_category IN (1,2) AND sa.`idtbl_area` = '$areaID' AND p.idtbl_product = '$pID'";
+                            $resultcheckprice = $conn->query($sqlcheckprice);
+                            $rowcheckprice = $resultcheckprice->fetch_assoc();
+
+                            if(!empty($rowcheckprice['discount_amount'])){
+                                $refillqty=$rowinvdetail['refillqty']+$rowinvdetail['trustqty'];
+                                $refill_price=(($rowcheckprice['encustomer_refillprice']*($vatamount+100))/100);
+                                $discount_price=(($rowinvdetail['discount_price']*($vatamount+100))/100);
+
+                                $total_refillprice=$refill_price*$refillqty;
+                                $total_discountprice=$discount_price*$refillqty;
+
+                                $discount_amount+=$total_refillprice-$total_discountprice;
+                                $specialdiscountstatus = 1;
+                            }
+                            else{
+                                $discount_amount+=0;
+                            }
+                        }
+                    endif;
                 }      
 
                 $sqlproductone="SELECT `newqty`, `refillqty`, `emptyqty`, `trustqty`, `trustreturnqty` FROM `tbl_invoice_detail` WHERE `status`=1 AND `tbl_product_idtbl_product`='6' AND `tbl_invoice_idtbl_invoice`='$invoiceID'";
@@ -287,7 +322,11 @@ if($advance==0){
                 <td nowrap class="text-right"><?php echo ($chequetotal != 0) ? number_format($chequetotal, 2) : '-'; $totalcheque = $totalcheque + $chequetotal; ?></td>
                 <td nowrap class="text-right">
                     <?php 
-                        $creditValue = $rowdaily['nettotal'] - ($discount_amount + $rowcash['amount'] + $chequetotal);
+                        if($specialdiscountstatus==1):
+                            $creditValue = $rowdaily['nettotal'] - ($rowcash['amount'] + $chequetotal);
+                        else:
+                            $creditValue = $rowdaily['nettotal'] - ($discount_amount + $rowcash['amount'] + $chequetotal);
+                        endif;
                         echo ($creditValue != 0) ? number_format($creditValue, 2) : '-';
                         $totalcredit += $creditValue;
                     ?>
