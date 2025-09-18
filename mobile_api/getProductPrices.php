@@ -23,13 +23,20 @@ if (mysqli_num_rows($resultcustomer) > 0) {
                   WHERE `ap`.`status` = 1 AND p.tbl_product_category_idtbl_product_category IN (1,2) AND ap.`tbl_main_area_idtbl_main_area` = '$mainArea' 
                   ORDER BY p.orderlevel ASC";
     } else {
-        $query = "SELECT p.idtbl_product, p.product_name, ap.newsaleprice, ap.refillsaleprice, ap.emptysaleprice, ap.encustomer_newprice, ap.encustomer_refillprice, ap.encustomer_emptyprice, ap.discount_price, p.tbl_product_category_idtbl_product_category
-                  FROM tbl_product p 
-                  LEFT JOIN tbl_areawise_product ap ON p.idtbl_product = ap.tbl_product_idtbl_product 
-                  JOIN `tbl_main_area` ma ON ap.`tbl_main_area_idtbl_main_area` = ma.`idtbl_main_area` 
-                  JOIN `tbl_area` sa ON ap.`tbl_main_area_idtbl_main_area` = sa.`tbl_main_area_idtbl_main_area`
-                  WHERE `ap`.`status` = 1 AND p.tbl_product_category_idtbl_product_category IN (1,2) AND sa.`idtbl_area` = '$areaID' 
-                  ORDER BY p.orderlevel ASC";
+        // $query = "SELECT p.idtbl_product, p.product_name, ap.newsaleprice, ap.refillsaleprice, ap.emptysaleprice, ap.encustomer_newprice, ap.encustomer_refillprice, ap.encustomer_emptyprice, ap.discount_price, p.tbl_product_category_idtbl_product_category
+        //           FROM tbl_product p 
+        //           LEFT JOIN tbl_areawise_product ap ON p.idtbl_product = ap.tbl_product_idtbl_product 
+        //           JOIN `tbl_main_area` ma ON ap.`tbl_main_area_idtbl_main_area` = ma.`idtbl_main_area` 
+        //           JOIN `tbl_area` sa ON ap.`tbl_main_area_idtbl_main_area` = sa.`tbl_main_area_idtbl_main_area`
+        //           WHERE `ap`.`status` = 1 AND p.tbl_product_category_idtbl_product_category IN (1,2) AND sa.`idtbl_area` = '$areaID' 
+        //           ORDER BY p.orderlevel ASC";
+        $query = "SELECT p.idtbl_product, p.orderlevel, p.product_name, ap.newsaleprice, ap.refillsaleprice, ap.emptysaleprice, ap.encustomer_newprice, CASE WHEN cd.discount_amount IS NOT NULL THEN cd.discount_amount ELSE ap.encustomer_refillprice END AS encustomer_refillprice, ap.encustomer_emptyprice, CASE WHEN ap.discount_price = 0 THEN cd.discount_amount ELSE ap.discount_price END AS discount_price, p.tbl_product_category_idtbl_product_category
+              FROM tbl_product p 
+              LEFT JOIN tbl_areawise_product ap ON p.idtbl_product = ap.tbl_product_idtbl_product 
+              LEFT JOIN `tbl_customer_discount` cd ON cd.tbl_product_idtbl_product = p.idtbl_product AND cd.tbl_customer_idtbl_customer = '$customerID'
+              JOIN `tbl_main_area` ma ON ap.`tbl_main_area_idtbl_main_area` = ma.`idtbl_main_area` 
+              JOIN `tbl_area` sa ON ap.`tbl_main_area_idtbl_main_area` = sa.`tbl_main_area_idtbl_main_area`
+              WHERE `ap`.`status` = 1 AND p.tbl_product_category_idtbl_product_category IN (1,2) AND sa.`idtbl_area` = '$areaID'";
     }
 
     $res = mysqli_query($con, $query);

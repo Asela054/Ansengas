@@ -84,6 +84,12 @@ if($con->query($insertinvoice)==true){
             $newPrice = ($newQty > 0) ? $unitprice : 0;
             $refillPrice = ($refillQty > 0 || $trustQty > 0) ? $refillprice : 0;
             $emptyPrice = ($emptyQty > 0) ? $emptyprice : 0;
+
+            $sqlspecialpriceaccocus = "SELECT `discount_amount`, `discount_percent` FROM `tbl_customer_discount` WHERE `status`=1 AND `tbl_customer_idtbl_customer`='$customerID' AND `tbl_product_idtbl_product`='$product'";
+            $resultspecialpriceaccocus = $conn->query($sqlspecialpriceaccocus);
+            $rowspecialpriceaccocus = $resultspecialpriceaccocus->fetch_assoc();
+
+            if(!empty($rowspecialpriceaccocus['discount_amount'])){$encustomerdiscountPrice = $rowspecialpriceaccocus['discount_amount'];}
         }
 
         if ($newQty > 0 || $refillQty > 0 || $emptyQty > 0 || $trustQty > 0 || $trustreturnQty > 0) {
