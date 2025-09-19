@@ -10,7 +10,6 @@ $row=$result->fetch_assoc();
 $obj=new stdClass();
 $obj->id=$row['idtbl_customer_discount'];
 $obj->customer=$row['idtbl_customer'];
-$obj->customer_name=$row['name'];
 $obj->product=$row['tbl_product_idtbl_product'];
 $obj->percent=$row['discount_percent'];
 $obj->amount=$row['discount_amount'];

@@ -61,24 +61,24 @@ include "include/topnavbar.php";
                                         <label class="small font-weight-bold text-dark">Discount Type</label><br>
                                         <div class="d-flex align-items-center">
                                             <div class="form-check form-check-inline">
-                                                <input type="radio" name="discountType" id="discountPercentageRadio" class="d-none" value="1">
+                                                <input type="radio" name="discountType" id="discountPercentageRadio" class="d-none" value="1" checked>
                                                 <label class="form-check-label ml-2 d-none" for="discountPercentageRadio">Discount Percentage</label>
                                             </div>
                                             <div class="form-check form-check-inline ml-3">
-                                                <input type="radio" name="discountType" id="discountAmountRadio" value="2" checked>
+                                                <input type="radio" name="discountType" id="discountAmountRadio" value="2">
                                                 <label class="form-check-label ml-2" for="discountAmountRadio">Discount Amount</label>
                                             </div>
                                         </div>
                                     </div>
 
                                     <div class="form-group mb-1" id="discountPercentageField">
-                                        <label class="small font-weight-bold text-dark d-none">Discount Percentage</label>
-                                        <input type="text" step="0.01" class="form-control form-control-sm d-none"
+                                        <label class="small font-weight-bold text-dark">Discount Percentage</label>
+                                        <input type="text" step="0.01" class="form-control form-control-sm"
                                             name="discountPercentage" id="discountPercentage"
                                             placeholder="Enter Discount Percentage">
                                     </div>
 
-                                    <div class="form-group mb-1" id="discountAmountField">
+                                    <div class="form-group mb-1" id="discountAmountField" style="display: none;">
                                         <label class="small font-weight-bold text-dark">Discount Amount Without VAT</label>
                                         <input type="text" step="0.01" class="form-control form-control-sm"
                                             name="discountAmount" id="discountAmount"
@@ -105,7 +105,7 @@ include "include/topnavbar.php";
                                             <th>Customer</th>
                                             <th>Product</th>
                                             <th>Discount Amount</th>
-                                            <th class="d-none">Discount Percentage</th>
+                                            <th>Discount Percentage</th>
                                             <th class="text-right">Actions</th>
                                         </tr>
                                     </thead>
@@ -116,7 +116,7 @@ include "include/topnavbar.php";
                                             <td><?php echo $row['customer_name'] ?></td>
                                             <td><?php echo $row['product_name'] ?></td>
                                             <td><?php echo $row['discount_amount'] ?></td>
-                                            <td class="d-none"><?php echo $row['discount_percent'] ?></td>
+                                            <td><?php echo $row['discount_percent'] ?></td>
                                             <td class="text-right">
                                                 <button
                                                     class="btn btn-outline-primary btn-sm btnEdit <?php if($editcheck==0){echo 'd-none';} ?>"
@@ -163,19 +163,19 @@ include "include/topnavbar.php";
         const percentageField = $('#discountPercentageField');
         const amountField = $('#discountAmountField');
 
-        // percentageRadio.on('change', function () {
-        //     if (percentageRadio.is(':checked')) {
-        //         percentageField.show();
-        //         amountField.hide();
-        //     }
-        // });
+        percentageRadio.on('change', function () {
+            if (percentageRadio.is(':checked')) {
+                percentageField.show();
+                amountField.hide();
+            }
+        });
 
-        // amountRadio.on('change', function () {
-        //     if (amountRadio.is(':checked')) {
-        //         amountField.show();
-        //         percentageField.hide();
-        //     }
-        // });
+        amountRadio.on('change', function () {
+            if (amountRadio.is(':checked')) {
+                amountField.show();
+                percentageField.hide();
+            }
+        });
 
         $("#product").select2();
         $("#productaddition").select2({
@@ -211,21 +211,17 @@ include "include/topnavbar.php";
                         recordID: id
                     },
                     url: 'getprocess/getcustomerwisediscount.php',
-                    success: function(result) {
+                    success: function(result) {  //alert (result);
                         var obj = JSON.parse(result);
-
+                        
                         $('#recordID').val(obj.id);
-
-                        if (obj.customer && obj.customer_name) {
-                            var newOption = new Option(obj.customer_name, obj.customer, true, true);
-                            $('#customer').append(newOption).trigger('change');
-                        }
-
+                        
+                        $('#customer').val(obj.customer).trigger('change');
                         $('#product').val(obj.product).trigger('change');
-
+                        
                         $('#discountPercentage').val(obj.percent);     
                         $('#discountAmount').val(obj.amount);          
-
+                        
                         if (obj.type == "1") { 
                             $('#discountPercentageRadio').prop('checked', true);
                         } else if (obj.type == "2") { 

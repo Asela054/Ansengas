@@ -216,13 +216,16 @@ include "include/topnavbar.php";
 
                         $('#recordID').val(obj.id);
 
+                        // Set customer (with select2)
                         if (obj.customer && obj.customer_name) {
                             var newOption = new Option(obj.customer_name, obj.customer, true, true);
                             $('#customer').append(newOption).trigger('change');
                         }
 
+                        // Set product
                         $('#product').val(obj.product).trigger('change');
 
+                        // Discounts
                         $('#discountPercentage').val(obj.percent);     
                         $('#discountAmount').val(obj.amount);          
 

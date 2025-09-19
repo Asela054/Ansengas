@@ -93,8 +93,8 @@ include "include/topnavbar.php";
                                         </button>
                                     </div>
 
-                                    <input type="hidden" name="recordOption" id="recordOption" value="1">
-                                    <input type="hidden" name="recordID" id="recordID" value="">
+                                    <input type="text" name="recordOption" id="recordOption" value="1">
+                                    <input type="text" name="recordID" id="recordID" value="">
                                 </form>
                             </div>
                             <div class="col-9">

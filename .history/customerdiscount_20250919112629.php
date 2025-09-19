@@ -178,6 +178,7 @@ include "include/topnavbar.php";
         // });
 
         $("#product").select2();
+        $("#customer").select2();
         $("#productaddition").select2({
              width: '100%'
         });

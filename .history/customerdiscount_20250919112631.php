@@ -178,28 +178,29 @@ include "include/topnavbar.php";
         // });
 
         $("#product").select2();
+        $("#customer").select2();
         $("#productaddition").select2({
              width: '100%'
         });
-        $("#customer").select2({
-            ajax: {
-                url: 'getprocess/getcustomerlist.php',
-                type: "post",
-                dataType: 'json',
-                delay: 250,
-                data: function (params) {
-                    return {
-                        searchTerm: params.term 
-                    };
-                },
-                processResults: function (response) {
-                    return {
-                        results: response
-                    };
-                },
-                cache: true
-            }
-        });
+        // $("#customer").select2({
+        //     ajax: {
+        //         url: 'getprocess/getcustomerlist.php',
+        //         type: "post",
+        //         dataType: 'json',
+        //         delay: 250,
+        //         data: function (params) {
+        //             return {
+        //                 searchTerm: params.term 
+        //             };
+        //         },
+        //         processResults: function (response) {
+        //             return {
+        //                 results: response
+        //             };
+        //         },
+        //         cache: true
+        //     }
+        // });
         $('#dataTable').DataTable();
         $('#dataTable tbody').on('click', '.btnEdit', function() {
             var r = confirm("Are you sure, You want to Edit this ? ");
