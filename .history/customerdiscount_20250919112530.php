@@ -212,29 +212,33 @@ include "include/topnavbar.php";
                     },
                     url: 'getprocess/getcustomerwisediscount.php',
                     success: function(result) {
-                        var obj = JSON.parse(result);
+    var obj = JSON.parse(result);
 
-                        $('#recordID').val(obj.id);
+    $('#recordID').val(obj.id);
 
-                        if (obj.customer && obj.customer_name) {
-                            var newOption = new Option(obj.customer_name, obj.customer, true, true);
-                            $('#customer').append(newOption).trigger('change');
-                        }
+    // Set customer (with select2)
+    if (obj.customer && obj.customer_name) {
+        var newOption = new Option(obj.customer_name, obj.customer, true, true);
+        $('#customer').append(newOption).trigger('change');
+    }
 
-                        $('#product').val(obj.product).trigger('change');
+    // Set product
+    $('#product').val(obj.product).trigger('change');
 
-                        $('#discountPercentage').val(obj.percent);     
-                        $('#discountAmount').val(obj.amount);          
+    // Discounts
+    $('#discountPercentage').val(obj.percent);     
+    $('#discountAmount').val(obj.amount);          
 
-                        if (obj.type == "1") { 
-                            $('#discountPercentageRadio').prop('checked', true);
-                        } else if (obj.type == "2") { 
-                            $('#discountAmountRadio').prop('checked', true);
-                        }
+    if (obj.type == "1") { 
+        $('#discountPercentageRadio').prop('checked', true);
+    } else if (obj.type == "2") { 
+        $('#discountAmountRadio').prop('checked', true);
+    }
 
-                        $('#recordOption').val('2');
-                        $('#submitBtn').html('<i class="far fa-save"></i>&nbsp;Update');
-                    }
+    $('#recordOption').val('2');
+    $('#submitBtn').html('<i class="far fa-save"></i>&nbsp;Update');
+}
+
                 });
             }
         });

@@ -221,8 +221,10 @@ include "include/topnavbar.php";
                             $('#customer').append(newOption).trigger('change');
                         }
 
+                        // Set product
                         $('#product').val(obj.product).trigger('change');
 
+                        // Discounts
                         $('#discountPercentage').val(obj.percent);     
                         $('#discountAmount').val(obj.amount);          
 

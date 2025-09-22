@@ -64,9 +64,9 @@ include "include/topnavbar.php";
                                                 <input type="radio" name="discountType" id="discountPercentageRadio" class="d-none" value="1">
                                                 <label class="form-check-label ml-2 d-none" for="discountPercentageRadio">Discount Percentage</label>
                                             </div>
-                                            <div class="form-check form-check-inline ml-3">
+                                            <div class="form-check form-check-inline">
                                                 <input type="radio" name="discountType" id="discountAmountRadio" value="2" checked>
-                                                <label class="form-check-label ml-2" for="discountAmountRadio">Discount Amount</label>
+                                                <label class="form-check-label" for="discountAmountRadio">Discount Amount</label>
                                             </div>
                                         </div>
                                     </div>

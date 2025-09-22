@@ -217,9 +217,10 @@ include "include/topnavbar.php";
                         $('#recordID').val(obj.id);
 
                         if (obj.customer && obj.customer_name) {
-                            var newOption = new Option(obj.customer_name, obj.customer, true, true);
-                            $('#customer').append(newOption).trigger('change');
-                        }
+    var newOption = new Option(obj.customer_name, obj.customer, true, true);
+    $('#customer').append(newOption).trigger('change');
+}
+
 
                         $('#product').val(obj.product).trigger('change');
 

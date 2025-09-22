@@ -223,6 +223,7 @@ include "include/topnavbar.php";
 
                         $('#product').val(obj.product).trigger('change');
 
+                        // Discounts
                         $('#discountPercentage').val(obj.percent);     
                         $('#discountAmount').val(obj.amount);          
 

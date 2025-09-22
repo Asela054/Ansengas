@@ -211,21 +211,17 @@ include "include/topnavbar.php";
                         recordID: id
                     },
                     url: 'getprocess/getcustomerwisediscount.php',
-                    success: function(result) {
+                    success: function(result) {  //alert (result);
                         var obj = JSON.parse(result);
-
+                        
                         $('#recordID').val(obj.id);
-
-                        if (obj.customer && obj.customer_name) {
-                            var newOption = new Option(obj.customer_name, obj.customer, true, true);
-                            $('#customer').append(newOption).trigger('change');
-                        }
-
+                        
+                        $('#customer').val(obj.customer).trigger('change');
                         $('#product').val(obj.product).trigger('change');
-
+                        
                         $('#discountPercentage').val(obj.percent);     
                         $('#discountAmount').val(obj.amount);          
-
+                        
                         if (obj.type == "1") { 
                             $('#discountPercentageRadio').prop('checked', true);
                         } else if (obj.type == "2") { 

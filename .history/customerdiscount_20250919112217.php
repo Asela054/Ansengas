@@ -105,7 +105,7 @@ include "include/topnavbar.php";
                                             <th>Customer</th>
                                             <th>Product</th>
                                             <th>Discount Amount</th>
-                                            <th class="d-none">Discount Percentage</th>
+                                            <th class->Discount Percentage</th>
                                             <th class="text-right">Actions</th>
                                         </tr>
                                     </thead>
@@ -116,7 +116,7 @@ include "include/topnavbar.php";
                                             <td><?php echo $row['customer_name'] ?></td>
                                             <td><?php echo $row['product_name'] ?></td>
                                             <td><?php echo $row['discount_amount'] ?></td>
-                                            <td class="d-none"><?php echo $row['discount_percent'] ?></td>
+                                            <td><?php echo $row['discount_percent'] ?></td>
                                             <td class="text-right">
                                                 <button
                                                     class="btn btn-outline-primary btn-sm btnEdit <?php if($editcheck==0){echo 'd-none';} ?>"
@@ -211,21 +211,17 @@ include "include/topnavbar.php";
                         recordID: id
                     },
                     url: 'getprocess/getcustomerwisediscount.php',
-                    success: function(result) {
+                    success: function(result) {  //alert (result);
                         var obj = JSON.parse(result);
-
+                        
                         $('#recordID').val(obj.id);
-
-                        if (obj.customer && obj.customer_name) {
-                            var newOption = new Option(obj.customer_name, obj.customer, true, true);
-                            $('#customer').append(newOption).trigger('change');
-                        }
-
+                        
+                        $('#customer').val(obj.customer).trigger('change');
                         $('#product').val(obj.product).trigger('change');
-
+                        
                         $('#discountPercentage').val(obj.percent);     
                         $('#discountAmount').val(obj.amount);          
-
+                        
                         if (obj.type == "1") { 
                             $('#discountPercentageRadio').prop('checked', true);
                         } else if (obj.type == "2") { 
