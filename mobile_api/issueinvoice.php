@@ -86,7 +86,7 @@ if($con->query($insertinvoice)==true){
             $emptyPrice = ($emptyQty > 0) ? $emptyprice : 0;
 
             $sqlspecialpriceaccocus = "SELECT `discount_amount`, `discount_percent` FROM `tbl_customer_discount` WHERE `status`=1 AND `tbl_customer_idtbl_customer`='$customerID' AND `tbl_product_idtbl_product`='$product'";
-            $resultspecialpriceaccocus = $conn->query($sqlspecialpriceaccocus);
+            $resultspecialpriceaccocus = $con->query($sqlspecialpriceaccocus);
             $rowspecialpriceaccocus = $resultspecialpriceaccocus->fetch_assoc();
 
             if(!empty($rowspecialpriceaccocus['discount_amount'])){$encustomerdiscountPrice = $rowspecialpriceaccocus['discount_amount'];}
