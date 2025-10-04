@@ -351,8 +351,8 @@ include "include/topnavbar.php";
                     tableBody.empty();
 
                         $.each(data, function (index, product) {
-                            var allowedProducts = [1, 2];
-                            
+                            var allowedProducts = [1, 2]; // Add more IDs here if needed
+
                             if (product.tbl_product_category_idtbl_product_category == 1 && 
                                 allowedProducts.includes(parseInt(product.idtbl_product))) {
                                 tableBody.append('<tr>' +

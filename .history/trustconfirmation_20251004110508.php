@@ -351,17 +351,17 @@ include "include/topnavbar.php";
                     tableBody.empty();
 
                         $.each(data, function (index, product) {
-                            var allowedProducts = [1, 2];
-                            
-                            if (product.tbl_product_category_idtbl_product_category == 1 && 
-                                allowedProducts.includes(parseInt(product.idtbl_product))) {
-                                tableBody.append('<tr>' +
-                                    '<td>' + product.product_name + '</td>' +
-                                    '<td class="d-none">' + product.idtbl_product + '</td>' +
-                                    '<td class="text-center"><input type="text" class="input-integer form-control form-control-sm custom-width full-qty-input" name="full_quantity[]" value="0"></td>' +
-                                    '<td class="text-center"><textarea type="text" class="form-control form-control-sm custom-width comment" name="comment"></textarea></td>' +
-                                    '</tr>');
-                            }
+var allowedProducts = [1, 2]; // Add more IDs here if needed
+
+if (product.tbl_product_category_idtbl_product_category == 1 && 
+    allowedProducts.includes(parseInt(product.idtbl_product))) {
+    tableBody.append('<tr>' +
+        '<td>' + product.product_name + '</td>' +
+        '<td class="d-none">' + product.idtbl_product + '</td>' +
+        '<td class="text-center"><input type="text" class="input-integer form-control form-control-sm custom-width full-qty-input" name="full_quantity[]" value="0"></td>' +
+        '<td class="text-center"><textarea type="text" class="form-control form-control-sm custom-width comment" name="comment"></textarea></td>' +
+        '</tr>');
+}
                         });
                 },
                 error: function (error) {

@@ -1,4 +1,4 @@
-<?php
+here titles should be in one font and fill data should be in one font <?php
 require '../vendor/autoload.php';
 
 use Dompdf\Dompdf;
