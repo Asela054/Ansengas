@@ -195,6 +195,7 @@ include "include/topnavbar.php";
         var editcheck='<?php echo $editcheck; ?>';
         var statuscheck='<?php echo $statuscheck; ?>';
         var deletecheck='<?php echo $deletecheck; ?>';
+        var userID ='<?php echo $_SESSION["userid"]; ?>';
 
         $("#customer").select2({
             dropdownParent: $('#customerchangemodal'),
@@ -318,7 +319,7 @@ include "include/topnavbar.php";
                     "render": function(data, type, full) {
                         var button = '';
                         button+='<button class="btn btn-outline-primary btn-sm btnAddremarks mr-1" id="'+full['idtbl_invoice']+'" data-toggle="tooltip" data-placement="bottom" title="Add Salesrep"><i class="fas fa-marker"></i></button>';
-                        if (statuscheck == 1) {
+                        if (statuscheck == 1 && (userID==1 || userID==25)) { // Only show if statuscheck is 1 AND user is admin or manager
                         button+='<button class="btn btn-outline-warning btn-sm btnChangeCustomer mr-1" id="'+full['idtbl_invoice']+'" data-cus-id="'+full['tbl_customer_idtbl_customer']+'" data-toggle="tooltip" data-placement="bottom" title="Change customer"><i class="fas fa-user-edit"></i></button>';
                         }
                         button += '<button class="btn btn-outline-dark btn-sm btnView mr-1 ';
