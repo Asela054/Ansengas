@@ -165,11 +165,11 @@ if($advance==0){
             $totalcheque=0;
             $totalcredit=0;
             $total_discount = 0;
-            $accetotalarray=array();
-
-            $specialdiscountstatus = 0;
+            $accetotalarray=array();            
 
             if($resultdaily->num_rows>0){while($rowdaily = $resultdaily-> fetch_assoc()){ 
+                $specialdiscountstatus = 0;
+
                 $invoiceID=$rowdaily['idtbl_invoice'];
                 $customerID=$rowdaily['idtbl_customer'];
                 $discountstatus=$rowdaily['discount_status'];
@@ -322,9 +322,9 @@ if($advance==0){
                 <td nowrap class="text-right"><?php echo ($chequetotal != 0) ? number_format($chequetotal, 2) : '-'; $totalcheque = $totalcheque + $chequetotal; ?></td>
                 <td nowrap class="text-right">
                     <?php 
-                        if($specialdiscountstatus==1):
+                        if($specialdiscountstatus==1): 
                             $creditValue = $rowdaily['nettotal'] - ($rowcash['amount'] + $chequetotal);
-                        else:
+                        else: 
                             $creditValue = $rowdaily['nettotal'] - ($discount_amount + $rowcash['amount'] + $chequetotal);
                         endif;
                         echo ($creditValue != 0) ? number_format($creditValue, 2) : '-';
