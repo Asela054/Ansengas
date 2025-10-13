@@ -447,6 +447,7 @@ $chequebrekup=array();
 $trfbrekup=array();
 $excessbrekup=array();
 $discountbrekup=array();
+$customerdiscountbrekup=array();
 
 $sqlvat = "SELECT `idtbl_vat_info`, `vat` FROM `tbl_vat_info` ORDER BY `idtbl_vat_info` DESC LIMIT 1";
 $resultvat = $conn->query($sqlvat);
@@ -454,12 +455,15 @@ $rowvat = $resultvat->fetch_assoc();
 
 $vatamount = $rowvat['vat'];
 
-$sqldaily="SELECT `tbl_invoice`.`idtbl_invoice`, `tbl_invoice`.`tax_invoice_num`, `tbl_invoice`.`date`, `tbl_invoice`.`nettotal`, `tbl_customer`.`name` AS `cusname`, `tbl_customer`.`idtbl_customer`, `tbl_customer`.`discount_status`, `tbl_employee`.`name` AS `refname`, `tbl_vehicle`.`vehicleno`, `tbl_area`.`area`, `tbl_invoice`.`paymentcomplete` FROM `tbl_invoice` LEFT JOIN `tbl_customer` ON `tbl_customer`.`idtbl_customer`=`tbl_invoice`.`tbl_customer_idtbl_customer` LEFT JOIN `tbl_employee` ON `tbl_employee`.`idtbl_employee`=`tbl_invoice`.`ref_id` LEFT JOIN `tbl_vehicle_load` ON `tbl_vehicle_load`.`idtbl_vehicle_load`=`tbl_invoice`.`tbl_vehicle_load_idtbl_vehicle_load` LEFT JOIN `tbl_vehicle` ON `tbl_vehicle`.`idtbl_vehicle`=`tbl_vehicle_load`.`lorryid` LEFT JOIN `tbl_area` ON `tbl_area`.`idtbl_area`=`tbl_invoice`.`tbl_area_idtbl_area` WHERE `tbl_invoice`.`date` BETWEEN '$validfrom' AND '$validto' AND `tbl_invoice`.`status`=1";
+$sqldaily="SELECT `tbl_invoice`.`idtbl_invoice`, `tbl_invoice`.`tax_invoice_num`, `tbl_invoice`.`date`, `tbl_invoice`.`nettotal`, `tbl_customer`.`name` AS `cusname`, `tbl_customer`.`idtbl_customer`, `tbl_customer`.`discount_status`, `tbl_employee`.`name` AS `refname`, `tbl_vehicle`.`vehicleno`, `tbl_area`.`area`, `tbl_invoice`.`paymentcomplete`, `tbl_area`.`idtbl_area` FROM `tbl_invoice` LEFT JOIN `tbl_customer` ON `tbl_customer`.`idtbl_customer`=`tbl_invoice`.`tbl_customer_idtbl_customer` LEFT JOIN `tbl_employee` ON `tbl_employee`.`idtbl_employee`=`tbl_invoice`.`ref_id` LEFT JOIN `tbl_vehicle_load` ON `tbl_vehicle_load`.`idtbl_vehicle_load`=`tbl_invoice`.`tbl_vehicle_load_idtbl_vehicle_load` LEFT JOIN `tbl_vehicle` ON `tbl_vehicle`.`idtbl_vehicle`=`tbl_vehicle_load`.`lorryid` LEFT JOIN `tbl_area` ON `tbl_area`.`idtbl_area`=`tbl_invoice`.`tbl_area_idtbl_area` WHERE `tbl_invoice`.`date` BETWEEN '$validfrom' AND '$validto' AND `tbl_invoice`.`status`=1";
 $resultdaily =$conn-> query($sqldaily);
 if($resultdaily->num_rows>0){
     while($rowdaily = $resultdaily-> fetch_assoc()){ 
+        $specialdiscountstatus = 0;
         $invoiceID=$rowdaily['idtbl_invoice'];
+        $customerID=$rowdaily['idtbl_customer'];
         $discountstatus=$rowdaily['discount_status'];
+        $areaID=$rowdaily['idtbl_area'];
 
         $sqlinvdetail="SELECT `refillqty`, `encustomer_refillprice`, `tbl_product_idtbl_product`, `discount_price` FROM `tbl_invoice_detail` WHERE `tbl_invoice_idtbl_invoice`='$invoiceID' AND `status`=1 AND `tbl_product_idtbl_product`=1";
         $resultinvdetail = $conn->query($sqlinvdetail);
@@ -485,6 +489,57 @@ if($resultdaily->num_rows>0){
         }
         else{
             $discount_amount=0;
+
+            if($rowdaily['date']>='2025-09-18'):
+                $sqlinvdetail="SELECT `refillqty`, `trustqty`, `encustomer_refillprice`, `tbl_product_idtbl_product`, `discount_price` FROM `tbl_invoice_detail` WHERE `tbl_invoice_idtbl_invoice`='$invoiceID' AND `status`=1 ";
+                $resultinvdetail = $conn->query($sqlinvdetail);
+                while($rowinvdetail = $resultinvdetail->fetch_assoc()){ 
+                    $pID = $rowinvdetail['tbl_product_idtbl_product'];
+
+                    $sqlcheckprice="SELECT ap.encustomer_refillprice, cd.discount_amount FROM tbl_product p 
+                    LEFT JOIN tbl_areawise_product ap ON p.idtbl_product = ap.tbl_product_idtbl_product 
+                    LEFT JOIN `tbl_customer_discount` cd ON cd.tbl_product_idtbl_product = p.idtbl_product AND cd.tbl_customer_idtbl_customer = '$customerID'
+                    JOIN `tbl_main_area` ma ON ap.`tbl_main_area_idtbl_main_area` = ma.`idtbl_main_area` 
+                    JOIN `tbl_area` sa ON ap.`tbl_main_area_idtbl_main_area` = sa.`tbl_main_area_idtbl_main_area`
+                    WHERE `ap`.`status` = 1 AND p.tbl_product_category_idtbl_product_category IN (1,2) AND sa.`idtbl_area` = '$areaID' AND p.idtbl_product = '$pID'";
+                    $resultcheckprice = $conn->query($sqlcheckprice);
+                    $rowcheckprice = $resultcheckprice->fetch_assoc();
+
+                    if(!empty($rowcheckprice['discount_amount'])){
+                        $refillqty=$rowinvdetail['refillqty']+$rowinvdetail['trustqty'];
+                        $refill_price=(($rowcheckprice['encustomer_refillprice']*($vatamount+100))/100);
+                        $discount_price=(($rowinvdetail['discount_price']*($vatamount+100))/100);
+
+                        $total_refillprice=$refill_price*$refillqty;
+                        $total_discountprice=$discount_price*$refillqty;
+
+                        $discount_amount+=$total_refillprice-$total_discountprice;
+                        $specialdiscountstatus = 1;
+
+                        $objdiscount=new stdClass();
+                        $objdiscount->customername=$rowdaily['cusname'];
+                        $objdiscount->invoiceno=$rowdaily['idtbl_invoice'];
+                        $objdiscount->tax_invoice_num=$rowdaily['tax_invoice_num'];
+                        $objdiscount->discountamount=$discount_amount;
+
+                        array_push($discountbrekup, $objdiscount);
+
+                        $unitcusdiscount = ($total_refillprice-$total_discountprice)/$refillqty;
+
+                        $objcusdiscount=new stdClass();
+                        $objcusdiscount->customerid=$customerID;
+                        $objcusdiscount->productid=$pID;
+                        $objcusdiscount->unitdiscount=$unitcusdiscount;
+                        $objcusdiscount->refillqty=$refillqty;
+                        $objcusdiscount->totaldiscount=$total_refillprice-$total_discountprice;
+
+                        array_push($customerdiscountbrekup, $objcusdiscount);
+                    }
+                    else{
+                        $discount_amount+=0;
+                    }
+                }
+            endif;
         }   
 
         $sqlcash="SELECT SUM(`amount`) AS `amount` FROM `tbl_invoice_payment_detail` WHERE `status`=1 AND `method`=1 AND `tbl_invoice_payment_idtbl_invoice_payment` IN (SELECT `tbl_invoice_payment_idtbl_invoice_payment` FROM `tbl_invoice_payment_has_tbl_invoice` WHERE `tbl_invoice_idtbl_invoice`='$invoiceID')";
@@ -649,7 +704,11 @@ if($resultdaily->num_rows>0){
             }
         }
 
-        $creditValue = $rowdaily['nettotal'] - ($discount_amount + $rowcash['amount'] + $chequetotal+$banktrftotal);
+        if($specialdiscountstatus==1): 
+            $creditValue = $rowdaily['nettotal'] - ($rowcash['amount'] + $chequetotal);
+        else: 
+            $creditValue = $rowdaily['nettotal'] - ($discount_amount + $rowcash['amount'] + $chequetotal+$banktrftotal);
+        endif;
         $totalcredit += $creditValue;
 
         // if($creditValue>0){
@@ -681,6 +740,7 @@ $resultacceinfo =$conn-> query($sqlacceinfo);
 
 // print_r($discountbrekup);
 // SELECT * FROM (SELECT SUM(`tbl_invoice_payment_detail`.`amount`) AS `cashtotal` FROM `tbl_invoice` LEFT JOIN `tbl_invoice_payment_has_tbl_invoice` ON `tbl_invoice_payment_has_tbl_invoice`.`tbl_invoice_idtbl_invoice`=`tbl_invoice`.`idtbl_invoice` LEFT JOIN `tbl_invoice_payment_detail` ON `tbl_invoice_payment_detail`.`tbl_invoice_payment_idtbl_invoice_payment`=`tbl_invoice_payment_has_tbl_invoice`.`tbl_invoice_payment_idtbl_invoice_payment` WHERE `tbl_invoice`.`date`='2024-06-11' AND `tbl_invoice`.`status`=1 AND `tbl_invoice_payment_detail`.`status`=1 AND `tbl_invoice_payment_detail`.`method`=1) AS `dcash` JOIN (SELECT SUM(`tbl_invoice_payment_detail`.`amount`) AS `chequetotal` FROM `tbl_invoice` LEFT JOIN `tbl_invoice_payment_has_tbl_invoice` ON `tbl_invoice_payment_has_tbl_invoice`.`tbl_invoice_idtbl_invoice`=`tbl_invoice`.`idtbl_invoice` LEFT JOIN `tbl_invoice_payment_detail` ON `tbl_invoice_payment_detail`.`tbl_invoice_payment_idtbl_invoice_payment`=`tbl_invoice_payment_has_tbl_invoice`.`tbl_invoice_payment_idtbl_invoice_payment` WHERE `tbl_invoice`.`date`='2024-06-11' AND `tbl_invoice`.`status`=1 AND `tbl_invoice_payment_detail`.`status`=1 AND `tbl_invoice_payment_detail`.`method`=2) AS `dcheque` JOIN (SELECT SUM(`tbl_invoice_payment_detail`.`amount`) AS `trftotal` FROM `tbl_invoice` LEFT JOIN `tbl_invoice_payment_has_tbl_invoice` ON `tbl_invoice_payment_has_tbl_invoice`.`tbl_invoice_idtbl_invoice`=`tbl_invoice`.`idtbl_invoice` LEFT JOIN `tbl_invoice_payment_detail` ON `tbl_invoice_payment_detail`.`tbl_invoice_payment_idtbl_invoice_payment`=`tbl_invoice_payment_has_tbl_invoice`.`tbl_invoice_payment_idtbl_invoice_payment` WHERE `tbl_invoice`.`date`='2024-06-11' AND `tbl_invoice`.`status`=1 AND `tbl_invoice_payment_detail`.`status`=1 AND `tbl_invoice_payment_detail`.`method`=3) AS `dtrf` JOIN (SELECT SUM(`tbl_invoice`.`nettotal`)-SUM(`tbl_invoice_payment_has_tbl_invoice`.`payamount`) AS `credit` FROM `tbl_invoice` LEFT JOIN `tbl_invoice_payment_has_tbl_invoice` ON `tbl_invoice_payment_has_tbl_invoice`.`tbl_invoice_idtbl_invoice`=`tbl_invoice`.`idtbl_invoice` WHERE `tbl_invoice`.`date`='2024-06-11' AND `tbl_invoice`.`status`=1 AND `tbl_invoice`.`paymentcomplete`=0) AS `dcredit`
+// print_r($customerdiscountbrekup);
 ?>
 <!-- <div class="table-container">
     <table class="table table-striped table-bordered sticky-header table-sm" id="table_content">
@@ -956,6 +1016,11 @@ $resultacceinfo =$conn-> query($sqlacceinfo);
 
             $nettotalacce=0;
 
+            $cus2KGdistotal=0;
+            $cus5KGdistotal=0;  
+            $cus125KGdistotal=0;
+            $cus375KGdistotal=0;
+
             for($k=0; $k<$max_value; $k++){ 
                 if(!empty($mainarray2[$k]->textP2_2)){$total2qty+=$mainarray2[$k]->totalqtyP2_2; $newqty+=$mainarray2[$k]->totalqtyP2_2; $newqty2+=$mainarray[$k]->totalqtyP2_2;}
                 if(!empty($mainarray[$k]->text2)){$total2qty+=$mainarray[$k]->totalqty2; $refilqty+=$mainarray[$k]->totalqty2; $refilqty2+=$mainarray[$k]->totalqty2;}
@@ -1172,16 +1237,47 @@ $resultacceinfo =$conn-> query($sqlacceinfo);
                 <td></td>
                 <td></td>
             </tr>
-            <?php } ?>
-            
+            <?php } if(!empty($customerdiscountbrekup)){ ?>
             <tr>
-                <th nowrap class="text-right"><?php if($new2total>0 | $refil2total>0 | $empty2total>0 | $trust2total>0){echo number_format(($new2total+$refil2total+$empty2total+$trust2total), 2);} ?></th>
-                <th nowrap class="text-right"><?php if($new5total>0 | $refil5total>0 | $empty5total>0 | $trust5total>0){echo number_format(($new5total+$refil5total+$empty5total+$trust5total), 2);} ?></th>
-                <th nowrap class="text-right"><?php if($new125total>0 | $refil125total>0 | $empty125total>0 | $trust125total>0){echo number_format(($new125total+$refil125total+$empty125total+$trust125total), 2);} ?></th>
-                <th nowrap class="text-right"><?php if($new375total>0 | $refil375total>0 | $empty375total>0 | $trust375total>0){echo number_format(($new375total+$refil375total+$empty375total+$trust375total), 2);} ?></th>
+                <th colspan="7">Special Discount Information</th>
+            </tr>
+            <tr>
+                <?php foreach($arrayproduct as $rowproductlist){ ?>
+                <th nowrap class="text-center table-dark"><?php echo $rowproductlist->product_name ?></th>
+                <?php } ?>
+                <th nowrap class="text-center align-top table-dark"></th>
+                <th nowrap class="text-center align-top table-dark"></th>
+                <th nowrap class="text-center align-top table-dark"></th>
+            </tr>
+            <?php foreach($customerdiscountbrekup as $rowcustomerdiscountbrekup){ ?>
+            <tr>
+                <td nowrap><?php if($rowcustomerdiscountbrekup->productid==6){echo number_format($rowcustomerdiscountbrekup->unitdiscount).' X '.$rowcustomerdiscountbrekup->refillqty.' = '.number_format($rowcustomerdiscountbrekup->totaldiscount); $cus2KGdistotal+=$rowcustomerdiscountbrekup->totaldiscount;} ?></td>
+                <td nowrap><?php if($rowcustomerdiscountbrekup->productid==4){echo number_format($rowcustomerdiscountbrekup->unitdiscount).' X '.$rowcustomerdiscountbrekup->refillqty.' = '.number_format($rowcustomerdiscountbrekup->totaldiscount); $cus5KGdistotal+=$rowcustomerdiscountbrekup->totaldiscount;} ?></td>
+                <td nowrap><?php if($rowcustomerdiscountbrekup->productid==1){echo number_format($rowcustomerdiscountbrekup->unitdiscount).' X '.$rowcustomerdiscountbrekup->refillqty.' = '.number_format($rowcustomerdiscountbrekup->totaldiscount); $cus125KGdistotal+=$rowcustomerdiscountbrekup->totaldiscount;} ?></td>
+                <td nowrap><?php if($rowcustomerdiscountbrekup->productid==2){echo number_format($rowcustomerdiscountbrekup->unitdiscount).' X '.$rowcustomerdiscountbrekup->refillqty.' = '.number_format($rowcustomerdiscountbrekup->totaldiscount); $cus375KGdistotal+=$rowcustomerdiscountbrekup->totaldiscount;} ?></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <?php } ?>
+            <tr>
+                <td nowrap class="text-right"><?php if($cus2KGdistotal>0){echo number_format($cus2KGdistotal, 2);} ?></td>
+                <td nowrap class="text-right"><?php if($cus5KGdistotal>0){echo number_format($cus5KGdistotal, 2);} ?></td>
+                <td nowrap class="text-right"><?php if($cus125KGdistotal>0){echo number_format($cus125KGdistotal, 2);} ?></td>
+                <td nowrap class="text-right"><?php if($cus375KGdistotal>0){echo number_format($cus375KGdistotal, 2);} ?></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <?php $netspecialcustomerdiscount=$cus2KGdistotal+$cus5KGdistotal+$cus125KGdistotal+$cus375KGdistotal; } ?>
+            <tr>
+                <th nowrap class="text-right"><?php if($new2total>0 | $refil2total>0 | $empty2total>0 | $trust2total>0 | $cus2KGdistotal>0){echo number_format(($new2total+$refil2total+$empty2total+$trust2total+$cus2KGdistotal), 2);} ?></th>
+                <th nowrap class="text-right"><?php if($new5total>0 | $refil5total>0 | $empty5total>0 | $trust5total>0 | $cus5KGdistotal>0){echo number_format(($new5total+$refil5total+$empty5total+$trust5total+$cus5KGdistotal), 2);} ?></th>
+                <th nowrap class="text-right"><?php if($new125total>0 | $refil125total>0 | $empty125total>0 | $trust125total>0 | $cus125KGdistotal>0){echo number_format(($new125total+$refil125total+$empty125total+$trust125total+$cus125KGdistotal), 2);} ?></th>
+                <th nowrap class="text-right"><?php if($new375total>0 | $refil375total>0 | $empty375total>0 | $trust375total>0 | $cus375KGdistotal>0){echo number_format(($new375total+$refil375total+$empty375total+$trust375total+$cus375KGdistotal), 2);} ?></th>
                 <th nowrap class="text-right"></th>
                 <th nowrap class="text-right"><?php echo number_format($nettotalacce, 2) ?></th>
-                <th nowrap class="text-right"><?php echo number_format($nettotal, 2) ?></th>
+                <th nowrap class="text-right"><?php echo number_format($nettotal+$netspecialcustomerdiscount, 2) ?></th>
             </tr>
             <tr>
                 <th nowrap colspan="7"></th>

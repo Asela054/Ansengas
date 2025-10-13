@@ -128,7 +128,7 @@ include "include/topnavbar.php";
 
                 for (var j = 0, col; col = row.cells[j]; j++) {
                     if(row.cells.length==1){
-                        if(col.innerText=='Refil Cylinders' | col.innerText=='New Cylinders' | col.innerText=='Trust Cylinders' | col.innerText=='Empty Cylinders'){
+                        if(col.innerText=='Refil Cylinders' | col.innerText=='New Cylinders' | col.innerText=='Trust Cylinders' | col.innerText=='Empty Cylinders' | col.innerText=='Special Discount Information'){
                             rowData.push({content: col.innerText, colSpan: 6, styles: {halign: 'left', fontStyle: 'bold', lineColor: [0, 0, 0], lineWidth: 0.5}});
                         }
                         else if(col.innerText=='Excess'){
