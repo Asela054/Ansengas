@@ -28,6 +28,7 @@ foreach ($customers as $customer) {
                            AND `tbl_product_idtbl_product`='$product' 
                            AND `tbl_user_idtbl_user`='$userID'";
         } else {
+            // For updates - check if other records exist (excluding current one)
             $check_query = "SELECT * FROM `tbl_customer_discount` 
                            WHERE `tbl_customer_idtbl_customer`='$customer' 
                            AND `tbl_product_idtbl_product`='$product' 
