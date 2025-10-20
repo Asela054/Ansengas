@@ -8,9 +8,84 @@ $employee=$_POST['employee'];
 $reporttype=$_POST['reporttype'];
 if(!empty($_POST['groupcategory'])){$groupcategory=$_POST['groupcategory'];}
 
+$productaccesorieslist=array();
+$accessories = $conn->query("SELECT idtbl_product, product_name FROM tbl_product 
+WHERE tbl_product_category_idtbl_product_category = 2 
+AND status = 1");
+while ($accessory = $accessories->fetch_assoc()) {
+    $productaccesorieslist[] = $accessory['product_name'];
+}
+
+// First execute the setup queries separately
+$setupQueries = [
+    "SET SESSION group_concat_max_len = 1000000",
+    "SET @accessory_columns = NULL",
+    "SELECT GROUP_CONCAT(DISTINCT
+        CONCAT(
+            'MAX(CASE WHEN p.idtbl_product = ''', idtbl_product, ''' THEN et.targettank END) AS `target_', 
+            REPLACE(REPLACE(REPLACE(REPLACE(LOWER(CONCAT(product_name, '_', size)), ' ', '_'), '.', '_'), '-', '_'), '/', '_'), '`,\n',
+            'MAX(CASE WHEN p.idtbl_product = ''', idtbl_product, ''' THEN IFNULL(sales.targetcomplete, 0) END) AS `completed_', 
+            REPLACE(REPLACE(REPLACE(REPLACE(LOWER(CONCAT(product_name, '_', size)), ' ', '_'), '.', '_'), '-', '_'), '/', '_'), '`,\n',
+            '(MAX(CASE WHEN p.idtbl_product = ''', idtbl_product, ''' THEN et.targettank END) - ',
+            'MAX(CASE WHEN p.idtbl_product = ''', idtbl_product, ''' THEN IFNULL(sales.targetcomplete, 0) END)) AS `balance_', 
+            REPLACE(REPLACE(REPLACE(REPLACE(LOWER(CONCAT(product_name, '_', size)), ' ', '_'), '.', '_'), '-', '_'), '/', '_'), '`,\n',
+            'CASE WHEN MAX(CASE WHEN p.idtbl_product = ''', idtbl_product, ''' THEN et.targettank END) > 0 THEN ',
+            'ROUND(((MAX(CASE WHEN p.idtbl_product = ''', idtbl_product, ''' THEN et.targettank END) - ',
+            'MAX(CASE WHEN p.idtbl_product = ''', idtbl_product, ''' THEN IFNULL(sales.targetcomplete, 0) END)) / ',
+            'MAX(CASE WHEN p.idtbl_product = ''', idtbl_product, ''' THEN et.targettank END)) * 100, 2) ',
+            'ELSE 0 END AS `balance_percentage_', 
+            REPLACE(REPLACE(REPLACE(REPLACE(LOWER(CONCAT(product_name, '_', size)), ' ', '_'), '.', '_'), '-', '_'), '/', '_'), '`,\n',
+            'ROUND((MAX(CASE WHEN p.idtbl_product = ''', idtbl_product, ''' THEN et.targettank END) - ',
+            'MAX(CASE WHEN p.idtbl_product = ''', idtbl_product, ''' THEN IFNULL(sales.targetcomplete, 0) END)) / ',
+            'GREATEST(DAY(LAST_DAY(CURDATE())) - DAY(CURDATE()) - IFNULL(hm.total_holidays_remaining, 0), 1), 2) AS `avg_day_', 
+            REPLACE(REPLACE(REPLACE(REPLACE(LOWER(CONCAT(product_name, '_', size)), ' ', '_'), '.', '_'), '-', '_'), '/', '_'), '`,\n',
+            'ROUND((MAX(CASE WHEN p.idtbl_product = ''', idtbl_product, ''' THEN et.targettank END) / DAY(LAST_DAY(CURDATE()))) * ',
+            'DAY(CURDATE()), 2) AS `upto_date_target_', 
+            REPLACE(REPLACE(REPLACE(REPLACE(LOWER(CONCAT(product_name, '_', size)), ' ', '_'), '.', '_'), '-', '_'), '/', '_'), '`,\n',
+            '(ROUND((MAX(CASE WHEN p.idtbl_product = ''', idtbl_product, ''' THEN et.targettank END) / DAY(LAST_DAY(CURDATE()))) * ',
+            'DAY(CURDATE()), 2) - MAX(CASE WHEN p.idtbl_product = ''', idtbl_product, ''' THEN IFNULL(sales.targetcomplete, 0) END)) AS `upto_date_target_balance_', 
+            REPLACE(REPLACE(REPLACE(REPLACE(LOWER(CONCAT(product_name, '_', size)), ' ', '_'), '.', '_'), '-', '_'), '/', '_'), '`'
+        )
+    SEPARATOR ',\n\n') 
+    INTO @accessory_columns
+    FROM tbl_product 
+    WHERE status = 1 AND tbl_product_category_idtbl_product_category = 2"
+];
+
+foreach ($setupQueries as $query) {
+    $conn->query($query);
+}
+
+// Get the accessory columns string
+$accessoryColumnsResult = $conn->query("SELECT @accessory_columns AS accessory_columns");
+$accessoryColumnsRow = $accessoryColumnsResult->fetch_assoc();
+$accessoryColumns = $accessoryColumnsRow['accessory_columns'];
+
+// First, get all accessory product names and their column names
+$accessoryProducts = $conn->query("
+    SELECT 
+        idtbl_product,
+        CONCAT(product_name, ' ', size) as display_name,
+        LOWER(REPLACE(REPLACE(REPLACE(REPLACE(CONCAT(product_name, '_', size), ' ', '_'), '.', '_'), '-', '_'), '/', '_')) as col_name
+    FROM tbl_product 
+    WHERE status = 1 AND tbl_product_category_idtbl_product_category = 2
+");
+
+// Store accessory product info in an array
+$accessories = [];
+if ($accessoryProducts && $accessoryProducts->num_rows > 0) {
+    while ($accessory = $accessoryProducts->fetch_assoc()) {
+        $accessories[] = $accessory;
+    }
+}
+
+// Calculate total columns for colspan (4 gas products * 7 columns + employee name + accessories * 7)
+$totalColumns = 1 + (4 * 7) + (count($accessories) * 7);
+
 if($reporttype == 1 || $reporttype == 2) {
     if($reporttype == 1){$empType= 7;} // For Executive
     if($reporttype == 2){$empType= 4;} // For Driver
+
     $sql="SELECT 
         e.name AS employee_name,
 
@@ -33,6 +108,12 @@ if($reporttype == 1 || $reporttype == 2) {
             MAX(CASE WHEN p.idtbl_product = '6' THEN IFNULL(sales.targetcomplete, 0) END)) / 
             GREATEST(DATEDIFF('$validto', CURDATE()) - IFNULL(hm.total_holidays_remaining, 0), 1), 
         2) AS avg_day_2kg,
+        ROUND(
+            (MAX(CASE WHEN p.idtbl_product = '6' THEN et.targettank END) / DAY(LAST_DAY('$validfrom'))) * 
+            DAY(CURDATE())) AS upto_date_target_2kg,
+        (ROUND(
+            (MAX(CASE WHEN p.idtbl_product = '6' THEN et.targettank END) / DAY(LAST_DAY('$validfrom'))) * 
+            DAY(CURDATE())) - MAX(CASE WHEN p.idtbl_product = '6' THEN IFNULL(sales.targetcomplete, 0) END)) AS upto_date_target_balance_2kg,
 
         -- 5KG (Product ID 4)
         MAX(CASE WHEN p.idtbl_product = '4' THEN et.targettank END) AS target_5kg,
@@ -53,6 +134,12 @@ if($reporttype == 1 || $reporttype == 2) {
             MAX(CASE WHEN p.idtbl_product = '4' THEN IFNULL(sales.targetcomplete, 0) END)) / 
             GREATEST(DATEDIFF('$validto', CURDATE()) - IFNULL(hm.total_holidays_remaining, 0), 1), 
         2) AS avg_day_5kg,
+        ROUND(
+            (MAX(CASE WHEN p.idtbl_product = '4' THEN et.targettank END) / DAY(LAST_DAY('$validfrom'))) * 
+            DAY(CURDATE())) AS upto_date_target_5kg,
+        (ROUND(
+            (MAX(CASE WHEN p.idtbl_product = '4' THEN et.targettank END) / DAY(LAST_DAY('$validfrom'))) * 
+            DAY(CURDATE())) - MAX(CASE WHEN p.idtbl_product = '4' THEN IFNULL(sales.targetcomplete, 0) END)) AS upto_date_target_balance_5kg,
 
         -- 12.5KG (Product ID 1)
         MAX(CASE WHEN p.idtbl_product = '1' THEN et.targettank END) AS target_12_5kg,
@@ -73,6 +160,12 @@ if($reporttype == 1 || $reporttype == 2) {
             MAX(CASE WHEN p.idtbl_product = '1' THEN IFNULL(sales.targetcomplete, 0) END)) / 
             GREATEST(DATEDIFF('$validto', CURDATE()) - IFNULL(hm.total_holidays_remaining, 0), 1), 
         2) AS avg_day_12_5kg,
+        ROUND(
+            (MAX(CASE WHEN p.idtbl_product = '1' THEN et.targettank END) / DAY(LAST_DAY('$validfrom'))) * 
+            DAY(CURDATE())) AS upto_date_target_12_5kg,
+        (ROUND(
+            (MAX(CASE WHEN p.idtbl_product = '1' THEN et.targettank END) / DAY(LAST_DAY('$validfrom'))) * 
+            DAY(CURDATE())) - MAX(CASE WHEN p.idtbl_product = '1' THEN IFNULL(sales.targetcomplete, 0) END)) AS upto_date_target_balance_12_5kg,
 
         -- 37.5KG (Product ID 2)
         MAX(CASE WHEN p.idtbl_product = '2' THEN et.targettank END) AS target_37_5kg,
@@ -92,8 +185,16 @@ if($reporttype == 1 || $reporttype == 2) {
             (MAX(CASE WHEN p.idtbl_product = '2' THEN et.targettank END) - 
             MAX(CASE WHEN p.idtbl_product = '2' THEN IFNULL(sales.targetcomplete, 0) END)) / 
             GREATEST(DATEDIFF('$validto', CURDATE()) - IFNULL(hm.total_holidays_remaining, 0), 1), 
-        2) AS avg_day_37_5kg
+        2) AS avg_day_37_5kg,
+        ROUND(
+            (MAX(CASE WHEN p.idtbl_product = '2' THEN et.targettank END) / DAY(LAST_DAY('$validfrom'))) * 
+            DAY(CURDATE())) AS upto_date_target_37_5kg,
+        (ROUND(
+            (MAX(CASE WHEN p.idtbl_product = '2' THEN et.targettank END) / DAY(LAST_DAY('$validfrom'))) * 
+            DAY(CURDATE())) - MAX(CASE WHEN p.idtbl_product = '2' THEN IFNULL(sales.targetcomplete, 0) END)) AS upto_date_target_balance_37_5kg,
 
+        -- Accessory Products
+        " . $accessoryColumns . "
     FROM 
         tbl_employee_target et
     INNER JOIN 
@@ -151,8 +252,9 @@ if($reporttype == 1 || $reporttype == 2) {
     
     $sql .= " GROUP BY 
         e.idtbl_employee";
+    
     $result = $conn->query($sql);
-
+    // echo $sql;
     $html='';
     
     if ($result->num_rows > 0) {
@@ -161,40 +263,61 @@ if($reporttype == 1 || $reporttype == 2) {
             <thead class="thead-dark">
                 <tr>
                     <th nowrap rowspan="2">Driver</th>
-                    <th nowrap colspan="5" class="text-center">2KG</th>
-                    <th nowrap colspan="5" class="text-center">5KG</th>
-                    <th nowrap colspan="5" class="text-center">12.5KG</th>
-                    <th nowrap colspan="5" class="text-center">37.5KG</th>
-                </tr>
+                    <th nowrap colspan="7" class="text-center">2KG</th>
+                    <th nowrap colspan="7" class="text-center">5KG</th>
+                    <th nowrap colspan="7" class="text-center">12.5KG</th>
+                    <th nowrap colspan="7" class="text-center">37.5KG</th>';
+                    foreach($productaccesorieslist as $rowproductaccesories){
+                        $html.='<th colspan="7" nowrap class="text-center">'.$rowproductaccesories.'</th>';
+                    }
+                $html.='</tr>
                 <tr>                    
                     <!-- 2KG Columns -->
-                    <th class="text-center">Target</th>
-                    <th class="text-center">Completed</th>
-                    <th class="text-center">Balance</th>
-                    <th class="text-center">Balance %</th>
-                    <th class="text-center">Avg/Day</th>
+                    <th nowrap class="text-center">Target</th>
+                    <th nowrap class="text-center">Upto Date Target</th>
+                    <th nowrap class="text-center">Completed</th>
+                    <th nowrap class="text-center">Balance</th>
+                    <th nowrap class="text-center">Upto Date Target Balance</th>
+                    <th nowrap class="text-center">Balance %</th>
+                    <th nowrap class="text-center">Avg/Day</th>
                     
                     <!-- 5KG Columns -->
-                    <th class="text-center">Target</th>
-                    <th class="text-center">Completed</th>
-                    <th class="text-center">Balance</th>
-                    <th class="text-center">Balance %</th>
-                    <th class="text-center">Avg/Day</th>
+                    <th nowrap class="text-center">Target</th>
+                    <th nowrap class="text-center">Upto Date Target</th>
+                    <th nowrap class="text-center">Completed</th>
+                    <th nowrap class="text-center">Balance</th>
+                    <th nowrap class="text-center">Upto Date Target Balance</th>
+                    <th nowrap class="text-center">Balance %</th>
+                    <th nowrap class="text-center">Avg/Day</th>
                     
                     <!-- 12.5KG Columns -->
-                    <th class="text-center">Target</th>
-                    <th class="text-center">Completed</th>
-                    <th class="text-center">Balance</th>
-                    <th class="text-center">Balance %</th>
-                    <th class="text-center">Avg/Day</th>
+                    <th nowrap class="text-center">Target</th>
+                    <th nowrap class="text-center">Upto Date Target</th>
+                    <th nowrap class="text-center">Completed</th>
+                    <th nowrap class="text-center">Balance</th>
+                    <th nowrap class="text-center">Upto Date Target Balance</th>
+                    <th nowrap class="text-center">Balance %</th>
+                    <th nowrap class="text-center">Avg/Day</th>
                     
                     <!-- 37.5KG Columns -->
-                    <th class="text-center">Target</th>
-                    <th class="text-center">Completed</th>
-                    <th class="text-center">Balance</th>
-                    <th class="text-center">Balance %</th>
-                    <th class="text-center">Avg/Day</th>
-                </tr>
+                    <th nowrap class="text-center">Target</th>
+                    <th nowrap class="text-center">Upto Date Target</th>
+                    <th nowrap class="text-center">Completed</th>
+                    <th nowrap class="text-center">Balance</th>
+                    <th nowrap class="text-center">Upto Date Target Balance</th>
+                    <th nowrap class="text-center">Balance %</th>
+                    <th nowrap class="text-center">Avg/Day</th>';
+
+                    foreach($productaccesorieslist as $rowproductaccesories){
+                        $html.='<th nowrap class="text-center">Target</th>
+                        <th nowrap class="text-center">Upto Date Target</th>
+                        <th nowrap class="text-center">Completed</th>
+                        <th nowrap class="text-center">Balance</th>
+                        <th nowrap class="text-center">Upto Date Target Balance</th>
+                        <th nowrap class="text-center">Balance %</th>
+                        <th nowrap class="text-center">Balance Average/Day</th>';
+                    }
+                $html.'</tr>
             </thead>
             <tbody>';
         while ($rowinfo = $result->fetch_assoc()) {
@@ -203,32 +326,46 @@ if($reporttype == 1 || $reporttype == 2) {
                 
                 <!-- 2KG Columns -->
                 <td class="text-center">'.$rowinfo['target_2kg'].'</td>
+                <td class="text-center">'.$rowinfo['upto_date_target_2kg'].'</td>
                 <td class="text-center">'.$rowinfo['completed_2kg'].'</td>
                 <td class="text-center">'.($rowinfo['balance_2kg'] <= 0 ? '' : ceil($rowinfo['balance_2kg'])).'</td>
+                <td class="text-center">'.$rowinfo['upto_date_target_balance_2kg'].'</td>
                 <td class="text-center">'.($rowinfo['balance_percentage_2kg'] <= 0 ? '' : ceil($rowinfo['balance_percentage_2kg']).'%').'</td>
                 <td class="text-center">'.($rowinfo['balance_2kg'] <= 0 ? '' : ceil($rowinfo['avg_day_2kg'])).'</td>
                 
                 <!-- 5KG Columns -->
                 <td class="text-center">'.$rowinfo['target_5kg'].'</td>
+                <td class="text-center">'.$rowinfo['upto_date_target_5kg'].'</td>
                 <td class="text-center">'.$rowinfo['completed_5kg'].'</td>
                 <td class="text-center">'.($rowinfo['balance_5kg'] <= 0 ? '' : ceil($rowinfo['balance_5kg'])).'</td>
+                <td class="text-center">'.$rowinfo['upto_date_target_balance_5kg'].'</td>
                 <td class="text-center">'.($rowinfo['balance_percentage_5kg'] <= 0 ? '' : ceil($rowinfo['balance_percentage_5kg']).'%').'</td>
                 <td class="text-center">'.($rowinfo['balance_5kg'] <= 0 ? '' : ceil($rowinfo['avg_day_5kg'])).'</td>
                 
                 <!-- 12.5KG Columns -->
                 <td class="text-center">'.$rowinfo['target_12_5kg'].'</td>
+                <td class="text-center">'.$rowinfo['upto_date_target_12_5kg'].'</td>
                 <td class="text-center">'.$rowinfo['completed_12_5kg'].'</td>
                 <td class="text-center">'.($rowinfo['balance_12_5kg'] <= 0 ? '' : ceil($rowinfo['balance_12_5kg'])).'</td>
+                <td class="text-center">'.$rowinfo['upto_date_target_balance_12_5kg'].'</td>
                 <td class="text-center">'.($rowinfo['balance_percentage_12_5kg'] <= 0 ? '' : ceil($rowinfo['balance_percentage_12_5kg']).'%').'</td>
                 <td class="text-center">'.($rowinfo['balance_12_5kg'] <= 0 ? '' : ceil($rowinfo['avg_day_12_5kg'])).'</td>
                 
                 <!-- 37.5KG Columns -->
                 <td class="text-center">'.$rowinfo['target_37_5kg'].'</td>
+                <td class="text-center">'.$rowinfo['upto_date_target_37_5kg'].'</td>
                 <td class="text-center">'.$rowinfo['completed_37_5kg'].'</td>
                 <td class="text-center">'.($rowinfo['balance_37_5kg'] <= 0 ? '' : ceil($rowinfo['balance_37_5kg'])).'</td>
+                <td class="text-center">'.$rowinfo['upto_date_target_balance_37_5kg'].'</td>
                 <td class="text-center">'.($rowinfo['balance_percentage_37_5kg'] <= 0 ? '' : ceil($rowinfo['balance_percentage_37_5kg']).'%').'</td>
-                <td class="text-center">'.($rowinfo['balance_37_5kg'] <= 0 ? '' : ceil($rowinfo['avg_day_37_5kg'])).'</td>
-            </tr>';
+                <td class="text-center">'.($rowinfo['balance_37_5kg'] <= 0 ? '' : ceil($rowinfo['avg_day_37_5kg'])).'</td>';
+
+                // Render accessory product columns
+                foreach ($accessories as $accessory) {
+                    $colName = $accessory['col_name'];
+                    $html .= renderAccessoryColumns($rowinfo, $colName);
+                }
+            $html .='</tr>';
         }
         $html.='</tbody></table></div>';
     }
@@ -314,8 +451,10 @@ if($reporttype == 1 || $reporttype == 2) {
             (MAX(CASE WHEN p.idtbl_product = '2' THEN et.targettank END) - 
             MAX(CASE WHEN p.idtbl_product = '2' THEN IFNULL(sales.targetcomplete, 0) END)) / 
             GREATEST(DATEDIFF('$validto', CURDATE()) - IFNULL(hm.total_holidays_remaining, 0), 1), 
-        2) AS avg_day_37_5kg
+        2) AS avg_day_37_5kg,
 
+        -- Accessory Products
+        " . $accessoryColumns . "
     FROM 
         tbl_area_target et
     INNER JOIN 
@@ -375,8 +514,11 @@ if($reporttype == 1 || $reporttype == 2) {
                     <th nowrap colspan="5" class="text-center">2KG</th>
                     <th nowrap colspan="5" class="text-center">5KG</th>
                     <th nowrap colspan="5" class="text-center">12.5KG</th>
-                    <th nowrap colspan="5" class="text-center">37.5KG</th>
-                </tr>
+                    <th nowrap colspan="5" class="text-center">37.5KG</th>';
+                    foreach($productaccesorieslist as $rowproductaccesories){
+                        $html.='<th colspan="7" nowrap class="text-center">'.$rowproductaccesories.'</th>';
+                    }
+                $html.='</tr>
                 <tr>                    
                     <!-- 2KG Columns -->
                     <th class="text-center">Target</th>
@@ -404,8 +546,18 @@ if($reporttype == 1 || $reporttype == 2) {
                     <th class="text-center">Completed</th>
                     <th class="text-center">Balance</th>
                     <th class="text-center">Balance %</th>
-                    <th class="text-center">Avg/Day</th>
-                </tr>
+                    <th class="text-center">Avg/Day</th>';
+
+                    foreach($productaccesorieslist as $rowproductaccesories){
+                        $html.='<th nowrap class="text-center">Target</th>
+                        <th nowrap class="text-center">Upto Date Target</th>
+                        <th nowrap class="text-center">Completed</th>
+                        <th nowrap class="text-center">Balance</th>
+                        <th nowrap class="text-center">Upto Date Target Balance</th>
+                        <th nowrap class="text-center">Balance %</th>
+                        <th nowrap class="text-center">Balance Average/Day</th>';
+                    }
+                $html.'</tr>
             </thead>
             <tbody>';
         while ($rowinfo = $result->fetch_assoc()) {
@@ -438,8 +590,14 @@ if($reporttype == 1 || $reporttype == 2) {
                 <td class="text-center">'.$rowinfo['completed_37_5kg'].'</td>
                 <td class="text-center">'.($rowinfo['balance_37_5kg'] <= 0 ? '' : ceil($rowinfo['balance_37_5kg'])).'</td>
                 <td class="text-center">'.($rowinfo['balance_percentage_37_5kg'] <= 0 ? '' : ceil($rowinfo['balance_percentage_37_5kg']).'%').'</td>
-                <td class="text-center">'.($rowinfo['balance_37_5kg'] <= 0 ? '' : ceil($rowinfo['avg_day_37_5kg'])).'</td>
-            </tr>';
+                <td class="text-center">'.($rowinfo['balance_37_5kg'] <= 0 ? '' : ceil($rowinfo['avg_day_37_5kg'])).'</td>';
+
+                // Render accessory product columns
+                foreach ($accessories as $accessory) {
+                    $colName = $accessory['col_name'];
+                    $html .= renderAccessoryColumns($rowinfo, $colName);
+                }
+            $html .='</tr>';
         }
         $html.='</tbody></table></div>';
     }
@@ -525,8 +683,10 @@ if($reporttype == 1 || $reporttype == 2) {
             (MAX(CASE WHEN p.idtbl_product = '2' THEN et.targettank END) - 
             MAX(CASE WHEN p.idtbl_product = '2' THEN IFNULL(sales.targetcomplete, 0) END)) / 
             GREATEST(DATEDIFF('$validto', CURDATE()) - IFNULL(hm.total_holidays_remaining, 0), 1), 
-        2) AS avg_day_37_5kg
+        2) AS avg_day_37_5kg,
 
+        -- Accessory Products
+        " . $accessoryColumns . "
     FROM 
         tbl_cutomer_target et
     INNER JOIN 
@@ -589,8 +749,11 @@ if($reporttype == 1 || $reporttype == 2) {
                     <th nowrap colspan="5" class="text-center">2KG</th>
                     <th nowrap colspan="5" class="text-center">5KG</th>
                     <th nowrap colspan="5" class="text-center">12.5KG</th>
-                    <th nowrap colspan="5" class="text-center">37.5KG</th>
-                </tr>
+                    <th nowrap colspan="5" class="text-center">37.5KG</th>';
+                    foreach($productaccesorieslist as $rowproductaccesories){
+                        $html.='<th colspan="7" nowrap class="text-center">'.$rowproductaccesories.'</th>';
+                    }
+                $html.='</tr>
                 <tr>                    
                     <!-- 2KG Columns -->
                     <th class="text-center">Target</th>
@@ -618,8 +781,18 @@ if($reporttype == 1 || $reporttype == 2) {
                     <th class="text-center">Completed</th>
                     <th class="text-center">Balance</th>
                     <th class="text-center">Balance %</th>
-                    <th class="text-center">Avg/Day</th>
-                </tr>
+                    <th class="text-center">Avg/Day</th>';
+
+                    foreach($productaccesorieslist as $rowproductaccesories){
+                        $html.='<th nowrap class="text-center">Target</th>
+                        <th nowrap class="text-center">Upto Date Target</th>
+                        <th nowrap class="text-center">Completed</th>
+                        <th nowrap class="text-center">Balance</th>
+                        <th nowrap class="text-center">Upto Date Target Balance</th>
+                        <th nowrap class="text-center">Balance %</th>
+                        <th nowrap class="text-center">Balance Average/Day</th>';
+                    }
+                $html.'</tr>
             </thead>
             <tbody>';
         while ($rowinfo = $result->fetch_assoc()) {
@@ -652,8 +825,14 @@ if($reporttype == 1 || $reporttype == 2) {
                 <td class="text-center">'.$rowinfo['completed_37_5kg'].'</td>
                 <td class="text-center">'.($rowinfo['balance_37_5kg'] <= 0 ? '' : ceil($rowinfo['balance_37_5kg'])).'</td>
                 <td class="text-center">'.($rowinfo['balance_percentage_37_5kg'] <= 0 ? '' : ceil($rowinfo['balance_percentage_37_5kg']).'%').'</td>
-                <td class="text-center">'.($rowinfo['balance_37_5kg'] <= 0 ? '' : ceil($rowinfo['avg_day_37_5kg'])).'</td>
-            </tr>';
+                <td class="text-center">'.($rowinfo['balance_37_5kg'] <= 0 ? '' : ceil($rowinfo['avg_day_37_5kg'])).'</td>';
+
+                // Render accessory product columns
+                foreach ($accessories as $accessory) {
+                    $colName = $accessory['col_name'];
+                    $html .= renderAccessoryColumns($rowinfo, $colName);
+                }
+            $html .='</tr>';
         }
         $html.='</tbody></table></div>';
     }
@@ -739,8 +918,10 @@ if($reporttype == 1 || $reporttype == 2) {
             (MAX(CASE WHEN p.idtbl_product = '2' THEN et.targettank END) - 
             MAX(CASE WHEN p.idtbl_product = '2' THEN IFNULL(sales.targetcomplete, 0) END)) / 
             GREATEST(DATEDIFF('$validto', CURDATE()) - IFNULL(hm.total_holidays_remaining, 0), 1), 
-        2) AS avg_day_37_5kg
+        2) AS avg_day_37_5kg,
 
+        -- Accessory Products
+        " . $accessoryColumns . "
     FROM 
         tbl_vehicle_target et
     INNER JOIN 
@@ -800,8 +981,11 @@ if($reporttype == 1 || $reporttype == 2) {
                     <th nowrap colspan="5" class="text-center">2KG</th>
                     <th nowrap colspan="5" class="text-center">5KG</th>
                     <th nowrap colspan="5" class="text-center">12.5KG</th>
-                    <th nowrap colspan="5" class="text-center">37.5KG</th>
-                </tr>
+                    <th nowrap colspan="5" class="text-center">37.5KG</th>';
+                    foreach($productaccesorieslist as $rowproductaccesories){
+                        $html.='<th colspan="7" nowrap class="text-center">'.$rowproductaccesories.'</th>';
+                    }
+                $html.='</tr>
                 <tr>                    
                     <!-- 2KG Columns -->
                     <th class="text-center">Target</th>
@@ -829,8 +1013,18 @@ if($reporttype == 1 || $reporttype == 2) {
                     <th class="text-center">Completed</th>
                     <th class="text-center">Balance</th>
                     <th class="text-center">Balance %</th>
-                    <th class="text-center">Avg/Day</th>
-                </tr>
+                    <th class="text-center">Avg/Day</th>';
+
+                    foreach($productaccesorieslist as $rowproductaccesories){
+                        $html.='<th nowrap class="text-center">Target</th>
+                        <th nowrap class="text-center">Upto Date Target</th>
+                        <th nowrap class="text-center">Completed</th>
+                        <th nowrap class="text-center">Balance</th>
+                        <th nowrap class="text-center">Upto Date Target Balance</th>
+                        <th nowrap class="text-center">Balance %</th>
+                        <th nowrap class="text-center">Balance Average/Day</th>';
+                    }
+                $html.'</tr>
             </thead>
             <tbody>';
         while ($rowinfo = $result->fetch_assoc()) {
@@ -863,14 +1057,52 @@ if($reporttype == 1 || $reporttype == 2) {
                 <td class="text-center">'.$rowinfo['completed_37_5kg'].'</td>
                 <td class="text-center">'.($rowinfo['balance_37_5kg'] <= 0 ? '' : ceil($rowinfo['balance_37_5kg'])).'</td>
                 <td class="text-center">'.($rowinfo['balance_percentage_37_5kg'] <= 0 ? '' : ceil($rowinfo['balance_percentage_37_5kg']).'%').'</td>
-                <td class="text-center">'.($rowinfo['balance_37_5kg'] <= 0 ? '' : ceil($rowinfo['avg_day_37_5kg'])).'</td>
-            </tr>';
+                <td class="text-center">'.($rowinfo['balance_37_5kg'] <= 0 ? '' : ceil($rowinfo['avg_day_37_5kg'])).'</td>';
+
+                // Render accessory product columns
+                foreach ($accessories as $accessory) {
+                    $colName = $accessory['col_name'];
+                    $html .= renderAccessoryColumns($rowinfo, $colName);
+                }
+            $html .='</tr>';
         }
         $html.='</tbody></table></div>';
     }
 }
 
 echo $html;
+
+// Helper function to render accessory product columns
+function renderAccessoryColumns($row, $colName) {
+    // Check if this accessory has data (target exists and is not null)
+    $hasData = isset($row['target_'.$colName]) && $row['target_'.$colName] !== null && $row['target_'.$colName] !== '';
+    
+    if ($hasData) {
+        $isComplete = ($row['balance_percentage_'.$colName] <= 0 && $row['target_'.$colName] != '');
+        $successClass = $isComplete ? 'table-success' : '';
+
+        if($row['balance_percentage_'.$colName] <= 0 && $row['target_'.$colName] != ''): $overcom = ceil(($row['target_'.$colName]/$row['completed_'.$colName]) * 100);else:$overcom = 0;endif;
+        
+        return '
+            <td class="text-center '.$successClass.'">'.$row['target_'.$colName].'</td>
+            <td class="text-center '.$successClass.'">'.ceil($row['upto_date_target_'.$colName]).'</td>
+            <td class="text-center '.$successClass.'">'.$row['completed_'.$colName].'</td>
+            <td class="text-center '.$successClass.'">'.($row['balance_'.$colName] > 0 ? ceil($row['balance_'.$colName]) : '').'</td>
+            <td class="text-center '.$successClass.'">'.ceil($row['upto_date_target_balance_'.$colName]).'</td>
+            <td class="text-center '.$successClass.'">'.($row['balance_percentage_'.$colName] <= 0 ? $overcom.'%' : ceil($row['balance_percentage_'.$colName]).'%').'</td>
+            <td class="text-center '.$successClass.'">'.($row['balance_'.$colName] > 0 ? ceil($row['avg_day_'.$colName]) : '0').'</td>';
+    } else {
+        // Return empty columns if no data exists for this accessory
+        return '
+            <td class="text-center">-</td>
+            <td class="text-center">-</td>
+            <td class="text-center">-</td>
+            <td class="text-center">-</td>
+            <td class="text-center">-</td>
+            <td class="text-center">-</td>
+            <td class="text-center">-</td>';
+    }
+}
 
 // if(!empty($_POST['employee'])){
 //     $sqlref="SELECT `idtbl_employee`, `name` FROM `tbl_employee` WHERE `status`=1 AND `idtbl_employee`='$employee'";
