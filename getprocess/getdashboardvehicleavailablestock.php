@@ -22,62 +22,145 @@ while ($accessory = $accessories->fetch_assoc()) {
     $products[] = $accessory;
 }
 
-$sql = "SET @sql = NULL;
-        -- Get gas products (category 1) ordered by orderlevel
-        SELECT GROUP_CONCAT(DISTINCT 
-            CONCAT('SUM(CASE WHEN p.idtbl_product = ', idtbl_product, 
-            ' THEN vld.loadqty ELSE 0 END) AS `', REPLACE(product_name, '`', '``'), '_Stock`, ',
-            'SUM(CASE WHEN p.idtbl_product = ', idtbl_product, 
-            ' THEN vld.loadqty - vld.qty ELSE 0 END) AS `', 
-            REPLACE(product_name, '`', '``'), '_Sale`')
-            ORDER BY orderlevel SEPARATOR ', '
-        ) INTO @gas_columns
-        FROM tbl_product 
-        WHERE status = 1 AND tbl_product_category_idtbl_product_category = 1;
+// $sql = "SET @sql = NULL;
+//         -- Get gas products (category 1) ordered by orderlevel
+//         SELECT GROUP_CONCAT(DISTINCT 
+//             CONCAT('SUM(CASE WHEN p.idtbl_product = ', idtbl_product, 
+//             ' THEN vld.loadqty ELSE 0 END) AS `', REPLACE(product_name, '`', '``'), '_Stock`, ',
+//             'SUM(CASE WHEN p.idtbl_product = ', idtbl_product, 
+//             ' THEN vld.loadqty - vld.qty ELSE 0 END) AS `', 
+//             REPLACE(product_name, '`', '``'), '_Sale`')
+//             ORDER BY orderlevel SEPARATOR ', '
+//         ) INTO @gas_columns
+//         FROM tbl_product 
+//         WHERE status = 1 AND tbl_product_category_idtbl_product_category = 1;
         
-        -- Get accessories (category 2)
-        SELECT GROUP_CONCAT(DISTINCT 
-            CONCAT('SUM(CASE WHEN p.idtbl_product = ', idtbl_product, 
-            ' THEN vld.loadqty ELSE 0 END) AS `', REPLACE(product_name, '`', '``'), '_Stock`, ',
-            'SUM(CASE WHEN p.idtbl_product = ', idtbl_product, 
-            ' THEN vld.loadqty - vld.qty ELSE 0 END) AS `', 
-            REPLACE(product_name, '`', '``'), '_Sale`')
-            SEPARATOR ', '
-        ) INTO @accessory_columns
-        FROM tbl_product 
-        WHERE status = 1 AND tbl_product_category_idtbl_product_category = 2;
+//         -- Get accessories (category 2)
+//         SELECT GROUP_CONCAT(DISTINCT 
+//             CONCAT('SUM(CASE WHEN p.idtbl_product = ', idtbl_product, 
+//             ' THEN vld.loadqty ELSE 0 END) AS `', REPLACE(product_name, '`', '``'), '_Stock`, ',
+//             'SUM(CASE WHEN p.idtbl_product = ', idtbl_product, 
+//             ' THEN vld.loadqty - vld.qty ELSE 0 END) AS `', 
+//             REPLACE(product_name, '`', '``'), '_Sale`')
+//             SEPARATOR ', '
+//         ) INTO @accessory_columns
+//         FROM tbl_product 
+//         WHERE status = 1 AND tbl_product_category_idtbl_product_category = 2;
         
-        SET @sql = CONCAT('
-        SELECT
-            vl.idtbl_vehicle_load,
-            v.vehicleno,
-            vl.unloadstatus,
-            ', IFNULL(@gas_columns, ''), 
-            IF(@gas_columns IS NOT NULL AND @accessory_columns IS NOT NULL, ', ', ''),
-            IFNULL(@accessory_columns, ''), ',
-            SUM(vld.loadqty) AS `Total_Stock`,
-            SUM(vld.loadqty - vld.qty) AS `Total_Sale`
-        FROM
-            tbl_vehicle_load_detail vld
-        JOIN
-            tbl_product p ON p.idtbl_product = vld.tbl_product_idtbl_product
-        JOIN
-            tbl_vehicle_load vl ON vl.idtbl_vehicle_load = vld.tbl_vehicle_load_idtbl_vehicle_load
-        JOIN
-            tbl_vehicle v ON v.idtbl_vehicle = vl.lorryid
-        WHERE
-            DATE(vl.date) = CURDATE()
-            AND vl.approvestatus = 1
-            AND vl.status = 1
-        GROUP BY
-            v.vehicleno, vl.idtbl_vehicle_load
-        ORDER BY
-            v.vehicleno;
-        ');
+//         SET @sql = CONCAT('
+//         SELECT
+//             vl.idtbl_vehicle_load,
+//             v.vehicleno,
+//             vl.unloadstatus,
+//             ', IFNULL(@gas_columns, ''), 
+//             IF(@gas_columns IS NOT NULL AND @accessory_columns IS NOT NULL, ', ', ''),
+//             IFNULL(@accessory_columns, ''), ',
+//             SUM(vld.loadqty) AS `Total_Stock`,
+//             SUM(vld.loadqty - vld.qty) AS `Total_Sale`
+//         FROM
+//             tbl_vehicle_load_detail vld
+//         JOIN
+//             tbl_product p ON p.idtbl_product = vld.tbl_product_idtbl_product
+//         JOIN
+//             tbl_vehicle_load vl ON vl.idtbl_vehicle_load = vld.tbl_vehicle_load_idtbl_vehicle_load
+//         JOIN
+//             tbl_vehicle v ON v.idtbl_vehicle = vl.lorryid
+//         WHERE
+//             DATE(vl.date) = CURDATE()
+//             AND vl.approvestatus = 1
+//             AND vl.status = 1
+//         GROUP BY
+//             v.vehicleno, vl.idtbl_vehicle_load
+//         ORDER BY
+//             v.vehicleno;
+//         ');
         
-        PREPARE stmt FROM @sql;
-        EXECUTE stmt;
-        DEALLOCATE PREPARE stmt";
+//         PREPARE stmt FROM @sql;
+//         EXECUTE stmt;
+//         DEALLOCATE PREPARE stmt";
+$sql = "SET SESSION group_concat_max_len = 1000000;
+
+SET @sql = NULL;
+SET @gas_columns = NULL;
+SET @accessory_columns = NULL;
+SET @all_columns = '';
+
+-- Get gas products (category 1) ordered by orderlevel
+SELECT GROUP_CONCAT(DISTINCT 
+    CONCAT('SUM(CASE WHEN p.idtbl_product = ', idtbl_product, 
+    ' THEN vld.loadqty ELSE 0 END) AS `', REPLACE(product_name, '`', '``'), '_Stock`, ',
+    'SUM(CASE WHEN p.idtbl_product = ', idtbl_product, 
+    ' THEN vld.loadqty - vld.qty ELSE 0 END) AS `', 
+    REPLACE(product_name, '`', '``'), '_Sale`')
+    ORDER BY orderlevel SEPARATOR ', '
+) INTO @gas_columns
+FROM tbl_product 
+WHERE status = 1 AND tbl_product_category_idtbl_product_category = 1;
+
+-- Get accessories (category 2)
+SELECT GROUP_CONCAT(DISTINCT 
+    CONCAT('SUM(CASE WHEN p.idtbl_product = ', idtbl_product, 
+    ' THEN vld.loadqty ELSE 0 END) AS `', REPLACE(product_name, '`', '``'), '_Stock`, ',
+    'SUM(CASE WHEN p.idtbl_product = ', idtbl_product, 
+    ' THEN vld.loadqty - vld.qty ELSE 0 END) AS `', 
+    REPLACE(product_name, '`', '``'), '_Sale`')
+    SEPARATOR ', '
+) INTO @accessory_columns
+FROM tbl_product 
+WHERE status = 1 AND tbl_product_category_idtbl_product_category = 2;
+
+-- Handle NULL values and comma separation using CASE statements
+SELECT 
+    CASE 
+        WHEN @gas_columns IS NOT NULL AND @accessory_columns IS NOT NULL THEN 
+            CONCAT(@gas_columns, ', ', @accessory_columns)
+        WHEN @gas_columns IS NOT NULL THEN 
+            @gas_columns
+        WHEN @accessory_columns IS NOT NULL THEN 
+            @accessory_columns
+        ELSE ''
+    END
+INTO @all_columns;
+
+-- Remove trailing comma if exists (using string functions)
+SET @all_columns = TRIM(BOTH ',' FROM REPLACE(REPLACE(@all_columns, ', ,', ','), ',,', ','));
+
+-- Build the final SQL query
+SET @sql = CONCAT('
+SELECT
+    vl.idtbl_vehicle_load,
+    v.vehicleno,
+    vl.unloadstatus',
+    CASE 
+        WHEN @all_columns != '' THEN 
+            CONCAT(',\n    ', @all_columns) 
+        ELSE ''
+    END,
+    ',
+    SUM(vld.loadqty) AS `Total_Stock`,
+    SUM(vld.loadqty - vld.qty) AS `Total_Sale`
+FROM
+    tbl_vehicle_load_detail vld
+JOIN
+    tbl_product p ON p.idtbl_product = vld.tbl_product_idtbl_product
+JOIN
+    tbl_vehicle_load vl ON vl.idtbl_vehicle_load = vld.tbl_vehicle_load_idtbl_vehicle_load
+JOIN
+    tbl_vehicle v ON v.idtbl_vehicle = vl.lorryid
+WHERE
+    DATE(vl.date) = CURDATE()
+    AND vl.approvestatus = 1
+    AND vl.status = 1
+GROUP BY
+    v.vehicleno, vl.idtbl_vehicle_load
+ORDER BY
+    v.vehicleno;
+');
+
+-- Prepare and execute the statement
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt";
 
 if ($conn->multi_query($sql)) {
     do {
@@ -153,7 +236,7 @@ foreach($mainarray as $rowdatalist) {
         $html .= 'table-success';
     }
     $html .= '">';
-    $html .= '<td>' . $rowdatalist->loadVehicle . ' (' . $rowdatalist->feqno . ')</td>';
+    $html .= '<td nowrap>' . $rowdatalist->loadVehicle . ' (' . $rowdatalist->feqno . ')</td>';
     
     foreach($rowdatalist->products as $productName => $productlist) {
         $productstock = 0;
