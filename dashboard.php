@@ -142,12 +142,12 @@ th[rowspan] {
                                             <table class="table table-striped table-bordered table-sm small mt-3" id="loadstocktable">
                                                 <thead class="thead-dark">
                                                     <tr class="">
-                                                        <th rowspan="2" class="align-middle">Vehicle</th>
+                                                        <th nowrap rowspan="2" class="align-middle">Vehicle</th>
                                                         <?php foreach($productgaslist as $rowproductgas){ ?>
-                                                        <th colspan="3" class="text-center"><?php echo $rowproductgas; ?></th>
+                                                        <th nowrap colspan="3" class="text-center"><?php echo $rowproductgas; ?></th>
                                                         <?php } ?>
                                                         <?php foreach($productaccesorieslist as $rowproductaccesories){ ?>
-                                                        <th colspan="3" class="text-center"><?php echo $rowproductaccesories; ?></th>
+                                                        <th nowrap colspan="3" class="text-center"><?php echo $rowproductaccesories; ?></th>
                                                         <?php } ?>
                                                     </tr>
                                                     <tr class="">
