@@ -17,7 +17,8 @@ $tableData = $_POST['tableData'];
 
 $updatedatetime = date('Y-m-d H:i:s');
 
-$insertgrn = "INSERT INTO `tbl_grn` (`date`, `total`, `taxamount`, `nettotal`, `invoicenum`, `dispatchnum`, `status`, `updatedatetime`, `tbl_user_idtbl_user`) 
+$insertgrn = "INSERT INTO `tbl_grn`
+(`date`, `total`, `taxamount`, `nettotal`, `invoicenum`, `dispatchnum`, `status`, `updatedatetime`, `tbl_user_idtbl_user`) 
 VALUES ('$grndate','$grnnettotalwithoutvat','$taxamount','$grnnettotal','$grninvoice','$grndispatch','1','$updatedatetime','$userID')";
 
 if($conn->query($insertgrn) === TRUE){

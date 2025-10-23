@@ -139,7 +139,7 @@
     }
 
     $(document).on("click", ".btntableaction", function () {
-        var url = 'http://localhost/Ansengas/'+$(this).attr("data-url");
+        var url = 'http://localhost/ansengas/'+$(this).attr("data-url");
         var actiontype = $(this).attr("data-actiontype");
 
         var title;

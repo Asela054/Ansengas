@@ -17,7 +17,8 @@ $tableData = $_POST['tableData'];
 
 $updatedatetime = date('Y-m-d H:i:s');
 
-$insertgrn = "INSERT INTO `tbl_grn` (`date`, `total`, `taxamount`, `nettotal`, `invoicenum`, `dispatchnum`, `status`, `updatedatetime`, `tbl_user_idtbl_user`) 
+$insertgrn = "INSERT INTO `tbl_grn`
+(`date`, `total`, `taxamount`, `nettotal`, `invoicenum`, `dispatchnum`, `status`, `updatedatetime`, `tbl_user_idtbl_user`) 
 VALUES ('$grndate','$grnnettotalwithoutvat','$taxamount','$grnnettotal','$grninvoice','$grndispatch','1','$updatedatetime','$userID')";
 
 if($conn->query($insertgrn) === TRUE){
@@ -39,8 +40,17 @@ if($conn->query($insertgrn) === TRUE){
         $total = $rowtabledata['col_20'];
         $totalwithvat = $rowtabledata['col_21'];
 
-        $insertgrndetail = "INSERT INTO `tbl_grndetail` (`date`, `type`, `newqty`, `fillqty`, `emptyqty`, `returnqty`, `trustqty`, `saftyqty`, `saftyreturnqty`, `unitprice_withoutvat`, `refillprice_withoutvat`, `emptyprice_withoutvat`, `unitprice`, `refillprice`, `emptyprice`, `totalwithoutvat`, `total`, `status`, `updatedatetime`, `tbl_user_idtbl_user`, `tbl_grn_idtbl_grn`, `tbl_product_idtbl_product`) 
-         VALUES ('$grndate','0','$newqty','$refillqty','$emptyqty','0','$trustqty','$saftyqty','0','$unitprice','$refillprice','$emptyprice','$unitpricewithvat','$refillpricewithvat','$emptypricewithvat','$total','$totalwithvat','1','$updatedatetime','$userID','$grnid','$product')";
+        $insertgrndetail = "INSERT INTO `tbl_grndetail`
+        (`date`, `type`, `newqty`, `fillqty`, `emptyqty`, `returnqty`, `trustqty`, `saftyqty`, `saftyreturnqty`,
+         `unitprice_withoutvat`, `refillprice_withoutvat`, `emptyprice_withoutvat`, 
+         `unitprice`, `refillprice`, `emptyprice`, 
+         `totalwithoutvat`, `total`, `status`, `updatedatetime`, 
+         `tbl_user_idtbl_user`, `tbl_grn_idtbl_grn`, `tbl_product_idtbl_product`) 
+         VALUES 
+         ('$grndate','0','$newqty','$refillqty','$emptyqty','0','$trustqty','$saftyqty','0',
+          '$unitprice','$refillprice','$emptyprice',
+          '$unitpricewithvat','$refillpricewithvat','$emptypricewithvat',
+          '$total','$totalwithvat','1','$updatedatetime','$userID','$grnid','$product')";
         $conn->query($insertgrndetail);
 
         $totqty = ($newqty + $refillqty + $trustqty + $saftyqty);
@@ -82,20 +92,29 @@ if($conn->query($insertgrn) === TRUE){
          '1','$updatedatetime','$userID','$product','$grnid')";
         $conn->query($inserthistory);
 
+        // === TRUST STOCK ===
         $checkTrustStockQuery = "SELECT * FROM tbl_stock_trust WHERE tbl_product_idtbl_product = '$product'";
         $resultTrust = $conn->query($checkTrustStockQuery);
 
         if ($resultTrust && $resultTrust->num_rows > 0) {
             if ($trustqty > 0) {
-                $updatetruststock = "UPDATE `tbl_stock_trust` SET `trustqty` = (`trustqty` + '$trustqty'), `saftyqty` = (`saftyqty` + '$saftyqty') WHERE `tbl_product_idtbl_product` = '$product'";
+                $updatetruststock = "UPDATE `tbl_stock_trust` 
+                                     SET `trustqty` = (`trustqty` + '$trustqty'),
+                                         `saftyqty` = (`saftyqty` + '$saftyqty') 
+                                     WHERE `tbl_product_idtbl_product` = '$product'";
                 $conn->query($updatetruststock);
             }
         } else {
-            $insertTrustStockQuery = "INSERT INTO `tbl_stock_trust` (`trustqty`, `returnqty`, `saftyqty`, `saftyreturnqty`, `status`, `tbl_user_idtbl_user`, `tbl_product_idtbl_product`) VALUES ('$trustqty', '0', '$saftyqty', '0', '1', '$userID', '$product')";
+            $insertTrustStockQuery = "INSERT INTO `tbl_stock_trust`
+            (`trustqty`, `returnqty`, `saftyqty`, `saftyreturnqty`, `status`, `tbl_user_idtbl_user`, `tbl_product_idtbl_product`)
+            VALUES ('$trustqty', '0', '$saftyqty', '0', '1', '$userID', '$product')";
             $conn->query($insertTrustStockQuery);
         }
 
-        $updateorder = "UPDATE `tbl_porder` SET `grnissuestatus`='1', `updatedatetime`='$updatedatetime',`tbl_user_idtbl_user`='$userID' WHERE `idtbl_porder`='$porderID'";
+        $updateorder = "UPDATE `tbl_porder`  SET `grnissuestatus`='1',
+                            `updatedatetime`='$updatedatetime',
+                            `tbl_user_idtbl_user`='$userID'
+                        WHERE `idtbl_porder`='$porderID'";
         $conn->query($updateorder);
     }
 
