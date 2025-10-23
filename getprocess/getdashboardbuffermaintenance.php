@@ -57,7 +57,7 @@ LEFT JOIN
     tbl_employee e ON cws.tbl_employee_idtbl_employee = e.idtbl_employee
 LEFT JOIN
     tbl_area a ON c.tbl_area_idtbl_area = a.idtbl_area
-LEFT JOIN 
+INNER JOIN 
     tbl_customer_buffer_stock cbs ON c.idtbl_customer = cbs.tbl_customer_idtbl_customer 
     AND DATE(cbs.date) = CURDATE()
 LEFT JOIN 

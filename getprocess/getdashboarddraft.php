@@ -23,6 +23,7 @@ for ($i = 1; $i <= $dayscount; $i++) {
         foreach ($arrayproduct as $rowproduct) {
             $newsalecount = 0;
             $refillsalecount = 0;
+            $trustqtysalecount = 0;
 
             $invdate = date('Y-m-') . $i;
             $sqlsaleproduct = "SELECT SUM(`newqty`) AS `newqty`, SUM(`refillqty`) AS `refillqty`, SUM(`trustqty`) AS `trustqty` FROM `tbl_invoice_detail` WHERE `tbl_invoice_idtbl_invoice` IN (SELECT `idtbl_invoice` FROM `tbl_invoice` WHERE `date`='$invdate' AND `status`=1) AND `status`=1 AND `tbl_product_idtbl_product`='$rowproduct'";
