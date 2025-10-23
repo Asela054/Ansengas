@@ -17,7 +17,8 @@ $tableData = $_POST['tableData'];
 
 $updatedatetime = date('Y-m-d H:i:s');
 
-$insertgrn = "INSERT INTO `tbl_grn` (`date`, `total`, `taxamount`, `nettotal`, `invoicenum`, `dispatchnum`, `status`, `updatedatetime`, `tbl_user_idtbl_user`) 
+$insertgrn = "INSERT INTO `tbl_grn`
+(`date`, `total`, `taxamount`, `nettotal`, `invoicenum`, `dispatchnum`, `status`, `updatedatetime`, `tbl_user_idtbl_user`) 
 VALUES ('$grndate','$grnnettotalwithoutvat','$taxamount','$grnnettotal','$grninvoice','$grndispatch','1','$updatedatetime','$userID')";
 
 if($conn->query($insertgrn) === TRUE){
@@ -39,8 +40,15 @@ if($conn->query($insertgrn) === TRUE){
         $total = $rowtabledata['col_20'];
         $totalwithvat = $rowtabledata['col_21'];
 
-        $insertgrndetail = "INSERT INTO `tbl_grndetail` (`date`, `type`, `newqty`, `fillqty`, `emptyqty`, `returnqty`, `trustqty`, `saftyqty`, `saftyreturnqty`, `unitprice_withoutvat`, `refillprice_withoutvat`, `emptyprice_withoutvat`, `unitprice`, `refillprice`, `emptyprice`, `totalwithoutvat`, `total`, `status`, `updatedatetime`, `tbl_user_idtbl_user`, `tbl_grn_idtbl_grn`, `tbl_product_idtbl_product`) 
-         VALUES ('$grndate','0','$newqty','$refillqty','$emptyqty','0','$trustqty','$saftyqty','0','$unitprice','$refillprice','$emptyprice','$unitpricewithvat','$refillpricewithvat','$emptypricewithvat','$total','$totalwithvat','1','$updatedatetime','$userID','$grnid','$product')";
+        $insertgrndetail = "INSERT INTO `tbl_grndetail` (`date`, `type`, `newqty`, `fillqty`, `emptyqty`, `returnqty`, `trustqty`, `saftyqty`, `saftyreturnqty`, `unitprice_withoutvat`, `refillprice_withoutvat`, `emptyprice_withoutvat`, 
+         `unitprice`, `refillprice`, `emptyprice`, 
+         `totalwithoutvat`, `total`, `status`, `updatedatetime`, 
+         `tbl_user_idtbl_user`, `tbl_grn_idtbl_grn`, `tbl_product_idtbl_product`) 
+         VALUES 
+         ('$grndate','0','$newqty','$refillqty','$emptyqty','0','$trustqty','$saftyqty','0',
+          '$unitprice','$refillprice','$emptyprice',
+          '$unitpricewithvat','$refillpricewithvat','$emptypricewithvat',
+          '$total','$totalwithvat','1','$updatedatetime','$userID','$grnid','$product')";
         $conn->query($insertgrndetail);
 
         $totqty = ($newqty + $refillqty + $trustqty + $saftyqty);
