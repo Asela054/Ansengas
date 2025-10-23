@@ -35,6 +35,7 @@ include "include/topnavbar.php";
                                 <table class="table table-bordered table-striped table-sm nowrap" id="dataTable">
                                     <thead>
                                         <tr>
+                                            <th>#</th>
                                             <th>Invoice</th>
                                             <th>Date</th>
                                             <th>Customer</th>
@@ -148,10 +149,9 @@ include "include/topnavbar.php";
                                 <input type="hidden" class="form-control form-control-sm" id="invoiceid" name="invoiceid">
                                 <input type="hidden" class="form-control form-control-sm" id="prev_customer" name="prev_customer">
                             </div>
-                            <div class="form-group mt-2 text-right">
-                                <button type="submit" id="submitBtnCustomer" class="btn btn-primary btn-sm px-4"><i
-                                        class="far fa-save"></i>&nbsp;Add</button>
-                                        <input type="submit" class="d-none" id="hidesubmitcustomer" value="">
+                            <div class="form-group mt-3 text-right">
+                                <button type="submit" id="submitBtnCustomer" class="btn btn-primary btn-sm px-4"><i class="far fa-save"></i>&nbsp;Change Customer</button>
+                                <input type="submit" class="d-none" id="hidesubmitcustomer" value="">
                             </div>
                         </form>
                     </div>
@@ -195,6 +195,7 @@ include "include/topnavbar.php";
         var editcheck='<?php echo $editcheck; ?>';
         var statuscheck='<?php echo $statuscheck; ?>';
         var deletecheck='<?php echo $deletecheck; ?>';
+        var userID ='<?php echo $_SESSION["userid"]; ?>';
 
         $("#customer").select2({
             dropdownParent: $('#customerchangemodal'),
@@ -228,19 +229,25 @@ include "include/topnavbar.php";
             },
             "order": [[ 0, "desc" ]],
             "columns": [
-                {
-                    "targets": -1,
-                    "className": '',
-                    "data": null,
-                    "render": function(data, type, full) {
-                        var invoiceNumber;
-                        if (full['tax_invoice_num'] == '') {
-                            invoiceNumber = 'INV-' + full['idtbl_invoice'];
-                        }else {
-                            invoiceNumber = 'AGT' + full['tax_invoice_num'];
-                        }
-                        return invoiceNumber;
-                    }
+                // {
+                //     "targets": -1,
+                //     "className": '',
+                //     "data": null,
+                //     "render": function(data, type, full) {
+                //         var invoiceNumber;
+                //         if (full['tax_invoice_num'] == '') {
+                //             invoiceNumber = 'INV-' + full['idtbl_invoice'];
+                //         }else {
+                //             invoiceNumber = 'AGT' + full['tax_invoice_num'];
+                //         }
+                //         return invoiceNumber;
+                //     }
+                // },
+                { 
+                    "data": "idtbl_invoice" 
+                },
+                { 
+                    "data": "invoiceNumber" 
                 },
                 { 
                     "data": "date" 
@@ -312,8 +319,8 @@ include "include/topnavbar.php";
                     "render": function(data, type, full) {
                         var button = '';
                         button+='<button class="btn btn-outline-primary btn-sm btnAddremarks mr-1" id="'+full['idtbl_invoice']+'" data-toggle="tooltip" data-placement="bottom" title="Add Salesrep"><i class="fas fa-marker"></i></button>';
-                        if (statuscheck == 1) {
-                        button+='<button class="btn btn-outline-warning btn-sm btnChangeCustomer mr-1" id="'+full['idtbl_invoice']+'" data-cus-id="'+full['tbl_customer_idtbl_customer']+'" data-toggle="tooltip" data-placement="bottom" title="Add Salesrep"><i class="fas fa-user-edit"></i></button>';
+                        if (statuscheck == 1 && (userID==1 || userID==25)) { // Only show if statuscheck is 1 AND user is admin or manager
+                        button+='<button class="btn btn-outline-warning btn-sm btnChangeCustomer mr-1" id="'+full['idtbl_invoice']+'" data-cus-id="'+full['tbl_customer_idtbl_customer']+'" data-toggle="tooltip" data-placement="bottom" title="Change customer"><i class="fas fa-user-edit"></i></button>';
                         }
                         button += '<button class="btn btn-outline-dark btn-sm btnView mr-1 ';
                         if (editcheck == 0) {
