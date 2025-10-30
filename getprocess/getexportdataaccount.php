@@ -1149,6 +1149,50 @@ if($exporttype==1){
         $html.='</tbody>
     </table>
     ';
+} else if($exporttype==9){
+    $sql="SELECT `tbl_invoice_reimbursement_detail`.`invoicedate`, `tbl_invoice_reimbursement_detail`.`amount`, `tbl_invoice_reimbursement_detail`.`tbl_invoice_idtbl_invoice`, `tbl_customer`.`name` AS customername, `tbl_invoice`.`tax_invoice_num`, `tbl_invoice`.`non_tax_invoice_num` FROM `tbl_invoice_reimbursement` LEFT JOIN `tbl_invoice_reimbursement_detail` ON `tbl_invoice_reimbursement_detail`.`tbl_invoice_reimbursement_idtbl_invoice_reimbursement`=`tbl_invoice_reimbursement`.`idtbl_invoice_reimbursement` LEFT JOIN `tbl_invoice` ON `tbl_invoice`.`idtbl_invoice`=`tbl_invoice_reimbursement_detail`.`tbl_invoice_idtbl_invoice` LEFT JOIN `tbl_customer` ON `tbl_customer`.`idtbl_customer`=`tbl_invoice`.`tbl_customer_idtbl_customer` WHERE `tbl_invoice_reimbursement`.`status`=1 AND `tbl_invoice_reimbursement`.`date` BETWEEN '$validfrom' AND '$validto'";
+    $result=$conn->query($sql);
+
+    $sqlreim="SELECT SUM(`tbl_invoice_reimbursement`.`netamount`) AS nettotal FROM `tbl_invoice_reimbursement` WHERE `status`=1 AND `date` BETWEEN '$validfrom' AND '$validto'";
+    $resultreim=$conn->query($sqlreim);
+    $rowreim=$resultreim->fetch_assoc();
+
+    $html='';
+    $html.='
+    <table class="table table-striped table-bordered table-sm small" id="table_content">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Vch/Bill No</th>
+                <th>Particulars</th>
+                <th class="text-right">Credit</th>
+                <th class="text-right">Debit</th>
+            </tr>
+        </thead>
+        <tbody>';
+        while($row=$result->fetch_assoc()){
+            $html.='
+            <tr>
+                <td>'.date("d/m/Y", strtotime($row['invoicedate'])).'</td>
+                <td>';
+                if(!empty($row['tax_invoice_num'])){$html.='AGT'.$row['tax_invoice_num'];}
+                else{$html.='INV-'.$row['tbl_invoice_idtbl_invoice'];}
+                $html.='</td>
+                <td>'.$row['customername'].'</td>
+                <td class="text-right">'.number_format(round($row['amount'], 2), 2).'</td>
+                <td class="text-right">&nbsp;</td>
+            </tr>';
+        }
+        $html.='
+            <tr>
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+                <td>LAUGFS Gas PLC - Sri Lanka</td>
+                <td class="text-right font-weight-bold">&nbsp;</td>
+                <td class="text-right font-weight-bold">'.number_format(round($rowreim['nettotal'], 2), 2).'</td>
+            </tr>';
+        $html.='</tbody>
+    </table>';
 }
 
 echo $html;

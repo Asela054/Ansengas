@@ -13,14 +13,14 @@ if($type==3){$value=3;}
 
 $sql="UPDATE `tbl_invoice_reimbursement` SET `status`='$value',`updatedatetime`='$updatedatetime' WHERE `idtbl_invoice_reimbursement`='$record'";
 if($conn->query($sql)==true){
-    $sql="SELECT `tbl_invoice_idtbl_invoice` FROM `tbl_invoice_reimbursement` WHERE `idtbl_invoice_reimbursement`='$record'";
+    $sql="SELECT `tbl_invoice_idtbl_invoice` FROM `tbl_invoice_reimbursement_detail` WHERE `tbl_invoice_reimbursement_idtbl_invoice_reimbursement`='$record'";
     $result =$conn-> query($sql);
-    $row = $result-> fetch_assoc();
+    while($row=mysqli_fetch_array($result)){
+        $invoiceID=$row['tbl_invoice_idtbl_invoice'];
 
-    $invoiceID=$row['tbl_invoice_idtbl_invoice'];
-
-    $updateinvoice="UPDATE `tbl_invoice` SET `paymentcomplete`='0',`updatedatetime`='$updatedatetime',`tbl_user_idtbl_user`='$userID' WHERE `idtbl_invoice`='$invoiceID'";
-    $conn->query($updateinvoice);
+        $updateinvoice="UPDATE `tbl_invoice` SET `paymentcomplete`='0',`updatedatetime`='$updatedatetime',`tbl_user_idtbl_user`='$userID' WHERE `idtbl_invoice`='$invoiceID'";
+        $conn->query($updateinvoice);
+    }
 
     header("Location:../invoicereimbursement.php?action=$type");
 }
