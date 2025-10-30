@@ -46,8 +46,6 @@ include "include/topnavbar.php";
                                                 <th>#</th>
                                                 <th>Date</th>
                                                 <th>Reimbursement No</th>
-                                                <th>Customer</th>
-                                                <th>Invoice No</th>
                                                 <th class="text-right">Amount</th>
                                                 <th class="text-right">Actions</th>
                                             </tr>
@@ -63,7 +61,7 @@ include "include/topnavbar.php";
         <?php include "include/footerbar.php"; ?>
     </div>
 </div>
-<!--Issue Payment Receipt Modal-->
+<!--Issue Reimbursement Modal-->
 <div class="modal fade" id="reimbursementmodal" data-backdrop="static" data-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable" role="document">
         <div class="modal-content">
@@ -128,6 +126,27 @@ include "include/topnavbar.php";
                 <div class="row">
                     <div class="col-sm-12 col-md-12 col-lg-12 col-xl-12 text-right">
                         <button class="btn btn-primary btn-sm" id="btnIssueReimbursement" disabled><i class="fas fa-plus"></i>&nbsp;Create Reimbursement</button>
+                        <input type="hidden" name="reimbursementtotal" id="reimbursementtotal" value="0">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--View Reimbursement Modal-->
+<div class="modal fade" id="reimbursementviewmodal" data-backdrop="static" data-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable" role="document">
+        <div class="modal-content">
+            <div class="modal-header p-0 p-2">
+                <h5 class="modal-title" id="oLevelTitle">View Reimbursement</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-sm-12 col-md-12 col-lg-12 col-xl-12">
+                        <div id="divview"></div>
                     </div>
                 </div>
             </div>
@@ -162,17 +181,11 @@ include "include/topnavbar.php";
                     "data": "reimdocno"
                 },
                 {
-                    "data": "customer_name"
-                },
-                {
-                    "data": "invoiceno"
-                },
-                {
                     "targets": -1,
                     "className": 'text-right',
                     "data": null,
                     "render": function(data, type, full) {
-                        var payment=addCommas(parseFloat(full['amount']).toFixed(2));
+                        var payment=addCommas(parseFloat(full['netamount']).toFixed(2));
                         return payment;
                     }
                 },
@@ -182,6 +195,7 @@ include "include/topnavbar.php";
                     "data": null,
                     "render": function(data, type, full) {
                         var button='';
+                        button += '<button class="btn btn-dark btn-sm btnView mr-1" id="' + full['idtbl_invoice_reimbursement'] + '"><i class="fas fa-eye"></i></button>';
                         if(deletecheck==1){
                             button+='<button type="button" data-url="process/statusinvoicereimbursement.php?record='+full['idtbl_invoice_reimbursement']+'&type=3" data-actiontype="3" class="btn btn-danger btn-sm text-light btntableaction"><i class="fas fa-trash-alt"></i></button>';
                         }
@@ -197,6 +211,52 @@ include "include/topnavbar.php";
                 }
             }
         } );
+        $('#dataTable tbody').on('click', '.btnView', function() {
+            var id = $(this).attr('id');
+
+            Swal.fire({
+                title: '',
+                html: '<div class="div-spinner"><div class="custom-loader"></div></div>',
+                allowOutsideClick: false,
+                showConfirmButton: false, // Hide the OK button
+                backdrop: `
+                    rgba(255, 255, 255, 0.5) 
+                `,
+                customClass: {
+                    popup: 'fullscreen-swal'
+                },
+                didOpen: () => {
+                    document.body.style.overflow = 'hidden';
+
+                    $.ajax({
+                        type: "POST",
+                        data: {
+                            reimbursementid : id,
+                        },
+                        url: 'getprocess/getreimbursementdata.php',
+                        success: function(result) {
+                            Swal.close();
+                            
+                            $('#divview').html(result);
+                            $('#reimbursementviewmodal').modal('show');
+                        },
+                        error: function(error) {
+                            // Close the SweetAlert on error
+                            Swal.close();
+                            
+                            // Show an error alert
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'Something went wrong. Please try again later.'
+                            });
+                        }
+                    });
+
+                    document.body.style.overflow = 'visible';
+                }
+            });
+        });
 
         // Filtor part start
         $("#customer").select2({
@@ -247,9 +307,11 @@ include "include/topnavbar.php";
                     item["invoiceid"] = $(this).data('invoiceid');
                     item["discountamount"] = $(this).data('discountamount');
                     item["customerid"] = $(this).data('customer');
+                    item["invoicedate"] = $(this).data('invoicedate');
                     jsonObj.push(item);
                 });
                 var myJSON = JSON.stringify(jsonObj);
+                var totalreimbursement=$('#reimbursementtotal').val();
 
                 Swal.fire({
                     title: '',
@@ -269,7 +331,8 @@ include "include/topnavbar.php";
                             type: "POST",
                             data: {
                                 invoicelist : myJSON,
-                                reimno : reimno
+                                reimno : reimno,
+                                totalreimbursement : totalreimbursement
                             },
                             url: 'process/invoicereimbursementprocess.php',
                             success: function(result) {
@@ -368,6 +431,7 @@ include "include/topnavbar.php";
         });
         
         $('#reimTable > tfoot th:last').text(addCommas(total.toFixed(2)));
+        $('#reimbursementtotal').val(total.toFixed(2));
     }
     function addCommas(nStr) {
         nStr += '';

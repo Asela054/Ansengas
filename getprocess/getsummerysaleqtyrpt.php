@@ -455,7 +455,7 @@ $rowvat = $resultvat->fetch_assoc();
 
 $vatamount = $rowvat['vat'];
 
-$sqldaily="SELECT `tbl_invoice`.`idtbl_invoice`, `tbl_invoice`.`tax_invoice_num`, `tbl_invoice`.`date`, `tbl_invoice`.`nettotal`, `tbl_customer`.`name` AS `cusname`, `tbl_customer`.`idtbl_customer`, `tbl_customer`.`discount_status`, `tbl_employee`.`name` AS `refname`, `tbl_vehicle`.`vehicleno`, `tbl_area`.`area`, `tbl_invoice`.`paymentcomplete`, `tbl_area`.`idtbl_area` FROM `tbl_invoice` LEFT JOIN `tbl_customer` ON `tbl_customer`.`idtbl_customer`=`tbl_invoice`.`tbl_customer_idtbl_customer` LEFT JOIN `tbl_employee` ON `tbl_employee`.`idtbl_employee`=`tbl_invoice`.`ref_id` LEFT JOIN `tbl_vehicle_load` ON `tbl_vehicle_load`.`idtbl_vehicle_load`=`tbl_invoice`.`tbl_vehicle_load_idtbl_vehicle_load` LEFT JOIN `tbl_vehicle` ON `tbl_vehicle`.`idtbl_vehicle`=`tbl_vehicle_load`.`lorryid` LEFT JOIN `tbl_area` ON `tbl_area`.`idtbl_area`=`tbl_invoice`.`tbl_area_idtbl_area` WHERE `tbl_invoice`.`date` BETWEEN '$validfrom' AND '$validto' AND `tbl_invoice`.`status`=1";
+$sqldaily="SELECT `tbl_invoice`.`idtbl_invoice`, `tbl_invoice`.`tax_invoice_num`, `tbl_invoice`.`date`, `tbl_invoice`.`nettotal`, `tbl_customer`.`name` AS `cusname`, `tbl_customer`.`idtbl_customer`, `tbl_customer`.`discount_status`, `tbl_employee`.`name` AS `refname`, `tbl_vehicle`.`vehicleno`, `tbl_area`.`area`, `tbl_invoice`.`paymentcomplete`, `tbl_area`.`idtbl_area`, `tbl_customer`.`type`, `tbl_customer`.`tbl_area_idtbl_area` FROM `tbl_invoice` LEFT JOIN `tbl_customer` ON `tbl_customer`.`idtbl_customer`=`tbl_invoice`.`tbl_customer_idtbl_customer` LEFT JOIN `tbl_employee` ON `tbl_employee`.`idtbl_employee`=`tbl_invoice`.`ref_id` LEFT JOIN `tbl_vehicle_load` ON `tbl_vehicle_load`.`idtbl_vehicle_load`=`tbl_invoice`.`tbl_vehicle_load_idtbl_vehicle_load` LEFT JOIN `tbl_vehicle` ON `tbl_vehicle`.`idtbl_vehicle`=`tbl_vehicle_load`.`lorryid` LEFT JOIN `tbl_area` ON `tbl_area`.`idtbl_area`=`tbl_invoice`.`tbl_area_idtbl_area` WHERE `tbl_invoice`.`date` BETWEEN '$validfrom' AND '$validto' AND `tbl_invoice`.`status`=1";
 $resultdaily =$conn-> query($sqldaily);
 if($resultdaily->num_rows>0){
     while($rowdaily = $resultdaily-> fetch_assoc()){ 
@@ -490,66 +490,95 @@ if($resultdaily->num_rows>0){
         else{
             $discount_amount=0;
 
-            if($rowdaily['date']>='2025-09-18'):
-                $sqlinvdetail="SELECT `refillqty`, `trustqty`, `encustomer_refillprice`, `tbl_product_idtbl_product`, `discount_price` FROM `tbl_invoice_detail` WHERE `tbl_invoice_idtbl_invoice`='$invoiceID' AND `status`=1 ";
-                $resultinvdetail = $conn->query($sqlinvdetail);
-                while($rowinvdetail = $resultinvdetail->fetch_assoc()){ 
-                    $pID = $rowinvdetail['tbl_product_idtbl_product'];
+            if($rowdaily['type']=='2' && $rowinvdetail['discount_price']==0 && $discountstatus==1):
+                $refillqty=$rowinvdetail['refillqty'];
 
-                    $sqlcheckprice="SELECT ap.encustomer_refillprice, cd.discount_amount FROM tbl_product p 
-                    LEFT JOIN tbl_areawise_product ap ON p.idtbl_product = ap.tbl_product_idtbl_product 
-                    LEFT JOIN `tbl_customer_discount` cd ON cd.tbl_product_idtbl_product = p.idtbl_product AND cd.tbl_customer_idtbl_customer = '$customerID'
-                    JOIN `tbl_main_area` ma ON ap.`tbl_main_area_idtbl_main_area` = ma.`idtbl_main_area` 
-                    JOIN `tbl_area` sa ON ap.`tbl_main_area_idtbl_main_area` = sa.`tbl_main_area_idtbl_main_area`
-                    WHERE `ap`.`status` = 1 AND p.tbl_product_category_idtbl_product_category IN (1,2) AND sa.`idtbl_area` = '$areaID' AND p.idtbl_product = '$pID'";
-                    $resultcheckprice = $conn->query($sqlcheckprice);
-                    $rowcheckprice = $resultcheckprice->fetch_assoc();
+                $sqlmainarea="SELECT `tbl_main_area_idtbl_main_area` FROM `tbl_area` WHERE `status`=1 AND `idtbl_area`='$areaID'";
+                $resultmainarea=$conn->query($sqlmainarea);
+                $rowmainarea=$resultmainarea->fetch_assoc();
 
-                    if(!empty($rowcheckprice['discount_amount'])){
-                        $refillqty=$rowinvdetail['refillqty']+$rowinvdetail['trustqty'];
-                        $refill_price=(($rowcheckprice['encustomer_refillprice']*($vatamount+100))/100);
-                        $discount_price=(($rowinvdetail['discount_price']*($vatamount+100))/100);
+                $mainareaID=$rowmainarea['tbl_main_area_idtbl_main_area'];
 
-                        $total_refillprice=$refill_price*$refillqty;
-                        $total_discountprice=$discount_price*$refillqty;
+                $sqldiscountprise="SELECT `tbl_areawise_product`.`discount_price`, `tbl_invoice_detail`.`tbl_product_idtbl_product`, `tbl_areawise_product`.`encustomer_refillprice` FROM `tbl_areawise_product` LEFT JOIN `tbl_invoice_detail` ON `tbl_invoice_detail`.`tbl_product_idtbl_product`=`tbl_areawise_product`.`tbl_product_idtbl_product` WHERE `tbl_areawise_product`.`status`=1 AND `tbl_areawise_product`.`discount_price`>0 AND `tbl_invoice_detail`.`status`=1 AND `tbl_invoice_detail`.`tbl_invoice_idtbl_invoice`='$invoiceID' AND `tbl_areawise_product`.`tbl_main_area_idtbl_main_area`='$mainareaID'";
+                $resultdiscountprise=$conn->query($sqldiscountprise);
+                $rowdiscountprise=$resultdiscountprise->fetch_assoc();
 
-                        $discount_amount+=$total_refillprice-$total_discountprice;
-                        $specialdiscountstatus = 1;
+                $refill_price=(($rowdiscountprise['encustomer_refillprice']*($vatamount+100))/100);
+                $discount_price=(($rowdiscountprise['discount_price']*($vatamount+100))/100);
+                $total_discountprice=$discount_price*$refillqty;
+                $total_refillprice=$refill_price*$refillqty;
 
-                        $objdiscount=new stdClass();
-                        $objdiscount->customername=$rowdaily['cusname'];
-                        $objdiscount->invoiceno=$rowdaily['idtbl_invoice'];
-                        $objdiscount->tax_invoice_num=$rowdaily['tax_invoice_num'];
-                        $objdiscount->discountamount=$discount_amount;
+                $discount_amount+=($total_refillprice-$total_discountprice);
 
-                        array_push($discountbrekup, $objdiscount);
+                $objdiscount=new stdClass();
+                $objdiscount->customername=$rowdaily['cusname'];
+                $objdiscount->invoiceno=$rowdaily['idtbl_invoice'];
+                $objdiscount->tax_invoice_num=$rowdaily['tax_invoice_num'];
+                $objdiscount->discountamount=$discount_amount;
 
-                        $unitcusdiscount = ($total_refillprice-$total_discountprice)/$refillqty;
+                array_push($discountbrekup, $objdiscount);
+            else:
+                if($rowdaily['date']>='2025-09-18'):
+                    $sqlinvdetail="SELECT `refillqty`, `trustqty`, `encustomer_refillprice`, `tbl_product_idtbl_product`, `discount_price` FROM `tbl_invoice_detail` WHERE `tbl_invoice_idtbl_invoice`='$invoiceID' AND `status`=1 ";
+                    $resultinvdetail = $conn->query($sqlinvdetail);
+                    while($rowinvdetail = $resultinvdetail->fetch_assoc()){ 
+                        $pID = $rowinvdetail['tbl_product_idtbl_product'];
 
-                        $objcusdiscount=new stdClass();
-                        $objcusdiscount->customerid=$customerID;
-                        $objcusdiscount->productid=$pID;
-                        $objcusdiscount->unitdiscount=$unitcusdiscount;
-                        $objcusdiscount->refillqty=$refillqty;
-                        $objcusdiscount->totaldiscount=$total_refillprice-$total_discountprice;
+                        $sqlcheckprice="SELECT ap.encustomer_refillprice, cd.discount_amount FROM tbl_product p 
+                        LEFT JOIN tbl_areawise_product ap ON p.idtbl_product = ap.tbl_product_idtbl_product 
+                        LEFT JOIN `tbl_customer_discount` cd ON cd.tbl_product_idtbl_product = p.idtbl_product AND cd.tbl_customer_idtbl_customer = '$customerID'
+                        JOIN `tbl_main_area` ma ON ap.`tbl_main_area_idtbl_main_area` = ma.`idtbl_main_area` 
+                        JOIN `tbl_area` sa ON ap.`tbl_main_area_idtbl_main_area` = sa.`tbl_main_area_idtbl_main_area`
+                        WHERE `ap`.`status` = 1 AND p.tbl_product_category_idtbl_product_category IN (1,2) AND sa.`idtbl_area` = '$areaID' AND p.idtbl_product = '$pID'";
+                        $resultcheckprice = $conn->query($sqlcheckprice);
+                        $rowcheckprice = $resultcheckprice->fetch_assoc();
 
-                        array_push($customerdiscountbrekup, $objcusdiscount);
+                        if(!empty($rowcheckprice['discount_amount'])){
+                            $refillqty=$rowinvdetail['refillqty']+$rowinvdetail['trustqty'];
+                            $refill_price=(($rowcheckprice['encustomer_refillprice']*($vatamount+100))/100);
+                            $discount_price=(($rowinvdetail['discount_price']*($vatamount+100))/100);
+
+                            $total_refillprice=$refill_price*$refillqty;
+                            $total_discountprice=$discount_price*$refillqty;
+
+                            $discount_amount+=$total_refillprice-$total_discountprice;
+                            $specialdiscountstatus = 1;
+
+                            $objdiscount=new stdClass();
+                            $objdiscount->customername=$rowdaily['cusname'];
+                            $objdiscount->invoiceno=$rowdaily['idtbl_invoice'];
+                            $objdiscount->tax_invoice_num=$rowdaily['tax_invoice_num'];
+                            $objdiscount->discountamount=$discount_amount;
+
+                            array_push($discountbrekup, $objdiscount);
+
+                            $unitcusdiscount = ($total_refillprice-$total_discountprice)/$refillqty;
+
+                            $objcusdiscount=new stdClass();
+                            $objcusdiscount->customerid=$customerID;
+                            $objcusdiscount->productid=$pID;
+                            $objcusdiscount->unitdiscount=$unitcusdiscount;
+                            $objcusdiscount->refillqty=$refillqty;
+                            $objcusdiscount->totaldiscount=$total_refillprice-$total_discountprice;
+
+                            array_push($customerdiscountbrekup, $objcusdiscount);
+                        }
+                        else{
+                            $discount_amount+=0;
+                        }
                     }
-                    else{
-                        $discount_amount+=0;
-                    }
-                }
+                endif;
             endif;
         }   
 
-        $sqlcash="SELECT SUM(`amount`) AS `amount` FROM `tbl_invoice_payment_detail` WHERE `status`=1 AND `method`=1 AND `tbl_invoice_payment_idtbl_invoice_payment` IN (SELECT `tbl_invoice_payment_idtbl_invoice_payment` FROM `tbl_invoice_payment_has_tbl_invoice` WHERE `tbl_invoice_idtbl_invoice`='$invoiceID')";
+        $sqlcash="SELECT SUM(`amount`) AS `amount` FROM `tbl_invoice_payment_detail` LEFT JOIN `tbl_invoice_payment` ON `tbl_invoice_payment`.`idtbl_invoice_payment`=`tbl_invoice_payment_detail`.`tbl_invoice_payment_idtbl_invoice_payment` WHERE `tbl_invoice_payment_detail`.`status`=1 AND `tbl_invoice_payment_detail`.`method`=1  AND `tbl_invoice_payment`.`date` BETWEEN '$validfrom' AND '$validto' AND `tbl_invoice_payment_detail`.`tbl_invoice_payment_idtbl_invoice_payment` IN (SELECT `tbl_invoice_payment_idtbl_invoice_payment` FROM `tbl_invoice_payment_has_tbl_invoice` WHERE `tbl_invoice_idtbl_invoice`='$invoiceID')";
         $resultcash =$conn-> query($sqlcash);   
         $rowcash = $resultcash-> fetch_assoc();
 
         // $chequelist='';
         $chequetotal=0;
         $i=1;
-        $sqlcheque="SELECT SUM(`tbl_invoice_payment_detail`.`amount`) AS `amount`, GROUP_CONCAT(`tbl_invoice_payment_detail`.`chequeno`) AS `chequeno`, `tbl_invoice_payment_detail`.`chequedate`, `tbl_bank`.`bankname` FROM `tbl_invoice_payment_detail` LEFT JOIN `tbl_bank` ON `tbl_bank`.`idtbl_bank`=`tbl_invoice_payment_detail`.`tbl_bank_idtbl_bank` WHERE `tbl_invoice_payment_detail`.`status`=1 AND `tbl_invoice_payment_detail`.`method`=2 AND `tbl_invoice_payment_detail`.`tbl_invoice_payment_idtbl_invoice_payment` IN (SELECT `tbl_invoice_payment_idtbl_invoice_payment` FROM `tbl_invoice_payment_has_tbl_invoice` WHERE `tbl_invoice_idtbl_invoice`='$invoiceID') GROUP BY `tbl_invoice_payment_detail`.`tbl_invoice_payment_idtbl_invoice_payment`";
+        $sqlcheque="SELECT SUM(`tbl_invoice_payment_detail`.`amount`) AS `amount`, GROUP_CONCAT(`tbl_invoice_payment_detail`.`chequeno`) AS `chequeno`, `tbl_invoice_payment_detail`.`chequedate`, `tbl_bank`.`bankname` FROM `tbl_invoice_payment_detail` LEFT JOIN `tbl_invoice_payment` ON `tbl_invoice_payment`.`idtbl_invoice_payment`=`tbl_invoice_payment_detail`.`tbl_invoice_payment_idtbl_invoice_payment` LEFT JOIN `tbl_bank` ON `tbl_bank`.`idtbl_bank`=`tbl_invoice_payment_detail`.`tbl_bank_idtbl_bank` WHERE `tbl_invoice_payment_detail`.`status`=1 AND `tbl_invoice_payment_detail`.`method`=2 AND `tbl_invoice_payment`.`date` BETWEEN '$validfrom' AND '$validto' AND `tbl_invoice_payment_detail`.`tbl_invoice_payment_idtbl_invoice_payment` IN (SELECT `tbl_invoice_payment_idtbl_invoice_payment` FROM `tbl_invoice_payment_has_tbl_invoice` WHERE `tbl_invoice_idtbl_invoice`='$invoiceID') GROUP BY `tbl_invoice_payment_detail`.`tbl_invoice_payment_idtbl_invoice_payment`";
         $resultcheque =$conn-> query($sqlcheque);   
         while($rowcheque = $resultcheque-> fetch_assoc()){
             // $chequelist.=$rowcheque['chequeno'];
@@ -576,7 +605,7 @@ if($resultdaily->num_rows>0){
         $banktrflist='';
         $banktrftotal=0;
         $i=1;
-        $sqlbanktrf="SELECT SUM(`tbl_invoice_payment_detail`.`amount`) AS `amount`, `tbl_invoice_payment_detail`.`receiptno`, `tbl_invoice_payment_detail`.`chequedate`, `tbl_bank`.`bankname` FROM `tbl_invoice_payment_detail` LEFT JOIN `tbl_bank` ON `tbl_bank`.`idtbl_bank`=`tbl_invoice_payment_detail`.`tbl_bank_idtbl_bank` WHERE `tbl_invoice_payment_detail`.`status`=1 AND `tbl_invoice_payment_detail`.`method`=3 AND `tbl_invoice_payment_detail`.`tbl_invoice_payment_idtbl_invoice_payment` IN (SELECT `tbl_invoice_payment_idtbl_invoice_payment` FROM `tbl_invoice_payment_has_tbl_invoice` WHERE `tbl_invoice_idtbl_invoice`='$invoiceID') GROUP BY `tbl_invoice_payment_detail`.`tbl_invoice_payment_idtbl_invoice_payment`";
+        $sqlbanktrf="SELECT SUM(`tbl_invoice_payment_detail`.`amount`) AS `amount`, `tbl_invoice_payment_detail`.`receiptno`, `tbl_invoice_payment_detail`.`chequedate`, `tbl_bank`.`bankname` FROM `tbl_invoice_payment_detail` LEFT JOIN `tbl_invoice_payment` ON `tbl_invoice_payment`.`idtbl_invoice_payment`=`tbl_invoice_payment_detail`.`tbl_invoice_payment_idtbl_invoice_payment` LEFT JOIN `tbl_bank` ON `tbl_bank`.`idtbl_bank`=`tbl_invoice_payment_detail`.`tbl_bank_idtbl_bank` WHERE `tbl_invoice_payment_detail`.`status`=1 AND `tbl_invoice_payment_detail`.`method`=3 AND `tbl_invoice_payment`.`date` BETWEEN '$validfrom' AND '$validto' AND `tbl_invoice_payment_detail`.`tbl_invoice_payment_idtbl_invoice_payment` IN (SELECT `tbl_invoice_payment_idtbl_invoice_payment` FROM `tbl_invoice_payment_has_tbl_invoice` WHERE `tbl_invoice_idtbl_invoice`='$invoiceID') GROUP BY `tbl_invoice_payment_detail`.`tbl_invoice_payment_idtbl_invoice_payment`";
         $resultbanktrf =$conn-> query($sqlbanktrf);   
         while($rowbanktrf = $resultbanktrf-> fetch_assoc()){
             $banktrflist.=$rowbanktrf['receiptno'];
@@ -719,7 +748,7 @@ if($resultdaily->num_rows>0){
             $excesstotal+=$creditValue;
         }
 
-        if($rowdaily['paymentcomplete']==0 && $creditValue>0){
+        if($creditValue>0){
             $objcredit=new stdClass();
             $objcredit->customername=$rowdaily['cusname'];
             $objcredit->invoiceno=$rowdaily['idtbl_invoice'];
@@ -1237,7 +1266,7 @@ $resultacceinfo =$conn-> query($sqlacceinfo);
                 <td></td>
                 <td></td>
             </tr>
-            <?php } if(!empty($customerdiscountbrekup)){ ?>
+            <?php } $netspecialcustomerdiscount=0; if(!empty($customerdiscountbrekup)){ ?>
             <tr>
                 <th colspan="7">Special Discount Information</th>
             </tr>
@@ -1394,7 +1423,7 @@ $resultacceinfo =$conn-> query($sqlacceinfo);
                 <th nowrap class="text-center table-dark"></th>
                 <th nowrap class="text-center table-dark"></th>
             </tr>
-            <?php $creditlisttotal=0; foreach($creditbrekup as $rowcreditbrekup){ ?>
+            <?php $creditlisttotal=0; foreach($creditbrekup as $rowcreditbrekup){ if(round($rowcreditbrekup->creditamount, 2)>0){ ?>
             <tr>
                 <td nowrap><?php echo $rowcreditbrekup->customername ?></td>
                 <td nowrap class="text-right"><?php echo number_format($rowcreditbrekup->creditamount, 2); $creditlisttotal+=$rowcreditbrekup->creditamount; ?></td>
@@ -1404,7 +1433,7 @@ $resultacceinfo =$conn-> query($sqlacceinfo);
                 <td nowrap class="text-center"></td>
                 <td nowrap class="text-center"></td>
             </tr>
-            <?php } ?>
+            <?php }} ?>
             <tr>
                 <th nowrap class="text-right"></th>
                 <th nowrap class="text-right"><?php echo number_format($creditlisttotal, 2) ?></th>
