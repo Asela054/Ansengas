@@ -657,8 +657,8 @@ include "include/topnavbar.php";
             $.ajax({
                 type: "POST",
                 data: {
-                    tblData: jsonObj,
-                    tblPayData: jsonObjOne,
+                    tblData: myJsonString,
+                    tblPayData: myJsonString2,
                     totAmount: totAmount,
                     payAmount: payAmount,
                     balAmount: balAmount,
