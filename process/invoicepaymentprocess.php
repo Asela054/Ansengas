@@ -4,8 +4,8 @@ if(!isset($_SESSION['userid'])){header ("Location:index.php");}
 require_once('../connection/db.php');//die('bc');
 $userID=$_SESSION['userid'];
 
-$tblData=$_POST['tblData'];
-$tblPayData=$_POST['tblPayData'];
+$tblData=json_decode($_POST['tblData']);
+$tblPayData=json_decode($_POST['tblPayData']);
 $totAmount=$_POST['totAmount'];
 $payAmount=$_POST['payAmount'];
 $balAmount=$_POST['balAmount'];
@@ -34,10 +34,10 @@ if($conn->query($insertpayment)==true){
     }
 
     foreach($tblData as $rowtabledata){
-        $invno=$rowtabledata['col_1'];
+        $invno=$rowtabledata->col_1;
         $invoiceID=substr($invno, 4);
-        $invamount=$rowtabledata['col_6'];
-        $invpayamount=$rowtabledata['col_11'];
+        $invamount=$rowtabledata->col_6;
+        $invpayamount=$rowtabledata->col_11;
 
         if($invamount<=$invpayamount){
             $fullstatus=1;
@@ -69,15 +69,15 @@ if($conn->query($insertpayment)==true){
     }
 
     foreach($tblPayData as $rowtablepaydata){
-        $typename=$rowtablepaydata['col_1'];
-        $cashamount=$rowtablepaydata['col_2'];
-        $bankamount=$rowtablepaydata['col_3'];
-        $chequeno=$rowtablepaydata['col_4'];
-        $receiptno=$rowtablepaydata['col_5'];
-        $chequedate=$rowtablepaydata['col_6'];
-        $bankname=$rowtablepaydata['col_7'];
-        $bankID=$rowtablepaydata['col_8'];
-        $typeID=$rowtablepaydata['col_9'];
+        $typename=$rowtablepaydata->col_1;
+        $cashamount=$rowtablepaydata->col_2;
+        $bankamount=$rowtablepaydata->col_3;
+        $chequeno=$rowtablepaydata->col_4;
+        $receiptno=$rowtablepaydata->col_5;
+        $chequedate=$rowtablepaydata->col_6;
+        $bankname=$rowtablepaydata->col_7;
+        $bankID=$rowtablepaydata->col_8;
+        $typeID=$rowtablepaydata->col_9;
 
         if($typeID==1){
             $paidamount=$cashamount;

@@ -571,14 +571,95 @@ if($resultdaily->num_rows>0){
             endif;
         }   
 
-        $sqlcash="SELECT SUM(`amount`) AS `amount` FROM `tbl_invoice_payment_detail` LEFT JOIN `tbl_invoice_payment` ON `tbl_invoice_payment`.`idtbl_invoice_payment`=`tbl_invoice_payment_detail`.`tbl_invoice_payment_idtbl_invoice_payment` WHERE `tbl_invoice_payment_detail`.`status`=1 AND `tbl_invoice_payment_detail`.`method`=1  AND `tbl_invoice_payment`.`date` BETWEEN '$validfrom' AND '$validto' AND `tbl_invoice_payment_detail`.`tbl_invoice_payment_idtbl_invoice_payment` IN (SELECT `tbl_invoice_payment_idtbl_invoice_payment` FROM `tbl_invoice_payment_has_tbl_invoice` WHERE `tbl_invoice_idtbl_invoice`='$invoiceID')";
+        // $sqlcash="SELECT SUM(`amount`) AS `amount` FROM `tbl_invoice_payment_detail` LEFT JOIN `tbl_invoice_payment` ON `tbl_invoice_payment`.`idtbl_invoice_payment`=`tbl_invoice_payment_detail`.`tbl_invoice_payment_idtbl_invoice_payment` WHERE `tbl_invoice_payment_detail`.`status`=1 AND `tbl_invoice_payment_detail`.`method`=1 AND `tbl_invoice_payment`.`date` BETWEEN '$validfrom' AND '$validto' AND `tbl_invoice_payment_detail`.`tbl_invoice_payment_idtbl_invoice_payment` IN (SELECT `tbl_invoice_payment_idtbl_invoice_payment` FROM `tbl_invoice_payment_has_tbl_invoice` WHERE `tbl_invoice_idtbl_invoice`='$invoiceID')";
+        $sqlcash="SELECT
+            -- Selects the payamount only for the invoice and the dynamically found payment ID
+            (
+                SELECT SUM(payamount)
+                FROM tbl_invoice_payment_has_tbl_invoice AS tihp_sum
+                WHERE tihp_sum.tbl_invoice_idtbl_invoice = '$invoiceID'
+                AND tihp_sum.tbl_invoice_payment_idtbl_invoice_payment IN (
+                    SELECT tip_sub.idtbl_invoice_payment
+                    FROM tbl_invoice_payment AS tip_sub
+                    LEFT JOIN tbl_invoice_payment_detail AS tpd_sub ON tpd_sub.tbl_invoice_payment_idtbl_invoice_payment = tip_sub.idtbl_invoice_payment
+                    WHERE tpd_sub.status = 1
+                    AND tpd_sub.method = 1
+                    AND tip_sub.date BETWEEN '$validfrom' AND '$validto'
+                    GROUP BY tip_sub.idtbl_invoice_payment
+                )
+            ) AS amount
+        FROM
+            tbl_invoice_payment_has_tbl_invoice AS tihp
+        INNER JOIN
+            tbl_invoice_payment AS tip ON tip.idtbl_invoice_payment = tihp.tbl_invoice_payment_idtbl_invoice_payment
+        INNER JOIN
+            tbl_invoice_payment_detail AS tpd ON tpd.tbl_invoice_payment_idtbl_invoice_payment = tip.idtbl_invoice_payment
+        LEFT JOIN
+            tbl_bank AS tb ON tb.idtbl_bank = tpd.tbl_bank_idtbl_bank
+        WHERE
+            tihp.tbl_invoice_idtbl_invoice = '$invoiceID'
+            AND tpd.status = 1
+            AND tpd.method = 1
+            AND tip.date BETWEEN '$validfrom' AND '$validto'
+            -- Dynamically find the correct payment ID(s)
+            AND tihp.tbl_invoice_payment_idtbl_invoice_payment IN (
+                SELECT tip_sub.idtbl_invoice_payment
+                FROM tbl_invoice_payment AS tip_sub
+                LEFT JOIN tbl_invoice_payment_detail AS tpd_sub ON tpd_sub.tbl_invoice_payment_idtbl_invoice_payment = tip_sub.idtbl_invoice_payment
+                WHERE tpd_sub.status = 1
+                AND tpd_sub.method = 1
+                AND tip_sub.date BETWEEN '$validfrom' AND '$validto'
+                GROUP BY tip_sub.idtbl_invoice_payment
+            )";
         $resultcash =$conn-> query($sqlcash);   
         $rowcash = $resultcash-> fetch_assoc();
 
         // $chequelist='';
         $chequetotal=0;
         $i=1;
-        $sqlcheque="SELECT SUM(`tbl_invoice_payment_detail`.`amount`) AS `amount`, GROUP_CONCAT(`tbl_invoice_payment_detail`.`chequeno`) AS `chequeno`, `tbl_invoice_payment_detail`.`chequedate`, `tbl_bank`.`bankname` FROM `tbl_invoice_payment_detail` LEFT JOIN `tbl_invoice_payment` ON `tbl_invoice_payment`.`idtbl_invoice_payment`=`tbl_invoice_payment_detail`.`tbl_invoice_payment_idtbl_invoice_payment` LEFT JOIN `tbl_bank` ON `tbl_bank`.`idtbl_bank`=`tbl_invoice_payment_detail`.`tbl_bank_idtbl_bank` WHERE `tbl_invoice_payment_detail`.`status`=1 AND `tbl_invoice_payment_detail`.`method`=2 AND `tbl_invoice_payment`.`date` BETWEEN '$validfrom' AND '$validto' AND `tbl_invoice_payment_detail`.`tbl_invoice_payment_idtbl_invoice_payment` IN (SELECT `tbl_invoice_payment_idtbl_invoice_payment` FROM `tbl_invoice_payment_has_tbl_invoice` WHERE `tbl_invoice_idtbl_invoice`='$invoiceID') GROUP BY `tbl_invoice_payment_detail`.`tbl_invoice_payment_idtbl_invoice_payment`";
+        // $sqlcheque="SELECT SUM(`tbl_invoice_payment_detail`.`amount`) AS `amount`, GROUP_CONCAT(`tbl_invoice_payment_detail`.`chequeno`) AS `chequeno`, `tbl_invoice_payment_detail`.`chequedate`, `tbl_bank`.`bankname` FROM `tbl_invoice_payment_detail` LEFT JOIN `tbl_invoice_payment` ON `tbl_invoice_payment`.`idtbl_invoice_payment`=`tbl_invoice_payment_detail`.`tbl_invoice_payment_idtbl_invoice_payment` LEFT JOIN `tbl_bank` ON `tbl_bank`.`idtbl_bank`=`tbl_invoice_payment_detail`.`tbl_bank_idtbl_bank` WHERE `tbl_invoice_payment_detail`.`status`=1 AND `tbl_invoice_payment_detail`.`method`=2 AND `tbl_invoice_payment`.`date` BETWEEN '$validfrom' AND '$validto' AND `tbl_invoice_payment_detail`.`tbl_invoice_payment_idtbl_invoice_payment` IN (SELECT `tbl_invoice_payment_idtbl_invoice_payment` FROM `tbl_invoice_payment_has_tbl_invoice` WHERE `tbl_invoice_idtbl_invoice`='$invoiceID') GROUP BY `tbl_invoice_payment_detail`.`tbl_invoice_payment_idtbl_invoice_payment`";
+        $sqlcheque="SELECT
+            -- Selects the payamount only for the invoice and the dynamically found payment ID
+            (
+                SELECT SUM(payamount)
+                FROM tbl_invoice_payment_has_tbl_invoice AS tihp_sum
+                WHERE tihp_sum.tbl_invoice_idtbl_invoice = '$invoiceID'
+                AND tihp_sum.tbl_invoice_payment_idtbl_invoice_payment IN (
+                    SELECT tip_sub.idtbl_invoice_payment
+                    FROM tbl_invoice_payment AS tip_sub
+                    LEFT JOIN tbl_invoice_payment_detail AS tpd_sub ON tpd_sub.tbl_invoice_payment_idtbl_invoice_payment = tip_sub.idtbl_invoice_payment
+                    WHERE tpd_sub.status = 1
+                    AND tpd_sub.method = 2
+                    AND tip_sub.date BETWEEN '$validfrom' AND '$validto'
+                    GROUP BY tip_sub.idtbl_invoice_payment
+                )
+            ) AS amount,
+            GROUP_CONCAT(tpd.chequeno) AS chequeno,
+            GROUP_CONCAT(DISTINCT tpd.chequedate ORDER BY tpd.chequedate) AS chequedate,
+            GROUP_CONCAT(DISTINCT tb.bankname) AS bankname
+        FROM
+            tbl_invoice_payment_has_tbl_invoice AS tihp
+        INNER JOIN
+            tbl_invoice_payment AS tip ON tip.idtbl_invoice_payment = tihp.tbl_invoice_payment_idtbl_invoice_payment
+        INNER JOIN
+            tbl_invoice_payment_detail AS tpd ON tpd.tbl_invoice_payment_idtbl_invoice_payment = tip.idtbl_invoice_payment
+        LEFT JOIN
+            tbl_bank AS tb ON tb.idtbl_bank = tpd.tbl_bank_idtbl_bank
+        WHERE
+            tihp.tbl_invoice_idtbl_invoice = '$invoiceID'
+            AND tpd.status = 1
+            AND tpd.method = 2
+            AND tip.date BETWEEN '$validfrom' AND '$validto'
+            -- Dynamically find the correct payment ID(s)
+            AND tihp.tbl_invoice_payment_idtbl_invoice_payment IN (
+                SELECT tip_sub.idtbl_invoice_payment
+                FROM tbl_invoice_payment AS tip_sub
+                LEFT JOIN tbl_invoice_payment_detail AS tpd_sub ON tpd_sub.tbl_invoice_payment_idtbl_invoice_payment = tip_sub.idtbl_invoice_payment
+                WHERE tpd_sub.status = 1
+                AND tpd_sub.method = 2
+                AND tip_sub.date BETWEEN '$validfrom' AND '$validto'
+                GROUP BY tip_sub.idtbl_invoice_payment
+            )";
         $resultcheque =$conn-> query($sqlcheque);   
         while($rowcheque = $resultcheque-> fetch_assoc()){
             // $chequelist.=$rowcheque['chequeno'];
@@ -586,47 +667,93 @@ if($resultdaily->num_rows>0){
             //     $chequelist.='/';
             // }
 
-            $objcheque=new stdClass();
-            $objcheque->customername=$rowdaily['cusname'];
-            $objcheque->invoiceno=$rowdaily['idtbl_invoice'];
-            $objcheque->tax_invoice_num=$rowdaily['tax_invoice_num'];
-            $objcheque->nettotal=$rowdaily['nettotal'];
-            $objcheque->chequeno=$rowcheque['chequeno'];
-            $objcheque->chequedate=$rowcheque['chequedate'];
-            $objcheque->bankname=$rowcheque['bankname'];
-            $objcheque->amount=$rowcheque['amount'];
+            if($rowcheque['amount']>0):
+                $objcheque=new stdClass();
+                $objcheque->customername=$rowdaily['cusname'];
+                $objcheque->invoiceno=$rowdaily['idtbl_invoice'];
+                $objcheque->tax_invoice_num=$rowdaily['tax_invoice_num'];
+                $objcheque->nettotal=$rowdaily['nettotal'];
+                $objcheque->chequeno=$rowcheque['chequeno'];
+                $objcheque->chequedate=$rowcheque['chequedate'];
+                $objcheque->bankname=$rowcheque['bankname'];
+                $objcheque->amount=$rowcheque['amount'];
 
-            array_push($chequebrekup, $objcheque);
+                array_push($chequebrekup, $objcheque);
 
-            $chequetotal=$chequetotal+$rowcheque['amount'];
-            $i++;
+                $chequetotal=$chequetotal+$rowcheque['amount'];
+                $i++;
+            endif;
         }
 
         $banktrflist='';
         $banktrftotal=0;
         $i=1;
-        $sqlbanktrf="SELECT SUM(`tbl_invoice_payment_detail`.`amount`) AS `amount`, `tbl_invoice_payment_detail`.`receiptno`, `tbl_invoice_payment_detail`.`chequedate`, `tbl_bank`.`bankname` FROM `tbl_invoice_payment_detail` LEFT JOIN `tbl_invoice_payment` ON `tbl_invoice_payment`.`idtbl_invoice_payment`=`tbl_invoice_payment_detail`.`tbl_invoice_payment_idtbl_invoice_payment` LEFT JOIN `tbl_bank` ON `tbl_bank`.`idtbl_bank`=`tbl_invoice_payment_detail`.`tbl_bank_idtbl_bank` WHERE `tbl_invoice_payment_detail`.`status`=1 AND `tbl_invoice_payment_detail`.`method`=3 AND `tbl_invoice_payment`.`date` BETWEEN '$validfrom' AND '$validto' AND `tbl_invoice_payment_detail`.`tbl_invoice_payment_idtbl_invoice_payment` IN (SELECT `tbl_invoice_payment_idtbl_invoice_payment` FROM `tbl_invoice_payment_has_tbl_invoice` WHERE `tbl_invoice_idtbl_invoice`='$invoiceID') GROUP BY `tbl_invoice_payment_detail`.`tbl_invoice_payment_idtbl_invoice_payment`";
+        // $sqlbanktrf="SELECT SUM(`tbl_invoice_payment_detail`.`amount`) AS `amount`, `tbl_invoice_payment_detail`.`receiptno`, `tbl_invoice_payment_detail`.`chequedate`, `tbl_bank`.`bankname` FROM `tbl_invoice_payment_detail` LEFT JOIN `tbl_invoice_payment` ON `tbl_invoice_payment`.`idtbl_invoice_payment`=`tbl_invoice_payment_detail`.`tbl_invoice_payment_idtbl_invoice_payment` LEFT JOIN `tbl_bank` ON `tbl_bank`.`idtbl_bank`=`tbl_invoice_payment_detail`.`tbl_bank_idtbl_bank` WHERE `tbl_invoice_payment_detail`.`status`=1 AND `tbl_invoice_payment_detail`.`method`=3 AND `tbl_invoice_payment`.`date` BETWEEN '$validfrom' AND '$validto' AND `tbl_invoice_payment_detail`.`tbl_invoice_payment_idtbl_invoice_payment` IN (SELECT `tbl_invoice_payment_idtbl_invoice_payment` FROM `tbl_invoice_payment_has_tbl_invoice` WHERE `tbl_invoice_idtbl_invoice`='$invoiceID') GROUP BY `tbl_invoice_payment_detail`.`tbl_invoice_payment_idtbl_invoice_payment`";
+        $sqlbanktrf="SELECT
+            -- Selects the payamount only for the invoice and the dynamically found payment ID
+            (
+                SELECT SUM(payamount)
+                FROM tbl_invoice_payment_has_tbl_invoice AS tihp_sum
+                WHERE tihp_sum.tbl_invoice_idtbl_invoice = '$invoiceID'
+                AND tihp_sum.tbl_invoice_payment_idtbl_invoice_payment IN (
+                    SELECT tip_sub.idtbl_invoice_payment
+                    FROM tbl_invoice_payment AS tip_sub
+                    LEFT JOIN tbl_invoice_payment_detail AS tpd_sub ON tpd_sub.tbl_invoice_payment_idtbl_invoice_payment = tip_sub.idtbl_invoice_payment
+                    WHERE tpd_sub.status = 1
+                    AND tpd_sub.method = 3
+                    AND tip_sub.date BETWEEN '$validfrom' AND '$validto'
+                    GROUP BY tip_sub.idtbl_invoice_payment
+                )
+            ) AS amount,
+            GROUP_CONCAT(DISTINCT tihp.tbl_invoice_payment_idtbl_invoice_payment) AS paymentreceipt,
+            GROUP_CONCAT(tpd.receiptno) AS receiptno,
+            GROUP_CONCAT(DISTINCT tpd.chequedate ORDER BY tpd.chequedate) AS chequedate,
+            GROUP_CONCAT(DISTINCT tb.bankname) AS bankname
+        FROM
+            tbl_invoice_payment_has_tbl_invoice AS tihp
+        INNER JOIN
+            tbl_invoice_payment AS tip ON tip.idtbl_invoice_payment = tihp.tbl_invoice_payment_idtbl_invoice_payment
+        INNER JOIN
+            tbl_invoice_payment_detail AS tpd ON tpd.tbl_invoice_payment_idtbl_invoice_payment = tip.idtbl_invoice_payment
+        LEFT JOIN
+            tbl_bank AS tb ON tb.idtbl_bank = tpd.tbl_bank_idtbl_bank
+        WHERE
+            tihp.tbl_invoice_idtbl_invoice = '$invoiceID'
+            AND tpd.status = 1
+            AND tpd.method = 3
+            AND tip.date BETWEEN '$validfrom' AND '$validto'
+            -- Dynamically find the correct payment ID(s)
+            AND tihp.tbl_invoice_payment_idtbl_invoice_payment IN (
+                SELECT tip_sub.idtbl_invoice_payment
+                FROM tbl_invoice_payment AS tip_sub
+                LEFT JOIN tbl_invoice_payment_detail AS tpd_sub ON tpd_sub.tbl_invoice_payment_idtbl_invoice_payment = tip_sub.idtbl_invoice_payment
+                WHERE tpd_sub.status = 1
+                AND tpd_sub.method = 3
+                AND tip_sub.date BETWEEN '$validfrom' AND '$validto'
+                GROUP BY tip_sub.idtbl_invoice_payment
+            )";
         $resultbanktrf =$conn-> query($sqlbanktrf);   
         while($rowbanktrf = $resultbanktrf-> fetch_assoc()){
-            $banktrflist.=$rowbanktrf['receiptno'];
-            if($i<$resultbanktrf->num_rows){
-                $banktrflist.='/';
-            }
+            // $banktrflist.=$rowbanktrf['receiptno'];
+            // if($i<$resultbanktrf->num_rows){
+            //     $banktrflist.='/';
+            // }
+            if($rowbanktrf['amount']>0):
+                $objcheque=new stdClass();
+                $objcheque->customername=$rowdaily['cusname'];
+                $objcheque->invoiceno=$rowdaily['idtbl_invoice'];
+                $objcheque->tax_invoice_num=$rowdaily['tax_invoice_num'];
+                $objcheque->nettotal=$rowdaily['nettotal'];
+                $objcheque->receiptno=$rowbanktrf['receiptno'];
+                $objcheque->trfdate=$rowbanktrf['chequedate'];
+                $objcheque->bankname=$rowbanktrf['bankname'];
+                $objcheque->amount=$rowbanktrf['amount'];
 
-            $objcheque=new stdClass();
-            $objcheque->customername=$rowdaily['cusname'];
-            $objcheque->invoiceno=$rowdaily['idtbl_invoice'];
-            $objcheque->tax_invoice_num=$rowdaily['tax_invoice_num'];
-            $objcheque->nettotal=$rowdaily['nettotal'];
-            $objcheque->receiptno=$rowbanktrf['receiptno'];
-            $objcheque->trfdate=$rowbanktrf['chequedate'];
-            $objcheque->bankname=$rowbanktrf['bankname'];
-            $objcheque->amount=$rowbanktrf['amount'];
+                array_push($trfbrekup, $objcheque);
 
-            array_push($trfbrekup, $objcheque);
-
-            $banktrftotal+=$rowbanktrf['amount'];
-            $i++;
+                $banktrftotal=$rowbanktrf['amount'];
+                $i++;
+            endif;
         }
 
         if ($discountstatus==1) {
@@ -648,7 +775,7 @@ if($resultdaily->num_rows>0){
                 $objexcess=new stdClass();
                 $objexcess->customername=$rowdaily['cusname'];
                 $objexcess->invoiceno=$rowdaily['idtbl_invoice'];
-                $objexcess->excesstype='Cheque';
+                $objexcess->excesstype='TRF';
                 $objexcess->excessamount=(($chequetotal+$rowcash['amount']+$banktrftotal)-$rowdaily['nettotal']);
     
                 array_push($excessbrekup, $objexcess);
@@ -674,7 +801,7 @@ if($resultdaily->num_rows>0){
                 $objexcess=new stdClass();
                 $objexcess->customername=$rowdaily['cusname'];
                 $objexcess->invoiceno=$rowdaily['idtbl_invoice'];
-                $objexcess->excesstype='Cheque';
+                $objexcess->excesstype='TRF';
                 $objexcess->excessamount=(($rowcash['amount']+$banktrftotal)-$rowdaily['nettotal']);
     
                 array_push($excessbrekup, $objexcess);
@@ -687,7 +814,7 @@ if($resultdaily->num_rows>0){
                 $objexcess=new stdClass();
                 $objexcess->customername=$rowdaily['cusname'];
                 $objexcess->invoiceno=$rowdaily['idtbl_invoice'];
-                $objexcess->excesstype='Cheque';
+                $objexcess->excesstype='TRF';
                 $objexcess->excessamount=(($chequetotal+$banktrftotal)-$rowdaily['nettotal']);
     
                 array_push($excessbrekup, $objexcess);
@@ -726,13 +853,13 @@ if($resultdaily->num_rows>0){
                 $objexcess=new stdClass();
                 $objexcess->customername=$rowdaily['cusname'];
                 $objexcess->invoiceno=$rowdaily['idtbl_invoice'];
-                $objexcess->excesstype='Cheque';
+                $objexcess->excesstype='TRF';
                 $objexcess->excessamount=($banktrftotal-$rowdaily['nettotal']);
     
                 array_push($excessbrekup, $objexcess);
             }
         }
-
+        
         if($specialdiscountstatus==1): 
             $creditValue = $rowdaily['nettotal'] - ($rowcash['amount'] + $chequetotal);
         else: 
