@@ -4,7 +4,7 @@ date_default_timezone_set(TIMEZONE);
 
 $servername = "localhost";
 $username = "root";
-$password = "asela123";
+$password = "";
 $databse = "erav_ansengas";
 
 // Create connection

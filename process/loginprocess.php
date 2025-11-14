@@ -1,5 +1,5 @@
 <?php
-// turn error reporting on, it makes life easier if you make typo in a variable name etc
+
 error_reporting(E_ALL);
 
 session_start();
@@ -10,7 +10,7 @@ date_default_timezone_set(TIMEZONE);
 //Start Database
 $IP = "localhost";
 $user = "root";
-$pass = "asela123";
+$pass = "";
 $db = "erav_ansengas";
 $con = mysqli_connect($IP, $user, $pass, $db);
 
