@@ -634,11 +634,9 @@ include "include/topnavbar.php";
                                         <label class="small font-weight-bold text-dark">Product*</label><br>
                                         <select class="form-control form-control-sm" name="product[]" id="product" style="width:100%;" required multiple>
                                             <option value="">Select</option>
-                                            <?php foreach ($products as $rowproduct) { ?>
-                                                <option value="<?= $rowproduct['idtbl_product'] ?>">
-                                                    <?= htmlspecialchars($rowproduct['product_name']) ?>
-                                                </option>
-                                            <?php } ?>
+                                            <?php if($resultproductaddrep->num_rows > 0) {while ($rowproduct = $resultproductaddrep-> fetch_assoc()) { ?>
+                                            <option value="<?php echo $rowproduct['idtbl_product'] ?>"><?php echo $rowproduct['product_name'] ?></option>
+                                            <?php }} ?>
                                         </select>
                                     </div>
                                     <div class="form-group mb-1">
@@ -682,13 +680,11 @@ include "include/topnavbar.php";
                             </div>
                             <div class="form-group mb-1">
                                         <label class="small font-weight-bold text-dark">Product*</label><br>
-                                        <select class="form-control form-control-sm" name="itemslist" id="itemslist" style="width:100%;" required>
+                                        <select class="form-control form-control-sm" name="productlist[]" id="productlist" style="width:100%;" required multiple>
                                             <option value="">Select</option>
-                                            <?php foreach ($products as $rowproduct) { ?>
-                                                <option value="<?= $rowproduct['idtbl_product'] ?>">
-                                                    <?= htmlspecialchars($rowproduct['product_name']) ?>
-                                                </option>
-                                            <?php } ?>
+                                            <?php if($resultproductaddrep->num_rows > 0) {while ($rowproduct = $resultproductaddrep-> fetch_assoc()) { ?>
+                                            <option value="<?php echo $rowproduct['idtbl_product'] ?>"><?php echo $rowproduct['product_name'] ?></option>
+                                            <?php }} ?>
                                         </select>
                                     </div>
                                     <div class="form-group mb-1">
@@ -727,7 +723,7 @@ include "include/topnavbar.php";
         });
 
         $("#product").select2();
-        $("#itemslist").select2();
+        $("#productlist").select2();
         $("#cusAreaOther").select2();
         $("#cusVisitDays").select2();
 
@@ -977,39 +973,31 @@ include "include/topnavbar.php";
                 });
             }
         });
-        $('#submitBtnDiscount').click(function (e) {
-            e.preventDefault();
-
+        $('#submitBtnDiscount').click(function () {
             if (!$("#adddiscountvalueform")[0].checkValidity()) {
+                // If the form is invalid, submit it. The form won't actually submit;
+                // this will just cause the browser to display the native HTML5 error messages.
                 $("#hidesubmitdis").click();
             } else {
-                var product = $('#itemslist').val();
+                var product = $('#product').val();
                 var disvalue = $('#disvalue').val();
                 var hiddenID = $('#hiddencusid').val();
 
                 $.ajax({
                     type: "POST",
-                    url: 'process/adddiscountvalueprocess.php',
-                    dataType: "json",
                     data: {
                         product: product,
                         disvalue: disvalue,
                         hiddenID: hiddenID
+
                     },
-                    success: function (response) {
-                        if (response.status === 'success') {
-                            $('#addDiscountModal').modal('hide');
-                            location.reload();
-                        }
-                    },
-                    error: function (xhr, status, error) {
-                        console.error('AJAX Error:', error);
+                    url: 'process/adddiscountvalueprocess.php',
+                    success: function (result) { //alert(result);
+                        action(result);
                     }
                 });
             }
         });
-
-
         $('#dataTable tbody').on('click', '.btnAddProduct', function() {
             var id = $(this).attr('id'); 
             loadproductpricelist(id);

@@ -471,7 +471,7 @@ function checkprivilege($arraymenu, $menuID, $type){
                 Invoice
                 <div class="sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
             </a>
-            <div class="collapse <?php if($lastElement=="invoice.php" | $lastElement=="invoicepayment.php" | $lastElement=="paymentreceipt.php" | $lastElement=="invoiceview.php" | $lastElement=="invoicerecovery.php" | $lastElement=="advancedpayment.php" | $lastElement=="invoicereimbursement.php" | $lastElement=="invoicespecialdiscount.php"){echo 'show';} ?>" id="collapseorder" data-parent="#accordionSidenav">
+            <div class="collapse <?php if($lastElement=="invoice.php" | $lastElement=="invoicepayment.php" | $lastElement=="paymentreceipt.php" | $lastElement=="invoiceview.php" | $lastElement=="invoicerecovery.php" | $lastElement=="advancedpayment.php" | $lastElement=="invoicereimbursement.php" | $lastElement=="invoicereimbursement.php"){echo 'show';} ?>" id="collapseorder" data-parent="#accordionSidenav">
                 <nav class="sidenav-menu-nested nav accordion" id="accordionSidenavPages">
                     <?php if(menucheck($menuprivilegearray, 14)==1){ ?>
                     <a class="nav-link p-0 px-3 py-1" href="invoice.php">Invoice Create</a>
@@ -488,7 +488,7 @@ function checkprivilege($arraymenu, $menuID, $type){
                     <?php }if(menucheck($menuprivilegearray, 89)==1){ ?>
                     <a class="nav-link p-0 px-3 py-1" href="invoicereimbursement.php">Invoice Reimbursement</a>
                     <?php }if(menucheck($menuprivilegearray, 96)==1){ ?>
-                    <a class="nav-link p-0 px-3 py-1" href="invoicespecialdiscount.php">Invoice Special Discount</a>
+                    <a class="nav-link p-0 px-3 py-1" href="invoicereimbursement.php">Invoice Reimbursement</a>
                     <?php } ?>
                 </nav>
             </div>

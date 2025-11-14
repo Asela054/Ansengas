@@ -977,38 +977,59 @@ include "include/topnavbar.php";
                 });
             }
         });
-        $('#submitBtnDiscount').click(function (e) {
-            e.preventDefault();
+$('#submitBtnDiscount').click(function (e) {
+    e.preventDefault();
 
-            if (!$("#adddiscountvalueform")[0].checkValidity()) {
-                $("#hidesubmitdis").click();
-            } else {
-                var product = $('#itemslist').val();
-                var disvalue = $('#disvalue').val();
-                var hiddenID = $('#hiddencusid').val();
+    if (!$("#adddiscountvalueform")[0].checkValidity()) {
+        $("#hidesubmitdis").click();
+    } else {
+        var product = $('#itemslist').val();
+        var disvalue = $('#disvalue').val();
+        var hiddenID = $('#hiddencusid').val();
 
-                $.ajax({
-                    type: "POST",
-                    url: 'process/adddiscountvalueprocess.php',
-                    dataType: "json",
-                    data: {
-                        product: product,
-                        disvalue: disvalue,
-                        hiddenID: hiddenID
-                    },
-                    success: function (response) {
-                        if (response.status === 'success') {
-                            $('#addDiscountModal').modal('hide');
-                            location.reload();
-                        }
-                    },
-                    error: function (xhr, status, error) {
-                        console.error('AJAX Error:', error);
-                    }
+        $.ajax({
+            type: "POST",
+            url: 'process/adddiscountvalueprocess.php',
+            dataType: "json",
+            data: {
+                product: product,
+                disvalue: disvalue,
+                hiddenID: hiddenID
+            },
+            success: function (response) {
+                if (response.status === 'success') {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: response.message,
+                        showConfirmButton: false,
+                        timer: 1500
+                    }).then(() => {
+                        // ✅ Close modal
+                        $('#addDiscountModal').modal('hide');
+                        // ✅ Refresh page
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error!',
+                        text: response.message,
+                        confirmButtonColor: '#3085d6'
+                    });
+                }
+            },
+            error: function (xhr, status, error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops!',
+                    text: 'Something went wrong: ' + error,
+                    confirmButtonColor: '#d33'
                 });
             }
         });
-
+    }
+});
 
         $('#dataTable tbody').on('click', '.btnAddProduct', function() {
             var id = $(this).attr('id'); 

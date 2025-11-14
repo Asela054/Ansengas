@@ -4,15 +4,8 @@ include "include/header.php";
 $sql="SELECT `idtbl_customer`, `name`, `nic`, `phone`, `status`, `type`, `tbl_area_idtbl_area` FROM `tbl_customer` WHERE `status` IN (1,2)";
 $result =$conn-> query($sql); 
 
-$sqlproductaddrep = "SELECT `idtbl_product`, `product_name` FROM `tbl_product` WHERE `status`=1";
-$resultproductaddrep = $conn->query($sqlproductaddrep);
-
-$products = [];
-if ($resultproductaddrep->num_rows > 0) {
-    while ($row = $resultproductaddrep->fetch_assoc()) {
-        $products[] = $row;
-    }
-}
+$sqlproductaddrep="SELECT `idtbl_product`, `product_name` FROM `tbl_product` WHERE `status`=1";
+$resultproductaddrep =$conn-> query($sqlproductaddrep); 
 
 $sqlsalesrep="SELECT `idtbl_employee`, `name` FROM `tbl_employee` WHERE `status`=1 AND `tbl_user_type_idtbl_user_type`=7";
 $resultsalesrep =$conn-> query($sqlsalesrep); 
@@ -634,11 +627,9 @@ include "include/topnavbar.php";
                                         <label class="small font-weight-bold text-dark">Product*</label><br>
                                         <select class="form-control form-control-sm" name="product[]" id="product" style="width:100%;" required multiple>
                                             <option value="">Select</option>
-                                            <?php foreach ($products as $rowproduct) { ?>
-                                                <option value="<?= $rowproduct['idtbl_product'] ?>">
-                                                    <?= htmlspecialchars($rowproduct['product_name']) ?>
-                                                </option>
-                                            <?php } ?>
+                                            <?php if($resultproductaddrep->num_rows > 0) {while ($rowproduct = $resultproductaddrep-> fetch_assoc()) { ?>
+                                            <option value="<?php echo $rowproduct['idtbl_product'] ?>"><?php echo $rowproduct['product_name'] ?></option>
+                                            <?php }} ?>
                                         </select>
                                     </div>
                                     <div class="form-group mb-1">
@@ -668,7 +659,7 @@ include "include/topnavbar.php";
     <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-sm">
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title" id="staticBackdropLabel"><i class="fas fa-plus-circle"></i> ADD DISCOUNT VALUE</h4>
+                <h4 class="modal-title" id="staticBackdropLabel"><i class="fas fa-plus-CIRCLE"></i> ADD DISCOUNT VALUE</h4>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -682,23 +673,21 @@ include "include/topnavbar.php";
                             </div>
                             <div class="form-group mb-1">
                                         <label class="small font-weight-bold text-dark">Product*</label><br>
-                                        <select class="form-control form-control-sm" name="itemslist" id="itemslist" style="width:100%;" required>
+                                        <select class="form-control form-control-sm" name="product[]" id="product" style="width:100%;" required multiple>
                                             <option value="">Select</option>
-                                            <?php foreach ($products as $rowproduct) { ?>
-                                                <option value="<?= $rowproduct['idtbl_product'] ?>">
-                                                    <?= htmlspecialchars($rowproduct['product_name']) ?>
-                                                </option>
-                                            <?php } ?>
+                                            <?php if($resultproductaddrep->num_rows > 0) {while ($rowproduct = $resultproductaddrep-> fetch_assoc()) { ?>
+                                            <option value="<?php echo $rowproduct['idtbl_product'] ?>"><?php echo $rowproduct['product_name'] ?></option>
+                                            <?php }} ?>
                                         </select>
                                     </div>
                                     <div class="form-group mb-1">
                                         <label class="small font-weight-bold text-dark">Discount Value*</label>
-                                        <input type="text" class="form-control form-control-sm" id="disvalue" name="disvalue">
+                                        <input type="text" class="form-control form-control-sm" id="hiddencusid" name="hiddencusid">
                                     </div>
                             <div class="form-group mt-2 text-right">
-                                <button type="submit" id="submitBtnDiscount" class="btn btn-primary btn-sm px-4"><i
+                                <button type="submit" id="submitBtnRep" class="btn btn-primary btn-sm px-4"><i
                                         class="far fa-save"></i>&nbsp;Add</button>
-                                        <input type="submit" class="d-none" id="hidesubmitdis" value="">
+                                        <input type="submit" class="d-none" id="hidesubmitrep" value="">
                             </div>
                         </form>
                     </div>
@@ -727,7 +716,6 @@ include "include/topnavbar.php";
         });
 
         $("#product").select2();
-        $("#itemslist").select2();
         $("#cusAreaOther").select2();
         $("#cusVisitDays").select2();
 
@@ -977,39 +965,6 @@ include "include/topnavbar.php";
                 });
             }
         });
-        $('#submitBtnDiscount').click(function (e) {
-            e.preventDefault();
-
-            if (!$("#adddiscountvalueform")[0].checkValidity()) {
-                $("#hidesubmitdis").click();
-            } else {
-                var product = $('#itemslist').val();
-                var disvalue = $('#disvalue').val();
-                var hiddenID = $('#hiddencusid').val();
-
-                $.ajax({
-                    type: "POST",
-                    url: 'process/adddiscountvalueprocess.php',
-                    dataType: "json",
-                    data: {
-                        product: product,
-                        disvalue: disvalue,
-                        hiddenID: hiddenID
-                    },
-                    success: function (response) {
-                        if (response.status === 'success') {
-                            $('#addDiscountModal').modal('hide');
-                            location.reload();
-                        }
-                    },
-                    error: function (xhr, status, error) {
-                        console.error('AJAX Error:', error);
-                    }
-                });
-            }
-        });
-
-
         $('#dataTable tbody').on('click', '.btnAddProduct', function() {
             var id = $(this).attr('id'); 
             loadproductpricelist(id);

@@ -977,39 +977,34 @@ include "include/topnavbar.php";
                 });
             }
         });
-        $('#submitBtnDiscount').click(function (e) {
-            e.preventDefault();
+$('#submitBtnDiscount').click(function (e) {
+    e.preventDefault();
 
-            if (!$("#adddiscountvalueform")[0].checkValidity()) {
-                $("#hidesubmitdis").click();
-            } else {
-                var product = $('#itemslist').val();
-                var disvalue = $('#disvalue').val();
-                var hiddenID = $('#hiddencusid').val();
+    if (!$("#adddiscountvalueform")[0].checkValidity()) {
+        $("#hidesubmitdis").click();
+    } else {
+        var product = $('#itemslist').val();
+        var disvalue = $('#disvalue').val();
+        var hiddenID = $('#hiddencusid').val();
 
-                $.ajax({
-                    type: "POST",
-                    url: 'process/adddiscountvalueprocess.php',
-                    dataType: "json",
-                    data: {
-                        product: product,
-                        disvalue: disvalue,
-                        hiddenID: hiddenID
-                    },
-                    success: function (response) {
-                        if (response.status === 'success') {
-                            $('#addDiscountModal').modal('hide');
-                            location.reload();
-                        }
-                    },
-                    error: function (xhr, status, error) {
-                        console.error('AJAX Error:', error);
-                    }
-                });
+        $.ajax({
+            type: "POST",
+            url: 'process/adddiscountvalueprocess.php',
+            data: {
+                product: product,
+                disvalue: disvalue,
+                hiddenID: hiddenID
+            },
+            success: function (result) {
+                // Since PHP redirects, this won't be reached
+                // But we'll handle the redirect on the PHP side
+            },
+            error: function() {
+                window.location.href = '../customer.php?action=5';
             }
         });
-
-
+    }
+});
         $('#dataTable tbody').on('click', '.btnAddProduct', function() {
             var id = $(this).attr('id'); 
             loadproductpricelist(id);

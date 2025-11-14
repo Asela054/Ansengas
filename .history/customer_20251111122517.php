@@ -990,26 +990,17 @@ include "include/topnavbar.php";
                 $.ajax({
                     type: "POST",
                     url: 'process/adddiscountvalueprocess.php',
-                    dataType: "json",
                     data: {
                         product: product,
                         disvalue: disvalue,
                         hiddenID: hiddenID
                     },
-                    success: function (response) {
-                        if (response.status === 'success') {
-                            $('#addDiscountModal').modal('hide');
-                            location.reload();
-                        }
-                    },
-                    error: function (xhr, status, error) {
-                        console.error('AJAX Error:', error);
+                    success: function (result) { alert()
+                        action(result);
                     }
                 });
             }
         });
-
-
         $('#dataTable tbody').on('click', '.btnAddProduct', function() {
             var id = $(this).attr('id'); 
             loadproductpricelist(id);

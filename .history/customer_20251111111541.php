@@ -4,15 +4,8 @@ include "include/header.php";
 $sql="SELECT `idtbl_customer`, `name`, `nic`, `phone`, `status`, `type`, `tbl_area_idtbl_area` FROM `tbl_customer` WHERE `status` IN (1,2)";
 $result =$conn-> query($sql); 
 
-$sqlproductaddrep = "SELECT `idtbl_product`, `product_name` FROM `tbl_product` WHERE `status`=1";
-$resultproductaddrep = $conn->query($sqlproductaddrep);
-
-$products = [];
-if ($resultproductaddrep->num_rows > 0) {
-    while ($row = $resultproductaddrep->fetch_assoc()) {
-        $products[] = $row;
-    }
-}
+$sqlproductaddrep="SELECT `idtbl_product`, `product_name` FROM `tbl_product` WHERE `status`=1";
+$resultproductaddrep =$conn-> query($sqlproductaddrep); 
 
 $sqlsalesrep="SELECT `idtbl_employee`, `name` FROM `tbl_employee` WHERE `status`=1 AND `tbl_user_type_idtbl_user_type`=7";
 $resultsalesrep =$conn-> query($sqlsalesrep); 
@@ -634,11 +627,9 @@ include "include/topnavbar.php";
                                         <label class="small font-weight-bold text-dark">Product*</label><br>
                                         <select class="form-control form-control-sm" name="product[]" id="product" style="width:100%;" required multiple>
                                             <option value="">Select</option>
-                                            <?php foreach ($products as $rowproduct) { ?>
-                                                <option value="<?= $rowproduct['idtbl_product'] ?>">
-                                                    <?= htmlspecialchars($rowproduct['product_name']) ?>
-                                                </option>
-                                            <?php } ?>
+                                            <?php if($resultproductaddrep->num_rows > 0) {while ($rowproduct = $resultproductaddrep-> fetch_assoc()) { ?>
+                                            <option value="<?php echo $rowproduct['idtbl_product'] ?>"><?php echo $rowproduct['product_name'] ?></option>
+                                            <?php }} ?>
                                         </select>
                                     </div>
                                     <div class="form-group mb-1">
@@ -654,51 +645,6 @@ include "include/topnavbar.php";
                                 <button type="submit" id="submitBtnRep" class="btn btn-primary btn-sm px-4"><i
                                         class="far fa-save"></i>&nbsp;Add</button>
                                         <input type="submit" class="d-none" id="hidesubmitrep" value="">
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-<!-- Modal Add Discount Value -->
-<div class="modal fade" id="adddiscountvaluemodal" data-backdrop="static" data-keyboard="false" tabindex="-1"
-    aria-labelledby="staticBackdropLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-sm">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4 class="modal-title" id="staticBackdropLabel"><i class="fas fa-plus-circle"></i> ADD DISCOUNT VALUE</h4>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="row">
-                    <div class="col-12">
-                        <form id="adddiscountvalueform" autocomplete="off">
-                            <div class="form-group mb-1">
-                                <input type="hidden" class="form-control form-control-sm" id="hiddencusid" name="hiddencusid">
-                            </div>
-                            <div class="form-group mb-1">
-                                        <label class="small font-weight-bold text-dark">Product*</label><br>
-                                        <select class="form-control form-control-sm" name="itemslist" id="itemslist" style="width:100%;" required>
-                                            <option value="">Select</option>
-                                            <?php foreach ($products as $rowproduct) { ?>
-                                                <option value="<?= $rowproduct['idtbl_product'] ?>">
-                                                    <?= htmlspecialchars($rowproduct['product_name']) ?>
-                                                </option>
-                                            <?php } ?>
-                                        </select>
-                                    </div>
-                                    <div class="form-group mb-1">
-                                        <label class="small font-weight-bold text-dark">Discount Value*</label>
-                                        <input type="text" class="form-control form-control-sm" id="disvalue" name="disvalue">
-                                    </div>
-                            <div class="form-group mt-2 text-right">
-                                <button type="submit" id="submitBtnDiscount" class="btn btn-primary btn-sm px-4"><i
-                                        class="far fa-save"></i>&nbsp;Add</button>
-                                        <input type="submit" class="d-none" id="hidesubmitdis" value="">
                             </div>
                         </form>
                     </div>
@@ -727,7 +673,6 @@ include "include/topnavbar.php";
         });
 
         $("#product").select2();
-        $("#itemslist").select2();
         $("#cusAreaOther").select2();
         $("#cusVisitDays").select2();
 
@@ -813,8 +758,7 @@ include "include/topnavbar.php";
                         "data": null,
                         "render": function (data, type, full) {
                             var button = '';
-                            button += '<button class="btn btn-outline-dark btn-sm btnadddiscountvalue mr-1" id="' + full['idtbl_customer'] + '" data-toggle="tooltip" data-placement="bottom" title="Add Salesrep"><i class="fas fa-plus-circle"></i></button>';
-
+                            button += '<button class="btn btn-outline-orange btn-sm btnaddsalesrep mr-1" id="' + full['idtbl_customer'] + '" data-toggle="tooltip" data-placement="bottom" title="Add Salesrep"><i class="fas fa-user-plus"></i></button>';
                             button += '<button class="btn btn-outline-orange btn-sm btnaddsalesrep mr-1" id="' + full['idtbl_customer'] + '" data-toggle="tooltip" data-placement="bottom" title="Add Salesrep"><i class="fas fa-user-plus"></i></button>';
 
                             button += '<button class="btn btn-outline-secondary btn-sm btnaddacount mr-1" id="' + full['idtbl_customer'] + '"><i class="fas fa-user"></i></button>';
@@ -837,10 +781,10 @@ include "include/topnavbar.php";
                             }
 
                             if (editcheck = 1) {
-                                button += '<button type="button" class="btn btn-outline-primary btn-sm btnEdit mr-1" id="' + full['idtbl_customer'] + '"><i class="fas fa-pen"></i></button>';
+                                button += '<button type="button" class="btn btn-primary btn-sm btnEdit mr-1" id="' + full['idtbl_customer'] + '"><i class="fas fa-pen"></i></button>';
                             }
                             if (full['status'] == 1 && statuscheck == 1) {
-                                button += '<button type="button" data-url="process/statuscustomer.php?record=' + full['idtbl_customer'] + '&type=2" data-actiontype="2" class="btn btn-outline-success btn-sm mr-1 btntableaction"><i class="fas fa-check"></i></button>';
+                                button += '<button type="button" data-url="process/statuscustomer.php?record=' + full['idtbl_customer'] + '&type=2" data-actiontype="2" class="btn btn-success btn-sm mr-1 btntableaction"><i class="fas fa-check"></i></button>';
                                 button += '<button type="button" class="btn btn-outline-pink btn-sm mr-1 btnclose ';
                                 if (deletecheck == 0) {
                                     button += 'd-none';
@@ -853,7 +797,7 @@ include "include/topnavbar.php";
                                 button += '<button type="button" class="btn btn-outline-purple btn-sm mr-1 btncloseview" id="' + full['idtbl_customer'] + '"><i class="fas fa-file"></i></button>';
                             }
                             if (deletecheck == 1) {
-                                button += '<button type="button" data-url="process/statuscustomer.php?record=' + full['idtbl_customer'] + '&type=3" data-actiontype="3" class="btn btn-outline-danger btn-sm btntableaction"><i class="fas fa-trash-alt"></i></button>';
+                                button += '<button type="button" data-url="process/statuscustomer.php?record=' + full['idtbl_customer'] + '&type=3" data-actiontype="3" class="btn btn-danger btn-sm text-light btntableaction"><i class="fas fa-trash-alt"></i></button>';
                             }
 
                             return button;
@@ -945,13 +889,6 @@ include "include/topnavbar.php";
                 $('#addsalesrepmodal').modal('show');
 
         });
-        $('#dataTable tbody').on('click', '.btnadddiscountvalue', function () {
-            var id = $(this).attr('id');
-            $("#hiddencusid").val(id);
-
-            $('#adddiscountvaluemodal').modal('show');
-
-        });
         $('#submitBtnRep').click(function(){
             if (!$("#addsalesrepform")[0].checkValidity()) {
                 // If the form is invalid, submit it. The form won't actually submit;
@@ -977,39 +914,6 @@ include "include/topnavbar.php";
                 });
             }
         });
-        $('#submitBtnDiscount').click(function (e) {
-            e.preventDefault();
-
-            if (!$("#adddiscountvalueform")[0].checkValidity()) {
-                $("#hidesubmitdis").click();
-            } else {
-                var product = $('#itemslist').val();
-                var disvalue = $('#disvalue').val();
-                var hiddenID = $('#hiddencusid').val();
-
-                $.ajax({
-                    type: "POST",
-                    url: 'process/adddiscountvalueprocess.php',
-                    dataType: "json",
-                    data: {
-                        product: product,
-                        disvalue: disvalue,
-                        hiddenID: hiddenID
-                    },
-                    success: function (response) {
-                        if (response.status === 'success') {
-                            $('#addDiscountModal').modal('hide');
-                            location.reload();
-                        }
-                    },
-                    error: function (xhr, status, error) {
-                        console.error('AJAX Error:', error);
-                    }
-                });
-            }
-        });
-
-
         $('#dataTable tbody').on('click', '.btnAddProduct', function() {
             var id = $(this).attr('id'); 
             loadproductpricelist(id);
