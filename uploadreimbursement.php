@@ -60,45 +60,101 @@ foreach ($data as $row) {
         if($rowinvinfo['tbl_customer_idtbl_customer']==542){
             $specaildiscount = $row12kg['refilltot'] * 35.40;
             $nettotal       = (float) ($rowinvinfo['nettotal'] ?? 0);
+            $nettotal       = round($nettotal);
             $totalpay       = (float) ($rowpayinfo['totalpay'] ?? 0);
             $discountamount = (float) ($discountamount ?? 0); // Assuming $discountamount is defined elsewhere
-            
+            $ansenexpenceamount = $specaildiscount;
+            $refilqty = $row12kg['refilltot'];
+            $unitexpence = 35.40;
             // Perform the calculation with guaranteed numbers
-            $expenseamount = $nettotal - ($totalpay + $discountamount);
-            // echo "Expense Amount for Invoice $invoiceno: $specaildiscount --> $expenseamount\n"."<br>";
-            if($expenseamount >= $specaildiscount){
-                $ansenexpenceamount = $specaildiscount;
+            // $expenseamount = $nettotal - ($totalpay + $discountamount);
+            // // echo "Expense Amount for Invoice $invoiceno: $specaildiscount --> $expenseamount\n"."<br>";
+            // if($expenseamount >= $specaildiscount){
+            //     $ansenexpenceamount = $specaildiscount;
+            // }
+            $oldnettotal = round($totalpay + $discountamount + $ansenexpenceamount);
+            $difference = $nettotal - $oldnettotal;
+            if($oldnettotal >= $nettotal){$paymentcomplete = 1;} 
+            else{
+                if($difference<=20){
+                    $paymentcomplete = 1;
+                }
+                else{
+                    $paymentcomplete = 0;
+                }
             }
+
+            // if('AGT2405457'==$invoiceno){
+            //     echo "Invoice No: $invoiceno, Net Total: $nettotal, Total Pay: $totalpay, Discount Amount: $discountamount, Ansen Expense Amount: $ansenexpenceamount, Old Net Total: $oldnettotal, Payment Complete: $paymentcomplete<br>";
+            // }
         }
         else if($rowinvinfo['tbl_customer_idtbl_customer']==1264){
             $specaildiscount = $row12kg['refilltot'] * 59;
             $nettotal       = (float) ($rowinvinfo['nettotal'] ?? 0);
+            $nettotal       = round($nettotal);
             $totalpay       = (float) ($rowpayinfo['totalpay'] ?? 0);
             $discountamount = (float) ($discountamount ?? 0); // Assuming $discountamount is defined elsewhere
-
+            $ansenexpenceamount = $specaildiscount;
+            $refilqty = $row12kg['refilltot'];
+            $unitexpence = 59;
             // Perform the calculation with guaranteed numbers
-            $expenseamount = $nettotal - ($totalpay + $discountamount);
-            // echo "Expense Amount for Invoice $invoiceno: $specaildiscount --> $expenseamount\n"."<br>";
-            if($expenseamount >= $specaildiscount){
-                $ansenexpenceamount = $specaildiscount;
+            // $expenseamount = $nettotal - ($totalpay + $discountamount);
+            // // echo "Expense Amount for Invoice $invoiceno: $specaildiscount --> $expenseamount\n"."<br>";
+            // if($expenseamount >= $specaildiscount){
+            //     $ansenexpenceamount = $specaildiscount;
+            // }
+            $oldnettotal = round($totalpay + $discountamount + $ansenexpenceamount);
+            $difference = $nettotal - $oldnettotal;
+            if($oldnettotal >= $nettotal){$paymentcomplete = 1;} 
+            else{
+                if($difference<=20){
+                    $paymentcomplete = 1;
+                }
+                else{
+                    $paymentcomplete = 0;
+                }
             }
         }
         else{
+            $nettotal       = (float) ($rowinvinfo['nettotal'] ?? 0);
+            $nettotal       = round($nettotal);
+            $totalpay       = (float) ($rowpayinfo['totalpay'] ?? 0);
+            $discountamount = (float) ($discountamount ?? 0);
             $ansenexpenceamount = 0;
+            $oldnettotal = round($totalpay + $discountamount + $ansenexpenceamount);
+            $difference = $nettotal - $oldnettotal;
+            if($oldnettotal >= $nettotal){$paymentcomplete = 1;} 
+            else{
+                if($difference<=20){
+                    $paymentcomplete = 1;
+                }
+                else{
+                    $paymentcomplete = 0;
+                }
+            }
+            $refilqty = 0;
+            $unitexpence = 0;
+            // if('AGT2403406'==$invoiceno){
+            //     echo "Invoice No: $invoiceno, Net Total: $nettotal, Total Pay: $totalpay, Discount Amount: $discountamount, Ansen Expense Amount: $ansenexpenceamount, Old Net Total: $oldnettotal, Payment Complete: $paymentcomplete<br>";
+            // }
         }
     }
 
-    if($rowinvinfo['tbl_customer_idtbl_customer']==542){
+    // if($rowinvinfo['tbl_customer_idtbl_customer']==542){
         $monthlyData[$key][] = [
             'invoicedate' => $dateinvoice,  
             'invoiceno' => $invoiceno,  
             'discountamount' => $discountamount,
             'customer' => $rowinvinfo['tbl_customer_idtbl_customer'],
             'invoice' => $rowinvinfo['idtbl_invoice'],
-            'ansenexpence' => $ansenexpenceamount
+            'ansenexpence' => $ansenexpenceamount,
+            'paymentcomplete' => $paymentcomplete,
+            'refilqty' => $refilqty,
+            'unitexpence' => $unitexpence,
+            'nettotal' => $nettotal,
+            'oldnettotal' => $oldnettotal
         ];
-        print_r($monthlyData[$key]);
-    }
+    // }
 }
 // print_r($monthlyData);
 foreach ($monthlyData as $monthPeriod => $entries) {
@@ -139,72 +195,117 @@ foreach ($monthlyData as $monthPeriod => $entries) {
     $flag = true;
     $conn->autocommit(FALSE);
 
-    // $insertreimbursement="INSERT INTO `tbl_invoice_reimbursement`(`date`, `reimdocno`, `netamount`, `status`, `insertdatetime`, `tbl_user_idtbl_user`) VALUES ('$today','$reimno','$totalreimbursement','1','$updatedatetime','$userID')";
-    // if($conn->query($insertreimbursement)==true){
-    //     $reimbursementID=$conn->insert_id;
+    $html = '';
+    $html .= '<table border="1">
+        <thead>
+            <tr>
+                <th>Invoice No</th>
+                <th>Customer</th>
+                <th>Invoice Total</th>
+                <th>Payment Total</th>
+                <th>Credit Amount</th>
+            </tr>
+        </thead>
+        <tbody>';
+        foreach($invoicelist as $datalist){
+            if($datalist['paymentcomplete']==1): continue;
+            else:
+                $difference = $datalist['nettotal'] - $datalist['oldnettotal'];
+                $sqlcus = "SELECT `name` FROM `tbl_customer` WHERE `idtbl_customer`='".$datalist['customer']."'";
+                $resultcus = $conn->query($sqlcus);
+                $rowcus = $resultcus->fetch_assoc();
 
-    //     foreach($invoicelist as $datalist){
-    //         $invoiceID = $datalist['invoice'];
-    //         $discountamount = $datalist['discountamount'];
-    //         $customerID = $datalist['customer'];
-    //         $invoicedate = $datalist['invoicedate'];
+                // echo $datalist['nettotal'].' --> '.$datalist['oldnettotal'].'<br>';
+                // echo 'Invoice No '.$datalist['invoiceno'].' --> Customer ID '.$datalist['customer']." --> Difference ".$difference."<br>";
+                $html .= '<tr>
+                    <td>'.$datalist['invoiceno'].'</td>
+                    <td>'.$rowcus['name'].'</td>
+                    <td class="text-right">'.number_format($datalist['nettotal'], 2).'</td>
+                    <td class="text-right">'.number_format($datalist['oldnettotal'], 2).'</td>
+                    <td class="text-right">'.number_format($difference, 2).'</td>
+                </tr>';
+            endif;
+        }
+    $html .= '</tbody>
+    </table>';
+    echo $html;
+    $insertreimbursement="INSERT INTO `tbl_invoice_reimbursement`(`date`, `reimdocno`, `netamount`, `status`, `insertdatetime`, `tbl_user_idtbl_user`) VALUES ('$today','$reimno','$totalreimbursement','1','$updatedatetime','$userID')";
+    if($conn->query($insertreimbursement)==true){
+        $reimbursementID=$conn->insert_id;
 
-    //         $insertreimbursementdetail="INSERT INTO `tbl_invoice_reimbursement_detail`(`invoicedate`, `amount`, `status`, `insertdatetime`, `tbl_user_idtbl_user`, `tbl_invoice_reimbursement_idtbl_invoice_reimbursement`, `tbl_invoice_idtbl_invoice`, `tbl_customer_idtbl_customer`) VALUES ('$invoicedate','$discountamount','1','$updatedatetime','$userID','$reimbursementID','$invoiceID','$customerID')";
-    //         if($conn->query($insertreimbursementdetail)==true){
-    //             $updateinvoice="UPDATE `tbl_invoice` SET `paymentcomplete`='1',`updatedatetime`='$updatedatetime',`tbl_user_idtbl_user`='$userID' WHERE `idtbl_invoice`='$invoiceID'";
-    //             if (!$conn->query($updateinvoice)) {
-    //                 $flag = false;
-    //             }            
-    //         }
-    //         else{
-    //             $transststus=1;
-    //             $flag = false;
-    //             break;
-    //         }    
-    //     }
-    // }
-    // else{
-    //     $transststus=1;
-    //     $flag = false;
-    // }
+        foreach($invoicelist as $datalist){
+            $invoiceID = $datalist['invoice'];
+            $discountamount = $datalist['discountamount'];
+            $customerID = $datalist['customer'];
+            $invoicedate = $datalist['invoicedate'];
+            $paymentcomplete = $datalist['paymentcomplete'];
+            $ansenexpence = $datalist['ansenexpence'];
+            $refilqty = $datalist['refilqty'];
+            $unitexpence = $datalist['unitexpence'];
 
-    // if($transststus==0 && $flag){
-    //     $conn->commit();
+            $insertreimbursementdetail="INSERT INTO `tbl_invoice_reimbursement_detail`(`invoicedate`, `amount`, `status`, `insertdatetime`, `tbl_user_idtbl_user`, `tbl_invoice_reimbursement_idtbl_invoice_reimbursement`, `tbl_invoice_idtbl_invoice`, `tbl_customer_idtbl_customer`) VALUES ('$invoicedate','$discountamount','1','$updatedatetime','$userID','$reimbursementID','$invoiceID','$customerID')";
+            if($conn->query($insertreimbursementdetail)==true){
+                $updateinvoice="UPDATE `tbl_invoice` SET `paymentcomplete`='$paymentcomplete',`updatedatetime`='$updatedatetime',`tbl_user_idtbl_user`='$userID' WHERE `idtbl_invoice`='$invoiceID'";
+                if (!$conn->query($updateinvoice)) {
+                    $flag = false;
+                }   
+                
+                if($ansenexpence>0){
+                    $insertspecialexpence="INSERT INTO `tbl_invoice_special_discount`(`invdate`, `qty`, `unitprice`, `totalamount`, `status`, `insertdatetime`, `tbl_user_idtbl_user`, `tbl_customer_idtbl_customer`, `tbl_invoice_idtbl_invoice`, `tbl_product_idtbl_product`) VALUES ('$invoicedate','$refilqty','$unitexpence','$ansenexpence','1','$updatedatetime','$userID','$customerID','$invoiceID','1')";
+                    if (!$conn->query($insertspecialexpence)) {
+                        $flag = false;
+                    } 
+                }
+            }
+            else{
+                $transststus=1;
+                $flag = false;
+                break;
+            }    
+        }
+    }
+    else{
+        $transststus=1;
+        $flag = false;
+    }
 
-    //     $actionObj=new stdClass();
-    //     $actionObj->icon='fas fa-save';
-    //     $actionObj->title='';
-    //     $actionObj->message='Record Added Successfully';
-    //     $actionObj->url='';
-    //     $actionObj->target='_blank';
-    //     $actionObj->type='success';
+    if($transststus==0 && $flag){
+        $conn->commit();
 
-    //     $actionJSON=json_encode($actionObj);
+        $actionObj=new stdClass();
+        $actionObj->icon='fas fa-save';
+        $actionObj->title='';
+        $actionObj->message='Record Added Successfully';
+        $actionObj->url='';
+        $actionObj->target='_blank';
+        $actionObj->type='success';
+
+        $actionJSON=json_encode($actionObj);
         
-    //     $obj=new stdClass();
-    //     $obj->status=1;
-    //     $obj->action=$actionJSON;
+        $obj=new stdClass();
+        $obj->status=1;
+        $obj->action=$actionJSON;
 
-    //     echo json_encode($obj);
-    // }
-    // else{
-    //     $conn->rollback();
+        echo json_encode($obj);
+    }
+    else{
+        $conn->rollback();
 
-    //     $actionObj=new stdClass();
-    //     $actionObj->icon='fas fa-warning';
-    //     $actionObj->title='';
-    //     $actionObj->message='Record Error';
-    //     $actionObj->url='';
-    //     $actionObj->target='_blank';
-    //     $actionObj->type='danger';
+        $actionObj=new stdClass();
+        $actionObj->icon='fas fa-warning';
+        $actionObj->title='';
+        $actionObj->message='Record Error';
+        $actionObj->url='';
+        $actionObj->target='_blank';
+        $actionObj->type='danger';
 
-    //     $actionJSON=json_encode($actionObj);
+        $actionJSON=json_encode($actionObj);
         
-    //     $obj=new stdClass();
-    //     $obj->status=0;
-    //     $obj->action=$actionJSON;
+        $obj=new stdClass();
+        $obj->status=0;
+        $obj->action=$actionJSON;
 
-    //     echo json_encode($obj);
-    // }
+        echo json_encode($obj);
+    }
 }
 ?>

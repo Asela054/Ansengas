@@ -4,16 +4,28 @@ if(!isset($_SESSION['userid'])){header ("Location:index.php");}
 require_once('../connection/db.php');//die('bc');
 $userID=$_SESSION['userid'];
 
-$reimno=$_POST['reimno'];
+$reimbursementtype=$_POST['reimbursementtype'];
 $totalreimbursement=$_POST['totalreimbursement'];
+$invoicedate=$_POST['invoicedate'];
 $invoicelist=json_decode($_POST['invoicelist']);
 $today=date('Y-m-d');
 $updatedatetime=date('Y-m-d h:i:s');
+$reimno='REIM'.date("Ymd", strtotime($invoicedate));
 $transststus=0;
 $flag = true;
 $conn->autocommit(FALSE);
 
-$insertreimbursement="INSERT INTO `tbl_invoice_reimbursement`(`date`, `reimdocno`, `netamount`, `status`, `insertdatetime`, `tbl_user_idtbl_user`) VALUES ('$today','$reimno','$totalreimbursement','1','$updatedatetime','$userID')";
+$sqlcount="SELECT COUNT(*) AS cnt FROM `tbl_invoice_reimbursement` WHERE `reimdocno` LIKE '$reimno%' AND `status`='1'";
+$resultcount=$conn->query($sqlcount);
+$rowcount=$resultcount->fetch_assoc();
+if($rowcount['cnt']>0){
+    $reimno=$reimno.'-'.($rowcount['cnt']+1);
+}
+else{
+    $reimno=$reimno.'-1';
+}
+
+$insertreimbursement="INSERT INTO `tbl_invoice_reimbursement`(`reimtype`, `date`, `reimdocno`, `netamount`, `status`, `insertdatetime`, `tbl_user_idtbl_user`) VALUES ('$reimbursementtype','$today','$reimno','$totalreimbursement','1','$updatedatetime','$userID')";
 if($conn->query($insertreimbursement)==true){
     $reimbursementID=$conn->insert_id;
 
