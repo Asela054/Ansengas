@@ -1,0 +1,7 @@
+<?php
+session_start();
+if(!isset($_SESSION['userid'])){header ("Location:index.php");}
+require_once('connection/db.php');//die('bc');
+$userID=$_SESSION['userid'];
+
+$sql="INSERT INTO `tbl_invoice_market_info`(`invdate`, `qty`, `unitprice`, `totalamount`, `status`, `insertdatetime`, `tbl_user_idtbl_user`, `tbl_customer_idtbl_customer`, `tbl_invoice_idtbl_invoice`, `tbl_product_idtbl_product`) SELECT `tbl_invoice`.`date`, SUM(`tbl_invoice_detail`.`newqty`+`tbl_invoice_detail`.`refillqty`+`tbl_invoice_detail`.`trustqty`) AS `qty37_5KG`, '131.78' AS `unitprice`, (SUM(`tbl_invoice_detail`.`newqty`+`tbl_invoice_detail`.`refillqty`+`tbl_invoice_detail`.`trustqty`)*131.78) AS `totalamount`, '1' AS `status`, NOW() AS `insertdatetime`, '1' AS `userID`, `tbl_invoice`.`tbl_customer_idtbl_customer`, `tbl_invoice`.`idtbl_invoice`, '2' AS `productID` FROM `tbl_invoice_detail` LEFT JOIN `tbl_invoice` ON `tbl_invoice`.`idtbl_invoice` = `tbl_invoice_detail`.`tbl_invoice_idtbl_invoice` LEFT JOIN `tbl_customer` ON `tbl_customer`.`idtbl_customer` = `tbl_invoice`.`tbl_customer_idtbl_customer` WHERE `tbl_customer`.`type` = 1 AND `tbl_invoice`.`status` = 1 AND `tbl_invoice_detail`.`status` = 1 AND `tbl_invoice_detail`.`tbl_product_idtbl_product` = 2 GROUP BY `tbl_invoice`.`tbl_customer_idtbl_customer`, `tbl_invoice`.`idtbl_invoice`";

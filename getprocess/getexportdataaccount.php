@@ -1193,6 +1193,126 @@ if($exporttype==1){
             </tr>';
         $html.='</tbody>
     </table>';
+} else if($exporttype==10){
+    $sql = "SELECT
+        SUM(`tbl_invoice_special_discount`.`totalamount`) AS `totaldiscount`,
+        `tbl_customer`.`name`,
+        `tbl_invoice_special_discount`.`invdate`,
+        CASE
+            WHEN `tbl_invoice`.`tax_invoice_num` IS NOT NULL AND `tbl_invoice`.`tax_invoice_num` != ''
+            THEN CONCAT('AGT', `tbl_invoice`.`tax_invoice_num`)
+            ELSE CONCAT('INV-', `tbl_invoice`.`idtbl_invoice`)
+        END AS `invoice_number`, 
+        `tbl_invoice`.`idtbl_invoice`
+    FROM
+        `tbl_invoice_special_discount`
+    LEFT JOIN
+        `tbl_invoice` ON `tbl_invoice`.`idtbl_invoice` = `tbl_invoice_special_discount`.`tbl_invoice_idtbl_invoice`
+    LEFT JOIN
+        `tbl_customer` ON `tbl_customer`.`idtbl_customer` = `tbl_invoice_special_discount`.`tbl_customer_idtbl_customer`
+    WHERE
+        `tbl_invoice_special_discount`.`status` = 1
+        AND `tbl_invoice_special_discount`.`invdate` BETWEEN '$validfrom' AND '$validto' 
+    GROUP BY
+        `tbl_invoice_special_discount`.`tbl_invoice_idtbl_invoice`
+    ORDER BY
+        `tbl_invoice_special_discount`.`invdate` ASC";
+    $result = $conn->query($sql);
+
+    $sqlsum = "SELECT SUM(`tbl_invoice_special_discount`.`totalamount`) AS `sumdiscount` FROM `tbl_invoice_special_discount` WHERE `tbl_invoice_special_discount`.`status` = 1 AND `tbl_invoice_special_discount`.`invdate` BETWEEN '$validfrom' AND '$validto'";
+    $resultsum = $conn->query($sqlsum);
+    $rowsum = $resultsum->fetch_assoc();
+
+    $html = '';
+    $html .= '<table class="table table-striped table-bordered table-sm small" id="table_content">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Vch/Bill No</th>
+                <th>Particulars</th>
+                <th class="text-right">Credit</th>
+                <th class="text-right">Debit</th>
+            </tr>
+        </thead>
+        <tbody>';
+        while ($row = $result->fetch_assoc()) {
+            $html .= '<tr>
+                <td>' . date("d/m/Y", strtotime($row['invdate'])) . '</td>
+                <td>' . $row['invoice_number'] . '</td>
+                <td>' . $row['name'] . '</td>
+                <td class="text-right">&nbsp;</td>
+                <td class="text-right">' . number_format(round($row['totaldiscount'], 2), 2) . '</td>
+            </tr>';
+        }
+        $html .= '<tr>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>37.5KG variance for budget</td>
+            <td class="text-right">' . number_format(round($rowsum['sumdiscount'], 2), 2) . '</td>
+            <td class="text-right">&nbsp;</td>
+        </tr>
+        </tbody>
+    </table>';
+} else if($exporttype==11){
+    $sql="SELECT
+        SUM(`tbl_invoice_market_info`.`totalamount`) AS `totalmarket`,
+        `tbl_customer`.`name`,
+        `tbl_invoice_market_info`.`invdate`,
+        CASE
+            WHEN `tbl_invoice`.`tax_invoice_num` IS NOT NULL AND `tbl_invoice`.`tax_invoice_num` != ''
+            THEN CONCAT('AGT', `tbl_invoice`.`tax_invoice_num`)
+            ELSE CONCAT('INV-', `tbl_invoice`.`idtbl_invoice`)
+        END AS `invoice_number`, 
+        `tbl_invoice`.`idtbl_invoice`
+    FROM
+        `tbl_invoice_market_info`
+    LEFT JOIN
+        `tbl_invoice` ON `tbl_invoice`.`idtbl_invoice` = `tbl_invoice_market_info`.`tbl_invoice_idtbl_invoice`
+    LEFT JOIN
+        `tbl_customer` ON `tbl_customer`.`idtbl_customer` = `tbl_invoice_market_info`.`tbl_customer_idtbl_customer`
+    WHERE
+        `tbl_invoice_market_info`.`status` = 1
+        AND `tbl_invoice_market_info`.`invdate` BETWEEN '$validfrom' AND '$validto' 
+    GROUP BY
+        `tbl_invoice_market_info`.`tbl_invoice_idtbl_invoice`
+    ORDER BY
+        `tbl_invoice_market_info`.`invdate` ASC";
+    $result = $conn->query($sql);
+
+    $sqlsum = "SELECT SUM(`tbl_invoice_market_info`.`totalamount`) AS `summarket` FROM `tbl_invoice_market_info` WHERE `tbl_invoice_market_info`.`status` = 1 AND `tbl_invoice_market_info`.`invdate` BETWEEN '$validfrom' AND '$validto'";
+    $resultsum = $conn->query($sqlsum); 
+    $rowsum = $resultsum->fetch_assoc();
+
+    $html = '';
+    $html .= '<table class="table table-striped table-bordered table-sm small" id="table_content">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Vch/Bill No</th>
+                <th>Particulars</th>
+                <th class="text-right">Credit</th>
+                <th class="text-right">Debit</th>
+            </tr>
+        </thead>
+        <tbody>';
+        while ($row = $result->fetch_assoc()) { if($row['totalmarket']>0){
+            $html .= '<tr>
+                <td>' . date("d/m/Y", strtotime($row['invdate'])) . '</td>
+                <td>' . $row['invoice_number'] . '</td>
+                <td>' . $row['name'] . '</td>
+                <td class="text-right">' . number_format(round($row['totalmarket'], 2), 2) . '</td>
+                <td class="text-right">&nbsp;</td>
+            </tr>';
+        }}
+        $html .= '<tr>
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+                <td>Marketing Expenses for budget</td>
+                <td class="text-right">&nbsp;</td>
+                <td class="text-right font-weight-bold">' . number_format(round($rowsum['summarket'], 2), 2) . '</td>
+            </tr>
+        </tbody>
+    </table>';
 }
 
 echo $html;

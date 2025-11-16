@@ -47,6 +47,8 @@ include "include/topnavbar.php";
                                                 <option value="6">Damage Return Customer Send</option>
                                                 <option value="7">Receipt Register</option>
                                                 <option value="9">Reimbursement Register</option>
+                                                <option value="10">Special Discount Register</option>
+                                                <option value="11">40KG Marketing Register</option>
                                             </select>
                                         </div>
                                         <div class="col">
@@ -125,6 +127,8 @@ include "include/topnavbar.php";
             if(exporttype==7){var actionurl='export/exportaccountreceiptformat.php';}
             if(exporttype==8){var actionurl='export/exportaccountsaleformatwithoutvat.php';}
             if(exporttype==9){var actionurl='export/exportaccountreimbursement.php';}
+            if(exporttype==10){var actionurl='export/exportaccountspecialdiscount.php';}
+            if(exporttype==11){var actionurl='export/exportaccountmarketing.php';}
 
             $("#convert_form").attr('action', actionurl);
             $('#hidefrom').val($('#fromdate').val());

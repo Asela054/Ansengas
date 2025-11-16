@@ -79,7 +79,15 @@ include "include/topnavbar.php";
                                 <label class="small font-weight-bold text-dark">Date</label>
                                 <input type="date" class="form-control form-control-sm" id="invoicedate">
                             </div>
-                            <div class="col-4">
+                            <div class="col-3">
+                                <label class="small font-weight-bold text-dark">Reimbursement Typeo</label>
+                                <select name="reimbursementtype" id="reimbursementtype" class="form-control form-control-sm" required>
+                                    <option value="">Select</option>
+                                    <option value="1">Commercial Reimbursement</option>
+                                    <option value="2">Free Issue Reimbursement</option>
+                                </select>
+                            </div>
+                            <div class="col">
                                 <label class="small font-weight-bold text-dark">Customer</label>
                                 <select class="form-control form-control-sm" style="width: 100%;" name="customer" id="customer">
                                     <option value="">Select</option>
@@ -87,10 +95,6 @@ include "include/topnavbar.php";
                                     <option value="<?php echo $rowcustomer['idtbl_customer'] ?>"><?php echo $rowcustomer['name']; ?></option>
                                     <?php }} ?>
                                 </select>
-                            </div>
-                            <div class="col-4">
-                                <label class="small font-weight-bold text-dark">Reimbursement Doc No</label>
-                                <input type="text" class="form-control form-control-sm" id="reimno">
                             </div>
                         </div>
                         <hr>
@@ -280,12 +284,19 @@ include "include/topnavbar.php";
             }
         });
         $('#invoicedate').change(function(){
-            if($(this).val()!=''){
+            var type = $('#reimbursementtype').val();
+            if($(this).val()!='' && type!=''){
                 loadDiscountInvoice();
             }
         });
         $('#customer').change(function(){
             if($(this).val()!=''){
+                loadDiscountInvoice();
+            }
+        });
+        $('#reimbursementtype').change(function(){
+            var date = $('#invoicedate').val();
+            if($(this).val()!='' && date!=''){
                 loadDiscountInvoice();
             }
         });
@@ -297,9 +308,10 @@ include "include/topnavbar.php";
         });
         $('#btnIssueReimbursement').click(function(){
             var tablelist = $("#reimTable tbody input[type=checkbox]:checked");
-            var reimno =  $('#reimno').val();
+            var reimbursementtype =  $('#reimbursementtype').val();
+            var invoicedate =  $('#invoicedate').val();
                 
-            if(tablelist.length>0 && reimno!=''){
+            if(tablelist.length>0){
                 jsonObj = [];
                 tablelist.each(function() {
                     item = {}
@@ -331,8 +343,9 @@ include "include/topnavbar.php";
                             type: "POST",
                             data: {
                                 invoicelist : myJSON,
-                                reimno : reimno,
-                                totalreimbursement : totalreimbursement
+                                reimbursementtype : reimbursementtype,
+                                totalreimbursement : totalreimbursement,
+                                invoicedate: invoicedate
                             },
                             url: 'process/invoicereimbursementprocess.php',
                             success: function(result) {
@@ -375,6 +388,7 @@ include "include/topnavbar.php";
     function loadDiscountInvoice(){
         var invoicedate = $('#invoicedate').val();
         var customerID = $('#customer').val();
+        var reimbursementtype = $('#reimbursementtype').val();
 
         Swal.fire({
             title: '',
@@ -394,7 +408,8 @@ include "include/topnavbar.php";
                     type: "POST",
                     data: {
                         invoicedate : invoicedate,
-                        customerID : customerID
+                        customerID : customerID,
+                        reimbursementtype: reimbursementtype
                     },
                     url: 'getprocess/getreimbursementinfo.php',
                     success: function(result) {
