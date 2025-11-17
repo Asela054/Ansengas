@@ -388,11 +388,11 @@ else if($lastElement=='invoicespecialdiscount.php'){
     $statuscheck=checkprivilege($menuprivilegearray, 96, 3);
     $deletecheck=checkprivilege($menuprivilegearray, 96, 4);
 }
-else if($lastElement=='budgetvariance.php'){
-    $addcheck=checkprivilege($menuprivilegearray, 97, 1);
-    $editcheck=checkprivilege($menuprivilegearray, 97, 2);
-    $statuscheck=checkprivilege($menuprivilegearray, 97, 3);
-    $deletecheck=checkprivilege($menuprivilegearray, 97, 4);
+else if($lastElement=='invoicespecialdiscount.php'){
+    $addcheck=checkprivilege($menuprivilegearray, 96, 1);
+    $editcheck=checkprivilege($menuprivilegearray, 96, 2);
+    $statuscheck=checkprivilege($menuprivilegearray, 96, 3);
+    $deletecheck=checkprivilege($menuprivilegearray, 96, 4);
 }
 
 function checkprivilege($arraymenu, $menuID, $type){
@@ -495,8 +495,6 @@ function checkprivilege($arraymenu, $menuID, $type){
                     <a class="nav-link p-0 px-3 py-1" href="invoicereimbursement.php">Invoice Reimbursement</a>
                     <?php }if(menucheck($menuprivilegearray, 96)==1){ ?>
                     <a class="nav-link p-0 px-3 py-1" href="invoicespecialdiscount.php">Invoice Special Discount</a>
-                    <?php }if(menucheck($menuprivilegearray, 97)==1){ ?>
-                    <a class="nav-link p-0 px-3 py-1" href="budgetvariance.php">Variance For Budget</a>
                     <?php } ?>
                 </nav>
             </div>

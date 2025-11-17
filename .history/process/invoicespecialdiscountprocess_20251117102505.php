@@ -4,6 +4,7 @@ if(!isset($_SESSION['userid'])){header ("Location:index.php");}
 require_once('../connection/db.php');
 $userID=$_SESSION['userid'];
 
+$totalreimbursement=$_POST['totalreimbursement'];
 $invoicelist=json_decode($_POST['invoicelist']);
 $today=date('Y-m-d');
 $updatedatetime=date('Y-m-d h:i:s');
@@ -19,7 +20,7 @@ foreach($invoicelist as $datalist){
     $total = $datalist->total;
     $qty = $datalist->qty;
 
-    $insertreimbursementdetail="INSERT INTO `tbl_invoice_special_discount`(`invdate`, `qty`, `unitprice`, `totalamount`, `status`, `insertdatetime`, `tbl_user_idtbl_user`, `tbl_customer_idtbl_customer`, `tbl_invoice_idtbl_invoice`, `tbl_product_idtbl_product`) VALUES ('$today','$qty','$price','$total','1','$updatedatetime','$userID','$customerID', '$invoiceID','$productID')";
+    $insertreimbursementdetail="INSERT INTO `tbl_invoice_special_discount`(`invdate`, `qty`, `unitprice`, `totalamount`, `status`, `insertdatetime`, `tbl_user_idtbl_user`, `tbl_invoice_idtbl_invoice`, `tbl_customer_idtbl_customer`, `tbl_product_idtbl_product`) VALUES ('$today','$qty','$price','$total','1','$updatedatetime','$userID','$invoiceID','$customerID','$productID')";
     if(!$conn->query($insertreimbursementdetail)){
         $transststus=1;
         $flag = false;

@@ -496,7 +496,7 @@ function checkprivilege($arraymenu, $menuID, $type){
                     <?php }if(menucheck($menuprivilegearray, 96)==1){ ?>
                     <a class="nav-link p-0 px-3 py-1" href="invoicespecialdiscount.php">Invoice Special Discount</a>
                     <?php }if(menucheck($menuprivilegearray, 97)==1){ ?>
-                    <a class="nav-link p-0 px-3 py-1" href="budgetvariance.php">Variance For Budget</a>
+                    <a class="nav-link p-0 px-3 py-1" href="budgetvariance.php"></a>
                     <?php } ?>
                 </nav>
             </div>

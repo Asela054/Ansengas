@@ -1,10 +1,6 @@
 <?php 
 include "include/header.php";  
 
-$sql = "SELECT c.`idtbl_customer`, c.`name` FROM `tbl_customer` c INNER JOIN `tbl_customer_product_special` cs ON c.`idtbl_customer` = cs.`tbl_customer_idtbl_customer` WHERE c.`status` = 1 GROUP BY c.`idtbl_customer`, c.`name` ORDER BY c.`name` ASC";
-
-$resultcustomer = $conn->query($sql);
-
 include "include/topnavbar.php"; 
 ?>
 <div id="layoutSidenav">
@@ -18,7 +14,7 @@ include "include/topnavbar.php";
                     <div class="page-header-content py-3">
                         <h1 class="page-header-title">
                             <div class="page-header-icon"><i data-feather="file"></i></div>
-                            <span>Invoice Special Discount</span>
+                            <span>37.5Kg Variance For Budget</span>
                         </h1>
                     </div>
                 </div>
@@ -35,12 +31,10 @@ include "include/topnavbar.php";
                                     </div>
                                     <div class="col-3">
                                         <label class="small font-weight-bold text-dark">Customer</label>
-                                        <select class="form-control form-control-sm" style="width: 100%;"
-                                            name="customer" id="customer">
+                                        <select class="form-control form-control-sm" style="width: 100%;" name="customer" id="customer">
                                             <option value="">Select</option>
                                             <?php if($resultcustomer->num_rows > 0) {while ($rowcustomer = $resultcustomer-> fetch_assoc()) { ?>
-                                            <option value="<?php echo $rowcustomer['idtbl_customer'] ?>">
-                                                <?php echo $rowcustomer['name']; ?></option>
+                                            <option value="<?php echo $rowcustomer['idtbl_customer'] ?>"><?php echo $rowcustomer['name']; ?></option>
                                             <?php }} ?>
                                         </select>
                                     </div>
@@ -73,7 +67,7 @@ include "include/topnavbar.php";
                         <div class="row">
                             <div class="col-sm-12 col-md-12 col-lg-12 col-xl-12 text-right">
                                 <button class="btn btn-primary btn-sm" id="btnIssueDiscount" disabled><i
-                                        class="fas fa-plus"></i>&nbsp;Create Special Discount</button>
+                                        class="fas fa-plus"></i>&nbsp;Create </button>
                                 <input type="hidden" name="discounttotal" id="discounttotal" value="0">
                             </div>
                         </div>
@@ -93,7 +87,25 @@ include "include/topnavbar.php";
         var deletecheck='<?php echo $deletecheck; ?>';
 
         // Filtor part start
-        $("#customer").select2();
+        $("#customer").select2({
+            ajax: {
+                url: 'getprocess/getcustomerlist.php',
+                type: "post",
+                dataType: 'json',
+                delay: 250,
+                data: function (params) {
+                    return {
+                        searchTerm: params.term 
+                    };
+                },
+                processResults: function (response) {
+                    return {
+                        results: response
+                    };
+                },
+                cache: true
+            }
+        });
         $('#invoicedate').change(function(){
             if($(this).val()!=''){
                 loadDiscountInvoice();
@@ -149,7 +161,7 @@ include "include/topnavbar.php";
                                 invoicelist : myJSON,
                                 totalreimbursement : totalreimbursement
                             },
-                            url: 'process/invoicespecialdiscountprocess.php',
+                            url: 'process/invoicevarianceprocess.php',
                             success: function(result) {
                                 Swal.close();
                                 var obj = JSON.parse(result);
@@ -208,7 +220,7 @@ include "include/topnavbar.php";
                         invoicedate : invoicedate,
                         customerID : customerID
                     },
-                    url: 'getprocess/getinvoiceinfo.php',
+                    url: 'getprocess/getvarianceinfo.php',
                     success: function(result) {
                         Swal.close();
                         
