@@ -21,7 +21,7 @@ $groupcategory=$_POST['groupcategory'];
 if(!empty($_POST['feqno'])){$feqno=$_POST['feqno'];}
 
 if(!empty($_POST['vat_status'])){$vatStatus=$_POST['vat_status'];}else{$vatStatus=0;}
-if(!empty($_POST['freeissue_status'])){$freeissue_status=$_POST['freeissue_status'];}else{$freeissue_status=0;}
+if(!empty($_POST['vat_status'])){$vatStatus=$_POST['vat_status'];}else{$vatStatus=0;}
 if(!empty($_POST['special_customer'])){$specialcustomer=$_POST['special_customer'];}else{$specialcustomer=0;}
 if(!empty($_POST['discounted_customer'])){$discountedcustomer=$_POST['discounted_customer'];}else{$discountedcustomer=0;}
 if(!empty($_POST['special_area'])){$specialarea=$_POST['special_area'];}else{$specialarea=0;}
@@ -46,7 +46,7 @@ if($recordOption==1){
 
     $nextfeqno=$rownextfeq['next_feqno'];
 
-    $query = "INSERT INTO `tbl_customer`(`type`, `name`, `alias_name`, `pv_num`,`owner_name`,`owner_dob`,`nic`, `phone`, `email`, `address`, `owner_address`,`tax_cus_name`,`vat_status`, `discount_status`, `vat_num`, `s_vat`, `numofvisitdays`, `creditlimit`, `credittype`, `creditperiod`, `emergencydate`, `specialcus_status`, `main_area`, `feqno`, `freeissue_status`, `status`, `updatedatetime`, `tbl_user_idtbl_user`, `tbl_area_idtbl_area`, `tbl_group_category_idtbl_group_category`) VALUES ('$cusType', '$cusName', '$alias_name','$pv_num','$owner_name','$owner_dob', '$cusNic', '$cusContact', '$cusEmail', '$address','$owner_address','$tax_cus_name', '$vatStatus', '$discountedcustomer','$TaxNum', '0', '$cusNoVisit', '$cusCreditlimit','$cuscredittype','$cuscreditdays','', '$specialcustomer', '$specialarea', '$nextfeqno', '$freeissue_status', '1','$updatedatetime', '$userID', '$cusArea', '$groupcategory')";
+    $query = "INSERT INTO `tbl_customer`(`type`, `name`, `alias_name`, `pv_num`,`owner_name`,`owner_dob`,`nic`, `phone`, `email`, `address`, `owner_address`,`tax_cus_name`,`vat_status`, `discount_status`, `vat_num`, `s_vat`, `numofvisitdays`, `creditlimit`, `credittype`, `creditperiod`, `emergencydate`, `specialcus_status`, `main_area`, `feqno`, `status`, `updatedatetime`, `tbl_user_idtbl_user`, `tbl_area_idtbl_area`, `tbl_group_category_idtbl_group_category`) VALUES ('$cusType', '$cusName', '$alias_name','$pv_num','$owner_name','$owner_dob', '$cusNic', '$cusContact', '$cusEmail', '$address','$owner_address','$tax_cus_name', '$vatStatus', '$discountedcustomer','$TaxNum', '0', '$cusNoVisit', '$cusCreditlimit','$cuscredittype','$cuscreditdays','', '$specialcustomer', '$specialarea', '$nextfeqno', '1','$updatedatetime', '$userID', '$cusArea', '$groupcategory')";
     if($conn->query($query)==true){
         $customerID=$conn->insert_id;
 
@@ -76,7 +76,7 @@ if($recordOption==1){
     }
 }
 else{
-    $update="UPDATE `tbl_customer` SET `type`='$cusType',`name`='$cusName',`alias_name`='$alias_name',`pv_num`='$pv_num',`owner_name`='$owner_name',`owner_dob`='$owner_dob',`nic`='$cusNic',`phone`='$cusContact',`email`='$cusEmail',`address`='$address',`owner_address`='$owner_address',`tax_cus_name`='$tax_cus_name',`vat_status`='$vatStatus',`discount_status`='$discountedcustomer',`vat_num`='$TaxNum',`s_vat`='0',`numofvisitdays`='$cusNoVisit',`creditlimit`='$cusCreditlimit',`credittype`='$cuscredittype',`creditperiod`='$cuscreditdays',`specialcus_status`='$specialcustomer',`freeissue_status`='$freeissue_status',`main_area`='$specialarea',`updatedatetime`='$updatedatetime',`tbl_user_idtbl_user`='$userID',`tbl_area_idtbl_area`='$cusArea',`tbl_group_category_idtbl_group_category`='$groupcategory' WHERE `idtbl_customer`='$recordID'";
+    $update="UPDATE `tbl_customer` SET `type`='$cusType',`name`='$cusName',`alias_name`='$alias_name',`pv_num`='$pv_num',`owner_name`='$owner_name',`owner_dob`='$owner_dob',`nic`='$cusNic',`phone`='$cusContact',`email`='$cusEmail',`address`='$address',`owner_address`='$owner_address',`tax_cus_name`='$tax_cus_name',`vat_status`='$vatStatus',`discount_status`='$discountedcustomer',`vat_num`='$TaxNum',`s_vat`='0',`numofvisitdays`='$cusNoVisit',`creditlimit`='$cusCreditlimit',`credittype`='$cuscredittype',`creditperiod`='$cuscreditdays',`specialcus_status`='$specialcustomer',`main_area`='$specialarea',`updatedatetime`='$updatedatetime',`tbl_user_idtbl_user`='$userID',`tbl_area_idtbl_area`='$cusArea',`tbl_group_category_idtbl_group_category`='$groupcategory' WHERE `idtbl_customer`='$recordID'";
     if($conn->query($update)==true){
         //Feq number part start 10-02-2025
         $arraycustomer=array();

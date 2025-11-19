@@ -905,7 +905,7 @@ include "include/topnavbar.php";
                         $('#ownAddress').val(obj.owner_address);
                         $('#tax_cus_name').val(obj.tax_cus_name);
                         $('#vat_status').prop('checked', !!parseInt(obj.vat_status));
-                        $('#freeissue_status').prop('checked', !!parseInt(obj.freeissue_status));
+                        $('#freeissue').prop('checked', !!parseInt(obj.freeissue));
                         $('#discounted_customer').prop('checked', !!parseInt(obj.discount_status));
                         $('#cusTaxNum').val(obj.tax_num);
                         $('#alias_name').val(obj.alias_name);

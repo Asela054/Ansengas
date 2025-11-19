@@ -224,7 +224,7 @@ include "include/topnavbar.php";
                                         </div>
                                     </div>                                    
                                     <div class="form-row">
-                                        <div class="col">
+                                        <div class="col-3">
                                             <div class="custom-control custom-checkbox">
                                                 <input type="checkbox" class="custom-control-input" name="vat_status"
                                                     id="vat_status" value="1">
@@ -232,16 +232,6 @@ include "include/topnavbar.php";
                                                     for="vat_status">VAT Status</label>
                                             </div>
                                         </div>
-                                        <div class="col">
-                                            <div class="custom-control custom-checkbox">
-                                                <input type="checkbox" class="custom-control-input"
-                                                    name="freeissue_status" id="freeissue_status" value="1">
-                                                <label class="custom-control-label small font-weight-bold text-dark"
-                                                    for="freeissue_status">Free Issue</label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="form-row">
                                         <div class="col">
                                             <div class="custom-control custom-checkbox">
                                                 <input type="checkbox" class="custom-control-input"
@@ -256,6 +246,48 @@ include "include/topnavbar.php";
                                                     name="special_customer" id="special_customer" value="1">
                                                 <label class="custom-control-label small font-weight-bold text-dark"
                                                     for="special_customer">Special Customer</label>
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="custom-control custom-checkbox">
+                                                <input type="checkbox" class="custom-control-input"
+                                                    name="freeissue_status" id="freeissue_status" value="1">
+                                                <label class="custom-control-label small font-weight-bold text-dark"
+                                                    for="freeissue_status">Free Issue</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                                                        <div class="form-row">
+                                        <div class="col-3">
+                                            <div class="custom-control custom-checkbox">
+                                                <input type="checkbox" class="custom-control-input" name="vat_status"
+                                                    id="vat_status" value="1">
+                                                <label class="custom-control-label small font-weight-bold text-dark"
+                                                    for="vat_status">VAT Status</label>
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="custom-control custom-checkbox">
+                                                <input type="checkbox" class="custom-control-input"
+                                                    name="discounted_customer" id="discounted_customer" value="1">
+                                                <label class="custom-control-label small font-weight-bold text-dark"
+                                                    for="discounted_customer">Discounted Customer</label>
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="custom-control custom-checkbox">
+                                                <input type="checkbox" class="custom-control-input"
+                                                    name="special_customer" id="special_customer" value="1">
+                                                <label class="custom-control-label small font-weight-bold text-dark"
+                                                    for="special_customer">Special Customer</label>
+                                            </div>
+                                        </div>
+                                        <div class="col">
+                                            <div class="custom-control custom-checkbox">
+                                                <input type="checkbox" class="custom-control-input"
+                                                    name="freeissue_status" id="freeissue_status" value="1">
+                                                <label class="custom-control-label small font-weight-bold text-dark"
+                                                    for="freeissue_status">Free Issue</label>
                                             </div>
                                         </div>
                                     </div>
@@ -905,7 +937,6 @@ include "include/topnavbar.php";
                         $('#ownAddress').val(obj.owner_address);
                         $('#tax_cus_name').val(obj.tax_cus_name);
                         $('#vat_status').prop('checked', !!parseInt(obj.vat_status));
-                        $('#freeissue_status').prop('checked', !!parseInt(obj.freeissue_status));
                         $('#discounted_customer').prop('checked', !!parseInt(obj.discount_status));
                         $('#cusTaxNum').val(obj.tax_num);
                         $('#alias_name').val(obj.alias_name);
