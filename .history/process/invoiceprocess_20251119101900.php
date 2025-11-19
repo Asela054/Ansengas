@@ -11,10 +11,10 @@ $refID=$_POST['refID'];
 $vehicleloadID=$_POST['vehicleloadID'];
 $areaID=$_POST['areaID'];
 $customerID=$_POST['customerID'];
+$customerID=$_POST['customerID'];
 $invoiceNo=$_POST['invoiceno'];
 $nettotal=$_POST['nettotal'];
 $withouttaxtotal=$_POST['withouttaxtotal'];
-$vatamount=$_POST['vatamount'];
 $freeissue_status=$_POST['freeissue_status'];
 $orderDetails = $_POST['orderDetails'];
 

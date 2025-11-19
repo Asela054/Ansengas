@@ -87,13 +87,13 @@ include "include/topnavbar.php";
 
                                             <div class="custom-control custom-radio custom-control-inline">
                                                 <input type="radio" class="custom-control-input"
-                                                    name="freeissue_status" id="freeissue_yes" value="1">
+                                                    name="freeissue_status_radio" id="freeissue_yes" value="1">
                                                 <label class="custom-control-label" for="freeissue_yes">Yes</label>
                                             </div>
 
                                             <div class="custom-control custom-radio custom-control-inline">
                                                 <input type="radio" class="custom-control-input"
-                                                    name="freeissue_status" id="freeissue_no" value="0" checked>
+                                                    name="freeissue_status_radio" id="freeissue_no" value="0" checked>
                                                 <label class="custom-control-label" for="freeissue_no">No</label>
                                             </div>
                                         </div>
@@ -647,29 +647,30 @@ include "include/topnavbar.php";
         });
         $("#customer").change(function () {
 
-            var cid = $(this).val();
+    var cid = $(this).val();
 
-            if (cid !== "") {
+    if (cid !== "") {
 
-                $.ajax({
-                    url: "getprocess/get_customer_freeissue_status.php",
-                    type: "POST",
-                    data: { customer_id: cid },
-                    success: function (response) {
+        $.ajax({
+            url: "get_customer_status.php",
+            type: "POST",
+            data: { customer_id: cid },
+            success: function (response) {
 
-                        if (response == 1) {
-                            $("#free_issue_section").show();
-                        } else {
-                            $("#free_issue_section").hide();
-                        }
+                if (response == 1) {
+                    $("#free_issue_section").show();
+                } else {
+                    $("#free_issue_section").hide();
+                }
 
-                    }
-                });
-
-            } else {
-                $("#free_issue_section").hide();
             }
         });
+
+    } else {
+        $("#free_issue_section").hide();
+    }
+});
+
         $('#area').change(function () {
             var areaID = $(this).val();
 
@@ -1220,8 +1221,6 @@ include "include/topnavbar.php";
             var nettotal = $('#hidetotalinvoice').val();
             var withouttaxtotal = $('#hidetotalinvoicewithoutvat').val();
             var vatamount = $('#vatamount').val();
-            var freeissue_status = $('input[name="freeissue_status"]:checked').val() ?? 0;
-
 
             var orderDetails = [];
             $('#tableBody tr').each(function () {
@@ -1274,7 +1273,6 @@ include "include/topnavbar.php";
                     nettotal: nettotal,
                     withouttaxtotal: withouttaxtotal,
                     vatamount: vatamount,
-                    freeissue_status: freeissue_status,
                     orderDetails: orderDetails
                 },
                 success: function(result) {

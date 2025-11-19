@@ -315,61 +315,61 @@ if ($resultvat) {
                                 2
                             );
                         
-                            echo '
-                            <tr>
-                                <td>' . $rowinvoicedetail['product_name'] . '</td>
+                        echo '
+                        <tr>
+                            <td>' . $rowinvoicedetail['product_name'] . '</td>
 
-                                <!-- NEW PRICE -->
-                                <td class="text-right">' . 
-                                    (($invtype == 1) 
-                                        ? '0.00' 
-                                        : number_format((($cusType == 1) ? $rowinvoicedetail['encustomer_newprice'] : $rowinvoicedetail['newprice']), 2)
-                                    ) . 
-                                '</td>
+                            <!-- NEW PRICE -->
+                            <td class="text-right">' . 
+                                (($invtype == 1) 
+                                    ? '0.00' 
+                                    : number_format((($cusType == 1) ? $rowinvoicedetail['encustomer_newprice'] : $rowinvoicedetail['newprice']), 2)
+                                ) . 
+                            '</td>
 
-                                <!-- REFILL PRICE -->
-                                <td class="text-right">' . 
-                                    (($invtype == 1) 
-                                        ? '0.00' 
-                                        : number_format((($cusType == 1) ? $rowinvoicedetail['encustomer_refillprice'] : $rowinvoicedetail['refillprice']), 2)
-                                    ) . 
-                                '</td>
+                            <!-- REFILL PRICE -->
+                            <td class="text-right">' . 
+                                (($invtype == 1) 
+                                    ? '0.00' 
+                                    : number_format((($cusType == 1) ? $rowinvoicedetail['encustomer_refillprice'] : $rowinvoicedetail['refillprice']), 2)
+                                ) . 
+                            '</td>
 
-                                <!-- EMPTY PRICE -->
-                                <td class="text-right">' . 
-                                    (($invtype == 1) 
-                                        ? '0.00' 
-                                        : number_format((($cusType == 1) ? $rowinvoicedetail['encustomer_emptyprice'] : $rowinvoicedetail['emptyprice']), 2)
-                                    ) . 
-                                '</td>
+                            <!-- EMPTY PRICE -->
+                            <td class="text-right">' . 
+                                (($invtype == 1) 
+                                    ? '0.00' 
+                                    : number_format((($cusType == 1) ? $rowinvoicedetail['encustomer_emptyprice'] : $rowinvoicedetail['emptyprice']), 2)
+                                ) . 
+                            '</td>
 
-                                <!-- VAT PERCENTAGE (You can keep original) -->
-                                <td class="text-right">' . (($invtype == 1) ? '0%' : $rowvat['vat'] . '%') . '</td>
+                            <!-- VAT PERCENTAGE (You can keep original) -->
+                            <td class="text-right">' . (($invtype == 1) ? '0%' : $rowvat['vat'] . '%') . '</td>
 
-                                <!-- NEW PRICE + VAT -->
-                                <td class="text-right">' . 
-                                    (($invtype == 1) 
-                                        ? '0.00' 
-                                        : number_format((($cusType == 1) ? $rowinvoicedetail['encustomer_newprice'] + $vatNew : ($rowinvoicedetail['newprice'] + $vatNew)), 2)
-                                    ) . 
-                                '</td>
+                            <!-- NEW PRICE + VAT -->
+                            <td class="text-right">' . 
+                                (($invtype == 1) 
+                                    ? '0.00' 
+                                    : number_format((($cusType == 1) ? $rowinvoicedetail['encustomer_newprice'] + $vatNew : ($rowinvoicedetail['newprice'] + $vatNew)), 2)
+                                ) . 
+                            '</td>
 
-                                <!-- REFILL PRICE + VAT -->
-                                <td class="text-right">' . 
-                                    (($invtype == 1) 
-                                        ? '0.00' 
-                                        : number_format((($cusType == 1) ? $rowinvoicedetail['encustomer_refillprice'] + $vatRefill : ($rowinvoicedetail['refillprice'] + $vatRefill)), 2)
-                                    ) . 
-                                '</td>
+                            <!-- REFILL PRICE + VAT -->
+                            <td class="text-right">' . 
+                                (($invtype == 1) 
+                                    ? '0.00' 
+                                    : number_format((($cusType == 1) ? $rowinvoicedetail['encustomer_refillprice'] + $vatRefill : ($rowinvoicedetail['refillprice'] + $vatRefill)), 2)
+                                ) . 
+                            '</td>
 
-                                <!-- EMPTY PRICE + VAT -->
-                                <td class="text-right">' . 
-                                    (($invtype == 1) 
-                                        ? '0.00' 
-                                        : number_format((($cusType == 1) ? $rowinvoicedetail['encustomer_emptyprice'] + $vatEmpty : ($rowinvoicedetail['emptyprice'] + $vatEmpty)), 2)
-                                    ) . 
-                                '</td>
-                            </tr>';
+                            <!-- EMPTY PRICE + VAT -->
+                            <td class="text-right">' . 
+                                (($invtype == 1) 
+                                    ? '0.00' 
+                                    : number_format((($cusType == 1) ? $rowinvoicedetail['encustomer_emptyprice'] + $vatEmpty : ($rowinvoicedetail['emptyprice'] + $vatEmpty)), 2)
+                                ) . 
+                            '</td>
+                        </tr>';
                         }
 
                 echo '

@@ -235,44 +235,48 @@ if ($resultvat) {
 
             </tbody>
             <tfoot>
-            <?php
-            if ($invtype == 1) {
-                echo '
-                    <tr>
-                        <th colspan="9" class="text-left">Total</th>
-                        <th class="text-right">0.00</th>
-                    </tr>
-                    <tr>
-                        <th colspan="9" class="text-left">VAT</th>
-                        <th class="text-right">0.00</th>
-                    </tr>
-                    <tr>
-                        <th colspan="9" class="text-left">Net Total</th>
-                        <th class="text-right">0.00</th>
-                    </tr>
-                ';
+                <?php
+                if ($invtype == 1) {
 
-            } else {
-                if ($vatStatus == 1) {
+                    // Free Issue Note → Everything is 0
                     echo '
                         <tr>
                             <th colspan="9" class="text-left">Total</th>
-                            <th class="text-right">' . number_format($rowinvoiceinfo['total'], 2) . '</th>
+                            <th class="text-right">0.00</th>
                         </tr>
                         <tr>
-                            <th colspan="9" class="text-left">VAT ('.$rowvat['vat'].'%)</th>
-                            <th class="text-right">' . number_format($rowinvoiceinfo['taxamount'], 2) . '</th>
+                            <th colspan="9" class="text-left">VAT</th>
+                            <th class="text-right">0.00</th>
+                        </tr>
+                        <tr>
+                            <th colspan="9" class="text-left">Net Total</th>
+                            <th class="text-right">0.00</th>
+                        </tr>
+                    ';
+
+                } else {
+
+                    // Normal Invoice
+                    if ($vatStatus == 1) {
+                        echo '
+                            <tr>
+                                <th colspan="9" class="text-left">Total</th>
+                                <th class="text-right">' . number_format($rowinvoiceinfo['total'], 2) . '</th>
+                            </tr>
+                            <tr>
+                                <th colspan="9" class="text-left">VAT ('.$rowvat['vat'].'%)</th>
+                                <th class="text-right">' . number_format($rowinvoiceinfo['taxamount'], 2) . '</th>
+                            </tr>';
+                    }
+
+                    echo '
+                        <tr>
+                            <th colspan="9" class="text-left">Net Total</th>
+                            <th class="text-right">' . number_format($rowinvoiceinfo['nettotal'], 2) . '</th>
                         </tr>';
                 }
-
-                echo '
-                    <tr>
-                        <th colspan="9" class="text-left">Net Total</th>
-                        <th class="text-right">' . number_format($rowinvoiceinfo['nettotal'], 2) . '</th>
-                    </tr>';
-            }
-            ?>
-            </tfoot>
+                ?>
+                </tfoot>
         </table>
 
         <?php
@@ -317,59 +321,15 @@ if ($resultvat) {
                         
                             echo '
                             <tr>
-                                <td>' . $rowinvoicedetail['product_name'] . '</td>
-
-                                <!-- NEW PRICE -->
-                                <td class="text-right">' . 
-                                    (($invtype == 1) 
-                                        ? '0.00' 
-                                        : number_format((($cusType == 1) ? $rowinvoicedetail['encustomer_newprice'] : $rowinvoicedetail['newprice']), 2)
-                                    ) . 
-                                '</td>
-
-                                <!-- REFILL PRICE -->
-                                <td class="text-right">' . 
-                                    (($invtype == 1) 
-                                        ? '0.00' 
-                                        : number_format((($cusType == 1) ? $rowinvoicedetail['encustomer_refillprice'] : $rowinvoicedetail['refillprice']), 2)
-                                    ) . 
-                                '</td>
-
-                                <!-- EMPTY PRICE -->
-                                <td class="text-right">' . 
-                                    (($invtype == 1) 
-                                        ? '0.00' 
-                                        : number_format((($cusType == 1) ? $rowinvoicedetail['encustomer_emptyprice'] : $rowinvoicedetail['emptyprice']), 2)
-                                    ) . 
-                                '</td>
-
-                                <!-- VAT PERCENTAGE (You can keep original) -->
-                                <td class="text-right">' . (($invtype == 1) ? '0%' : $rowvat['vat'] . '%') . '</td>
-
-                                <!-- NEW PRICE + VAT -->
-                                <td class="text-right">' . 
-                                    (($invtype == 1) 
-                                        ? '0.00' 
-                                        : number_format((($cusType == 1) ? $rowinvoicedetail['encustomer_newprice'] + $vatNew : ($rowinvoicedetail['newprice'] + $vatNew)), 2)
-                                    ) . 
-                                '</td>
-
-                                <!-- REFILL PRICE + VAT -->
-                                <td class="text-right">' . 
-                                    (($invtype == 1) 
-                                        ? '0.00' 
-                                        : number_format((($cusType == 1) ? $rowinvoicedetail['encustomer_refillprice'] + $vatRefill : ($rowinvoicedetail['refillprice'] + $vatRefill)), 2)
-                                    ) . 
-                                '</td>
-
-                                <!-- EMPTY PRICE + VAT -->
-                                <td class="text-right">' . 
-                                    (($invtype == 1) 
-                                        ? '0.00' 
-                                        : number_format((($cusType == 1) ? $rowinvoicedetail['encustomer_emptyprice'] + $vatEmpty : ($rowinvoicedetail['emptyprice'] + $vatEmpty)), 2)
-                                    ) . 
-                                '</td>
-                            </tr>';
+                            <td>' . $rowinvoicedetail['product_name'] . '</td>
+                            <td class="text-right">' . number_format((($cusType == 1) ? $rowinvoicedetail['encustomer_newprice'] : $rowinvoicedetail['newprice']), 2) . '</td>
+                            <td class="text-right">' . number_format((($cusType == 1) ? $rowinvoicedetail['encustomer_refillprice'] :$rowinvoicedetail['refillprice']), 2) . '</td>
+                            <td class="text-right">' . number_format((($cusType == 1) ? $rowinvoicedetail['encustomer_emptyprice'] :$rowinvoicedetail['emptyprice']), 2). '</td>
+                            <td class="text-right">' . $rowvat['vat'] . '%</td>
+                            <td class="text-right">' . number_format(($cusType == 1) ? $rowinvoicedetail['encustomer_newprice'] + $vatNew : ($rowinvoicedetail['newprice'] + $vatNew), 2) . '</td>
+                            <td class="text-right">' . number_format(($cusType == 1) ? $rowinvoicedetail['encustomer_refillprice'] + $vatRefill : ($rowinvoicedetail['refillprice'] + $vatRefill), 2) . '</td>
+                            <td class="text-right">' . number_format(($cusType == 1) ? $rowinvoicedetail['encustomer_emptyprice'] + $vatEmpty : ($rowinvoicedetail['emptyprice'] + $vatEmpty), 2) . '</td>
+                        </tr>';
                         }
 
                 echo '

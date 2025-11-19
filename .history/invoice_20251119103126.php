@@ -82,22 +82,22 @@ include "include/topnavbar.php";
                                         </div> 
                                     </div>
                                     <div class="form-row mt-3 mb-3" id="free_issue_section" style="display:none;">
-                                        <div class="col">
-                                            <label class="small font-weight-bold text-dark d-block">Free Issue</label>
+    <div class="col">
+        <label class="small font-weight-bold text-dark d-block">Free Issue</label>
 
-                                            <div class="custom-control custom-radio custom-control-inline">
-                                                <input type="radio" class="custom-control-input"
-                                                    name="freeissue_status" id="freeissue_yes" value="1">
-                                                <label class="custom-control-label" for="freeissue_yes">Yes</label>
-                                            </div>
+        <div class="custom-control custom-radio custom-control-inline">
+            <input type="radio" class="custom-control-input"
+                   name="freeissue_status" id="freeissue_yes" value="1">
+            <label class="custom-control-label" for="freeissue_yes">Yes</label>
+        </div>
 
-                                            <div class="custom-control custom-radio custom-control-inline">
-                                                <input type="radio" class="custom-control-input"
-                                                    name="freeissue_status" id="freeissue_no" value="0" checked>
-                                                <label class="custom-control-label" for="freeissue_no">No</label>
-                                            </div>
-                                        </div>
-                                    </div>
+        <div class="custom-control custom-radio custom-control-inline">
+            <input type="radio" class="custom-control-input"
+                   name="freeissue_status" id="freeissue_no" value="0" checked>
+            <label class="custom-control-label" for="freeissue_no">No</label>
+        </div>
+    </div>
+</div>
                                     <!-- Customer Available Stock -->
                                     <div class="collapse" id="customeravastock">
                                         <div class="card card-body p-0 border-0 shadow-none">
@@ -1220,8 +1220,7 @@ include "include/topnavbar.php";
             var nettotal = $('#hidetotalinvoice').val();
             var withouttaxtotal = $('#hidetotalinvoicewithoutvat').val();
             var vatamount = $('#vatamount').val();
-            var freeissue_status = $('input[name="freeissue_status"]:checked').val() ?? 0;
-
+            var freeissue_status = $('input[name="freeissue_status_radio"]:checked').val();
 
             var orderDetails = [];
             $('#tableBody tr').each(function () {

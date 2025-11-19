@@ -1220,8 +1220,7 @@ include "include/topnavbar.php";
             var nettotal = $('#hidetotalinvoice').val();
             var withouttaxtotal = $('#hidetotalinvoicewithoutvat').val();
             var vatamount = $('#vatamount').val();
-            var freeissue_status = $('input[name="freeissue_status"]:checked').val() ?? 0;
-
+            var freeissue_status = $('input[name="freeissue_status_radio"]:checked').val();
 
             var orderDetails = [];
             $('#tableBody tr').each(function () {

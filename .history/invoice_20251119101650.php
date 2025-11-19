@@ -87,13 +87,13 @@ include "include/topnavbar.php";
 
                                             <div class="custom-control custom-radio custom-control-inline">
                                                 <input type="radio" class="custom-control-input"
-                                                    name="freeissue_status" id="freeissue_yes" value="1">
+                                                    name="freeissue_status_radio" id="freeissue_yes" value="1">
                                                 <label class="custom-control-label" for="freeissue_yes">Yes</label>
                                             </div>
 
                                             <div class="custom-control custom-radio custom-control-inline">
                                                 <input type="radio" class="custom-control-input"
-                                                    name="freeissue_status" id="freeissue_no" value="0" checked>
+                                                    name="freeissue_status_radio" id="freeissue_no" value="0" checked>
                                                 <label class="custom-control-label" for="freeissue_no">No</label>
                                             </div>
                                         </div>
@@ -1220,8 +1220,7 @@ include "include/topnavbar.php";
             var nettotal = $('#hidetotalinvoice').val();
             var withouttaxtotal = $('#hidetotalinvoicewithoutvat').val();
             var vatamount = $('#vatamount').val();
-            var freeissue_status = $('input[name="freeissue_status"]:checked').val() ?? 0;
-
+            var freeissue_status = $('input[name="freeissue_status_radio"]:checked').val();
 
             var orderDetails = [];
             $('#tableBody tr').each(function () {
@@ -1274,7 +1273,6 @@ include "include/topnavbar.php";
                     nettotal: nettotal,
                     withouttaxtotal: withouttaxtotal,
                     vatamount: vatamount,
-                    freeissue_status: freeissue_status,
                     orderDetails: orderDetails
                 },
                 success: function(result) {

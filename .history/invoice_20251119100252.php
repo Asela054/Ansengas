@@ -81,20 +81,13 @@ include "include/topnavbar.php";
                                             </div>
                                         </div> 
                                     </div>
-                                    <div class="form-row mt-3 mb-3" id="free_issue_section" style="display:none;">
+                                                                        <div class="form-row">
                                         <div class="col">
-                                            <label class="small font-weight-bold text-dark d-block">Free Issue</label>
-
-                                            <div class="custom-control custom-radio custom-control-inline">
-                                                <input type="radio" class="custom-control-input"
-                                                    name="freeissue_status" id="freeissue_yes" value="1">
-                                                <label class="custom-control-label" for="freeissue_yes">Yes</label>
-                                            </div>
-
-                                            <div class="custom-control custom-radio custom-control-inline">
-                                                <input type="radio" class="custom-control-input"
-                                                    name="freeissue_status" id="freeissue_no" value="0" checked>
-                                                <label class="custom-control-label" for="freeissue_no">No</label>
+                                            <div class="custom-control custom-checkbox">
+                                                <input type="checkbox" class="custom-control-input"
+                                                    name="freeissue_status" id="freeissue_status" value="1">
+                                                <label class="custom-control-label small font-weight-bold text-dark"
+                                                    for="freeissue_status">Free Issue</label>
                                             </div>
                                         </div>
                                     </div>
@@ -643,31 +636,6 @@ include "include/topnavbar.php";
                 $("#hidesubmit").click();
             } else {  
                 getloadlist(invdate, refID);
-            }
-        });
-        $("#customer").change(function () {
-
-            var cid = $(this).val();
-
-            if (cid !== "") {
-
-                $.ajax({
-                    url: "getprocess/get_customer_freeissue_status.php",
-                    type: "POST",
-                    data: { customer_id: cid },
-                    success: function (response) {
-
-                        if (response == 1) {
-                            $("#free_issue_section").show();
-                        } else {
-                            $("#free_issue_section").hide();
-                        }
-
-                    }
-                });
-
-            } else {
-                $("#free_issue_section").hide();
             }
         });
         $('#area').change(function () {
@@ -1220,8 +1188,6 @@ include "include/topnavbar.php";
             var nettotal = $('#hidetotalinvoice').val();
             var withouttaxtotal = $('#hidetotalinvoicewithoutvat').val();
             var vatamount = $('#vatamount').val();
-            var freeissue_status = $('input[name="freeissue_status"]:checked').val() ?? 0;
-
 
             var orderDetails = [];
             $('#tableBody tr').each(function () {
@@ -1274,7 +1240,6 @@ include "include/topnavbar.php";
                     nettotal: nettotal,
                     withouttaxtotal: withouttaxtotal,
                     vatamount: vatamount,
-                    freeissue_status: freeissue_status,
                     orderDetails: orderDetails
                 },
                 success: function(result) {

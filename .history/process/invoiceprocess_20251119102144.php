@@ -11,11 +11,12 @@ $refID=$_POST['refID'];
 $vehicleloadID=$_POST['vehicleloadID'];
 $areaID=$_POST['areaID'];
 $customerID=$_POST['customerID'];
+$customerID=$_POST['customerID'];
 $invoiceNo=$_POST['invoiceno'];
 $nettotal=$_POST['nettotal'];
 $withouttaxtotal=$_POST['withouttaxtotal'];
 $vatamount=$_POST['vatamount'];
-$freeissue_status=$_POST['freeissue_status'];
+$vatamount=$_POST['vatamount'];
 $orderDetails = $_POST['orderDetails'];
 
 $invoicemonth = date("n", strtotime($invoicedate));
@@ -45,9 +46,9 @@ if ($result = $conn->query($sql)) {
 } 
 
 if($vat_status==1){
-    $insertinvoice="INSERT INTO `tbl_invoice`(`tax_invoice_num`,`non_tax_invoice_num`,`invtype`,`date`, `total`, `taxamount`, `nettotal`, `paymentmethod`, `paymentcomplete`, `chequesend`, `companydiffsend`, `ref_id`, `vat`, `status`, `updatedatetime`, `tbl_user_idtbl_user`, `tbl_area_idtbl_area`, `tbl_customer_idtbl_customer`, `tbl_vehicle_load_idtbl_vehicle_load`) VALUES ('$nextTaxInvoiceNum','$invoiceNo','$freeissue_status','$invoicedate','$withouttaxtotal','$taxamount','$nettotal','0','0','0','0','$refID','$vatamount','1','$updatedatetime','$userID','$areaID','$customerID','$vehicleloadID')";
+    $insertinvoice="INSERT INTO `tbl_invoice`(`tax_invoice_num`,`non_tax_invoice_num`,`date`, `total`, `taxamount`, `nettotal`, `paymentmethod`, `paymentcomplete`, `chequesend`, `companydiffsend`, `ref_id`, `vat`, `status`, `updatedatetime`, `tbl_user_idtbl_user`, `tbl_area_idtbl_area`, `tbl_customer_idtbl_customer`, `tbl_vehicle_load_idtbl_vehicle_load`) VALUES ('$nextTaxInvoiceNum','$invoiceNo','$invoicedate','$withouttaxtotal','$taxamount','$nettotal','0','0','0','0','$refID','$vatamount','1','$updatedatetime','$userID','$areaID','$customerID','$vehicleloadID')";
 }else{
-    $insertinvoice="INSERT INTO `tbl_invoice`(`non_tax_invoice_num`,`invtype`,`date`, `total`, `taxamount`, `nettotal`, `paymentmethod`, `paymentcomplete`, `chequesend`, `companydiffsend`, `ref_id`, `vat`, `status`, `updatedatetime`, `tbl_user_idtbl_user`, `tbl_area_idtbl_area`, `tbl_customer_idtbl_customer`, `tbl_vehicle_load_idtbl_vehicle_load`) VALUES ('$invoiceNo','$freeissue_status','$invoicedate','$withouttaxtotal','$taxamount','$nettotal','0','0','0','0','$refID','$vatamount','1','$updatedatetime','$userID','$areaID','$customerID','$vehicleloadID')";
+    $insertinvoice="INSERT INTO `tbl_invoice`(`non_tax_invoice_num`,`date`, `total`, `taxamount`, `nettotal`, `paymentmethod`, `paymentcomplete`, `chequesend`, `companydiffsend`, `ref_id`, `vat`, `status`, `updatedatetime`, `tbl_user_idtbl_user`, `tbl_area_idtbl_area`, `tbl_customer_idtbl_customer`, `tbl_vehicle_load_idtbl_vehicle_load`) VALUES ('$invoiceNo','$invoicedate','$withouttaxtotal','$taxamount','$nettotal','0','0','0','0','$refID','$vatamount','1','$updatedatetime','$userID','$areaID','$customerID','$vehicleloadID')";
 }
 
 if($conn->query($insertinvoice)==true){
