@@ -1282,7 +1282,8 @@ include "include/topnavbar.php";
                     handleModalHidden();
                     $('#tableBody').empty();
                     $('#invoiceno').val('');
-                    $('#customer').val(null).trigger('change');
+$('#customer').val(null).trigger('change');
+
                     $('#divtotal').empty();          
 
                 },
