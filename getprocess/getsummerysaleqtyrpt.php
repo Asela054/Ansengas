@@ -465,12 +465,12 @@ if($resultdaily->num_rows>0){
         $discountstatus=$rowdaily['discount_status'];
         $areaID=$rowdaily['idtbl_area'];
 
-        $sqlinvdetail="SELECT `refillqty`, `encustomer_refillprice`, `tbl_product_idtbl_product`, `discount_price` FROM `tbl_invoice_detail` WHERE `tbl_invoice_idtbl_invoice`='$invoiceID' AND `status`=1 AND `tbl_product_idtbl_product`=1";
+        $sqlinvdetail="SELECT `refillqty`, `trustqty`, `encustomer_refillprice`, `tbl_product_idtbl_product`, `discount_price` FROM `tbl_invoice_detail` WHERE `tbl_invoice_idtbl_invoice`='$invoiceID' AND `status`=1 AND `tbl_product_idtbl_product`=1";
         $resultinvdetail = $conn->query($sqlinvdetail);
         $rowinvdetail = $resultinvdetail->fetch_assoc();
 
         if(!empty($rowinvdetail['tbl_product_idtbl_product']) && $rowinvdetail['discount_price']>0 && $discountstatus==1){
-            $refillqty=$rowinvdetail['refillqty'];
+            $refillqty=$rowinvdetail['refillqty']+$rowinvdetail['trustqty'];
             $refill_price=(($rowinvdetail['encustomer_refillprice']*($vatamount+100))/100);
             $discount_price=(($rowinvdetail['discount_price']*($vatamount+100))/100);
 

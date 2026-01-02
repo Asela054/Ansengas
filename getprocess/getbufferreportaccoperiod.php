@@ -19,6 +19,7 @@ if(!empty($_POST['groupcategory'])){$groupcategory=$_POST['groupcategory'];}
 // $resultCustomerBufferStockDetail = $conn->query($sqlCustomerBufferStockDetail);
 
 $sql="SELECT 
+    c.idtbl_customer,
     c.name AS Customer,
     c.pv_num AS 'PV Number',
     r.idtbl_reject_reason AS 'rejectid',
@@ -58,6 +59,7 @@ if ($type == '2' && !empty($customerID)) {
 }
 if ($type == '4' && !empty($customerID)) {
     $sql .= " LEFT JOIN tbl_vehicle_load vl ON vl.idtbl_vehicle_load = bs.tbl_vehicle_load_idtbl_vehicle_load";
+    $sql .= " LEFT JOIN tbl_area a ON vl.tbl_area_idtbl_area = a.idtbl_area";
 }
 $sql .= " WHERE 
     c.status = 1";
@@ -75,6 +77,7 @@ if ($type == '3' && !empty($customerID)) {
 }
 if ($type == '4' && !empty($customerID)) {
     $sql .= " AND vl.driverid = '$customerID'";
+    $sql .= " AND c.tbl_area_idtbl_area = vl.tbl_area_idtbl_area";
 }
 if ($type == '5' && !empty($customerID)) {
     $sql .= " AND c.tbl_area_idtbl_area = '$customerID'";
@@ -86,6 +89,16 @@ HAVING
 ORDER BY 
     c.name";
 $result = $conn->query($sql);
+
+$areacustomers = array();
+$bufferenteredcustomers = array();
+if($type == '4'){
+    $sqlcustomerlist = "SELECT `idtbl_customer`, `name` FROM `tbl_customer` LEFT JOIN `tbl_vehicle_load` ON `tbl_vehicle_load`.`tbl_area_idtbl_area` = `tbl_customer`.`tbl_area_idtbl_area` WHERE `tbl_customer`.`status`=1 AND `tbl_vehicle_load`.`driverid`='$customerID' AND `tbl_vehicle_load`.`status`=1 AND `tbl_vehicle_load`.`date`='$date' GROUP BY `tbl_customer`.`idtbl_customer`";
+    $resultcustomerlist = $conn->query($sqlcustomerlist);
+    while($rowcustomerlist = $resultcustomerlist->fetch_assoc()){
+        $areacustomers[] = $rowcustomerlist['idtbl_customer'];
+    }
+}
 
 // Initialize totals array
 $totals = array(
@@ -133,6 +146,7 @@ $html='';
         </thead>
         <tbody>';
         while ($rowinfo = $result->fetch_assoc()) {
+            $bufferenteredcustomers[] = $rowinfo['idtbl_customer'];
             $totals['2KG_Full'] += $rowinfo['2KG_Full'];
             $totals['2KG_Empty'] += $rowinfo['2KG_Empty'];
             $totals['5KG_Full'] += $rowinfo['5KG_Full'];
@@ -167,6 +181,36 @@ $html='';
                 <td class="text-center">'.($rowinfo['37_5KG_Full'] <= 0 ? '' : ceil($rowinfo['37_5KG_Full'])).'</td>
                 <td class="text-center">'.($rowinfo['37_5KG_Empty'] <= 0 ? '' : ceil($rowinfo['37_5KG_Empty'])).'</td>
             </tr>';
+        }
+
+        if($type == '4'){
+            $removedubplicates = array_diff($areacustomers, $bufferenteredcustomers);;
+            if(count($removedubplicates) > 0){
+                foreach($removedubplicates as $customerid){
+                    $sqlcustomername = "SELECT `name` FROM `tbl_customer` WHERE `idtbl_customer`='$customerid'";
+                    $resultcustomername = $conn->query($sqlcustomername);
+                    $rowcustomername = $resultcustomername->fetch_assoc();
+                    $html.='<tr>
+                        <td nowrap>'.$rowcustomername['name'].'</td>
+                        <td nowrap></td>
+                        <!-- 2KG Columns -->
+                        <td class="text-center"></td>
+                        <td class="text-center"></td>
+                        
+                        <!-- 5KG Columns -->
+                        <td class="text-center"></td>
+                        <td class="text-center"></td>
+                        
+                        <!-- 12.5KG Columns -->
+                        <td class="text-center"></td>
+                        <td class="text-center"></td>
+                        
+                        <!-- 37.5KG Columns -->
+                        <td class="text-center"></td>
+                        <td class="text-center"></td>
+                    </tr>';
+                }
+            }   
         }
     $html.='</tbody>
         <tfoot class="">
