@@ -4,7 +4,107 @@ require_once('../connection/db.php');
 
 $recordID=$_POST['recordID'];
 
-$sqlinvoiceinfo="SELECT `tbl_invoice`.`idtbl_invoice`,`tbl_invoice`.`invtype`,`tbl_invoice`.`status`, `tbl_invoice`.`tax_invoice_num`, `tbl_invoice`.`non_tax_invoice_num`, `tbl_invoice`.`date`, `tbl_invoice`.`total`, `tbl_invoice`.`taxamount`, `tbl_invoice`.`nettotal`, `tbl_invoice`.`paymentcomplete`, `tbl_customer`.`type`, `tbl_customer`.`vat_status`, `tbl_customer`.`vat_num`, `tbl_customer`.`name`, `tbl_customer`.`tax_cus_name`, `tbl_customer`.`address`, `tbl_employee`.`name` AS `saleref`, `tbl_area`.`area` FROM `tbl_invoice` LEFT JOIN `tbl_customer` ON `tbl_customer`.`idtbl_customer`=`tbl_invoice`.`tbl_customer_idtbl_customer` LEFT JOIN `tbl_employee` ON `tbl_employee`.`idtbl_employee`=`tbl_invoice`.`ref_id` LEFT JOIN `tbl_area` ON `tbl_area`.`idtbl_area`=`tbl_invoice`.`tbl_area_idtbl_area` WHERE `tbl_invoice`.`idtbl_invoice`='$recordID'";
+function ConvertRupeeToText($amount) {
+    $ones = array(
+        0 => '',
+        1 => 'one',
+        2 => 'two',
+        3 => 'three',
+        4 => 'four',
+        5 => 'five',
+        6 => 'six',
+        7 => 'seven',
+        8 => 'eight',
+        9 => 'nine',
+        10 => 'ten',
+        11 => 'eleven',
+        12 => 'twelve',
+        13 => 'thirteen',
+        14 => 'fourteen',
+        15 => 'fifteen',
+        16 => 'sixteen',
+        17 => 'seventeen',
+        18 => 'eighteen',
+        19 => 'nineteen'
+    );
+
+    $tens = array(
+        2 => 'twenty',
+        3 => 'thirty',
+        4 => 'forty',
+        5 => 'fifty',
+        6 => 'sixty',
+        7 => 'seventy',
+        8 => 'eighty',
+        9 => 'ninety'
+    );
+
+    $amount = str_replace(',', '', $amount);
+    $rupees = intval($amount);
+    $cents = intval(round(($amount - $rupees) * 100));
+
+    $words = '';
+
+    $numberToWords = function($num) use (&$numberToWords, $ones, $tens) {
+        $str = '';
+
+        if ($num >= 1000000000) {
+            $str .= $numberToWords(intval($num / 1000000000)) . ' billion ';
+            $num %= 1000000000;
+        }
+
+        if ($num >= 1000000) {
+            $str .= $numberToWords(intval($num / 1000000)) . ' million ';
+            $num %= 1000000;
+        }
+
+        if ($num >= 1000) {
+            $str .= $numberToWords(intval($num / 1000)) . ' thousand ';
+            $num %= 1000;
+        }
+
+        if ($num >= 100) {
+            $str .= $ones[intval($num / 100)] . ' hundred ';
+            $num %= 100;
+        }
+
+        if ($num > 0) {
+            if ($str !== '') {
+                $str .= ' ';
+            }
+
+            if ($num < 20) {
+                $str .= $ones[$num];
+            } else {
+                $str .= $tens[intval($num / 10)];
+                if ($num % 10 > 0) {
+                    $str .= '-' . $ones[$num % 10];
+                }
+            }
+        }
+
+        return trim($str);
+    };
+
+    if ($rupees > 0) {
+        $words .= $numberToWords($rupees);
+    }
+
+    if ($cents > 0) {
+        if ($rupees > 0) {
+            $words .= ' and ';
+        }
+        $words .= $numberToWords($cents) . ' cents';
+    }
+
+    if ($words === '') {
+        $words = 'zero';
+    }
+
+    return ucfirst(trim($words));
+}  
+
+$sqlinvoiceinfo="SELECT `tbl_invoice`.`idtbl_invoice`,`tbl_invoice`.`invtype`,`tbl_invoice`.`status`, `tbl_invoice`.`tax_invoice_num`, `tbl_invoice`.`non_tax_invoice_num`, `tbl_invoice`.`date`, `tbl_invoice`.`total`, `tbl_invoice`.`taxamount`, `tbl_invoice`.`nettotal`, `tbl_invoice`.`paymentcomplete`, `tbl_customer`.`type`, `tbl_customer`.`vat_status`, `tbl_customer`.`vat_num`, `tbl_customer`.`name`, `tbl_customer`.`tax_cus_name`, `tbl_customer`.`address`, `tbl_employee`.`name` AS `saleref`, `tbl_area`.`area`, `tbl_customer`.`phone` FROM `tbl_invoice` LEFT JOIN `tbl_customer` ON `tbl_customer`.`idtbl_customer`=`tbl_invoice`.`tbl_customer_idtbl_customer` LEFT JOIN `tbl_employee` ON `tbl_employee`.`idtbl_employee`=`tbl_invoice`.`ref_id` LEFT JOIN `tbl_area` ON `tbl_area`.`idtbl_area`=`tbl_invoice`.`tbl_area_idtbl_area` WHERE `tbl_invoice`.`idtbl_invoice`='$recordID'";
 $resultinvoiceinfo =$conn-> query($sqlinvoiceinfo); 
 $rowinvoiceinfo = $resultinvoiceinfo-> fetch_assoc();
 
@@ -55,6 +155,24 @@ if ($resultvat) {
     }
 }
 
+$sqlpaymethod = "SELECT 
+    GROUP_CONCAT(
+        CASE `tbl_invoice_payment_detail`.`method`
+            WHEN 1 THEN 'Cash'
+            WHEN 2 THEN 'Bank / Cheque'
+            WHEN 3 THEN 'Online'
+            ELSE 'Unknown'
+        END
+    ) AS payment_methods
+FROM `tbl_invoice_payment_detail` 
+LEFT JOIN `tbl_invoice_payment_has_tbl_invoice` 
+    ON `tbl_invoice_payment_has_tbl_invoice`.`tbl_invoice_payment_idtbl_invoice_payment` = `tbl_invoice_payment_detail`.`tbl_invoice_payment_idtbl_invoice_payment` 
+WHERE `tbl_invoice_payment_has_tbl_invoice`.`tbl_invoice_idtbl_invoice` = '$recordID' 
+  AND `tbl_invoice_payment_detail`.`status` = 1";
+$resultpaymethod = $conn->query($sqlpaymethod);
+$rowpaymethod = $resultpaymethod->fetch_assoc();
+
+if ($vatStatus == 0) {
 ?>
 <div class="row">
     <div class="col-12">
@@ -82,53 +200,53 @@ if ($resultvat) {
         </table>
     </div>
 </div>
-        <div class="row mt-3">
-            <div class="col-12">
-                <div class="row">
-                    <div class="col-2">Invoice Date</div>
-                    <div class="col-1 text-center">:</div>
-                    <div class="col-6"><?php echo $rowinvoiceinfo['date']; ?></div>
-                </div>
-                <div class="row">
-                    <div class="col-2">Invoice No</div>
-                    <div class="col-1 text-center">:</div>
-                    <div class="col-6"><?php 
-                        if ($rowinvoiceinfo['tax_invoice_num'] == null) {
-                            echo 'INV-'.$rowinvoiceinfo['idtbl_invoice'];
-                        } else{
-                            echo 'AGT'.$rowinvoiceinfo['tax_invoice_num'];
-                        }
-                    ?></div>
-                </div>
-                <div class="row">
-                    <div class="col-2">Customer</div>
-                    <div class="col-1 text-center">:</div>
-                    <div class="col-6"><?php if ($vatStatus == 1) {echo $rowinvoiceinfo['tax_cus_name'];}else{echo $rowinvoiceinfo['name'];} ?></div>
-                </div>
-                <div class="row">
-                    <div class="col-2">Address</div>
-                    <div class="col-1 text-center">:</div>
-                    <div class="col-6"><?php echo $rowinvoiceinfo['address']; ?></div>
-                </div>
-                <?php if ($vatStatus == 1) { ?>
-                <div class="row">
-                    <div class="col-2">Outlet</div>
-                    <div class="col-1 text-center">:</div>
-                    <div class="col-6"><?php echo $rowinvoiceinfo['name']; ?></div>
-                </div>
-                <?php } ?>
-                <?php if ($vatStatus == 1) { ?>
-                <div class="row">
-                    <div class="col-2">Tax No</div>
-                    <div class="col-1 text-center">:</div>
-                    <div class="col-6"><?php echo $rowinvoiceinfo['vat_num']; ?></div>
-                </div>
-                <?php } ?>
-            </div>
+<div class="row mt-3">
+    <div class="col-12">
+        <div class="row">
+            <div class="col-2">Invoice Date</div>
+            <div class="col-1 text-center">:</div>
+            <div class="col-6"><?php echo $rowinvoiceinfo['date']; ?></div>
         </div>
-        <div class="row mt-3">
-            <div class="col-12">
-                <?php
+        <div class="row">
+            <div class="col-2">Invoice No</div>
+            <div class="col-1 text-center">:</div>
+            <div class="col-6"><?php 
+                if ($rowinvoiceinfo['tax_invoice_num'] == null) {
+                    echo 'INV-'.$rowinvoiceinfo['idtbl_invoice'];
+                } else{
+                    echo 'AGT'.$rowinvoiceinfo['tax_invoice_num'];
+                }
+            ?></div>
+        </div>
+        <div class="row">
+            <div class="col-2">Customer</div>
+            <div class="col-1 text-center">:</div>
+            <div class="col-6"><?php if ($vatStatus == 1) {echo $rowinvoiceinfo['tax_cus_name'];}else{echo $rowinvoiceinfo['name'];} ?></div>
+        </div>
+        <div class="row">
+            <div class="col-2">Address</div>
+            <div class="col-1 text-center">:</div>
+            <div class="col-6"><?php echo $rowinvoiceinfo['address']; ?></div>
+        </div>
+        <?php if ($vatStatus == 1) { ?>
+        <div class="row">
+            <div class="col-2">Outlet</div>
+            <div class="col-1 text-center">:</div>
+            <div class="col-6"><?php echo $rowinvoiceinfo['name']; ?></div>
+        </div>
+        <?php } ?>
+        <?php if ($vatStatus == 1) { ?>
+        <div class="row">
+            <div class="col-2">Tax No</div>
+            <div class="col-1 text-center">:</div>
+            <div class="col-6"><?php echo $rowinvoiceinfo['vat_num']; ?></div>
+        </div>
+        <?php } ?>
+    </div>
+</div>
+<div class="row mt-3">
+    <div class="col-12">
+        <?php
         // Fetch all rows into an array
         $invoiceDetails = [];
         while ($rowinvoicedetail = $resultinvoicedetail->fetch_assoc()) {
@@ -378,11 +496,9 @@ if ($resultvat) {
             } else {
             }
         ?>
-
     </div>
 </div>
 <?php
-
 echo '
 <div class="row mt-3">
     <div class="col-12">
@@ -418,7 +534,6 @@ echo '
     </div>
 </div>
 ';
-
 ?>
 <div class="row mt-4">
     <div class="col-4 text-center">...........................................................<br>Sig. of Driver</div>
@@ -444,3 +559,189 @@ echo '
     <div class="col-6 text-right">ID No :</div>
     <div class="col-6">.................................................................................</div>
 </div>
+<?php 
+} else { 
+    $invoiceDetails = [];
+    while ($rowinvoicedetail = $resultinvoicedetail->fetch_assoc()) {
+        $invoiceDetails[] = $rowinvoicedetail;
+    }
+?>
+<div class="row justify-content-center">
+    <div class="col-2 border border-dark text-center p-2 font-weight-bold">
+        <h3 class="mb-1">Tax Invoice</h3>
+    </div>
+</div>
+<div class="row row-cols-1 row-cols-md-2 mt-3">
+    <div class="col">
+        <div class="card rounded-0 border-dark shadow-none">
+            <div class="card-body p-2 small"><label class="font-weight-bold my-0">Date of Invoice:</label> <?php echo $rowinvoiceinfo['date']; ?></div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card rounded-0 border-dark shadow-none">
+            <div class="card-body p-2 small"><label class="font-weight-bold my-0">Tax Invoice No:</label> <?php echo 'AGT'.$rowinvoiceinfo['tax_invoice_num']; ?></div>
+        </div>        
+    </div>
+</div>
+<div class="row row-cols-1 row-cols-md-2 mt-3">
+    <div class="col">
+        <div class="card rounded-0 border-dark shadow-none h-100">
+            <div class="card-body p-2 small">
+                <p class="my-1"><label class="font-weight-bold my-0">Supplier's TIN:</label> 102575474-7000</p>
+                <p class="my-1"><label class="font-weight-bold my-0">Supplier's Name:</label> ANSEN GAS DISTRIBUTORS (PVT) LTD</p>
+                <p class="my-1"><label class="font-weight-bold my-0">Address:</label> 65, Arcbishop, Archbishop Nicholas Marcus Fernando Mawatha, Negombo, Sri Lanka</p>
+                <p class="my-1"><label class="font-weight-bold my-0">Telephone No:</label> 0312 235 050</p>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card rounded-0 border-dark shadow-none h-100">
+            <div class="card-body p-2 small">
+                <p class="my-1"><label class="font-weight-bold my-0">Purchaser's TIN:</label> <?php echo $rowinvoiceinfo['vat_num']; ?></p>
+                <p class="my-1"><label class="font-weight-bold my-0">Purchaser's Name:</label> <?php echo $rowinvoiceinfo['tax_cus_name']; ?></p>
+                <p class="my-1"><label class="font-weight-bold my-0">Address:</label> <?php echo $rowinvoiceinfo['address']; ?></p>
+                <p class="my-1"><label class="font-weight-bold my-0">Telephone No:</label> <?php echo $rowinvoiceinfo['phone']; ?></p>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row row-cols-1 row-cols-md-2 mt-3">
+    <div class="col">
+        <div class="card rounded-0 border-dark shadow-none">
+            <div class="card-body p-2 small"><label class="font-weight-bold my-0">Date of Delivery:</label> <?php echo $rowinvoiceinfo['date']; ?></div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card rounded-0 border-dark shadow-none">
+            <div class="card-body p-2 small"><label class="font-weight-bold my-0">Place of Supply:</label> </div>
+        </div>        
+    </div>
+</div>
+<div class="row row-cols-1 row-cols-md-1 mt-3">
+    <div class="col">
+        <div class="card rounded-0 border-dark shadow-none">
+            <div class="card-body p-2 small" style="height: 100px;"><label class="font-weight-bold my-0">Additional Information if any: </label> </div>
+        </div>
+    </div>
+</div>
+<div class="row mt-3">
+    <div class="col-12">
+        <table
+            class="table table-striped table-bordered table-black bg-transparent table-sm w-100 tableprint small">
+            <thead>
+                <tr>
+                    <th nowrap>Reference</th>
+                    <th nowrap>Description of Goods or Services</th>
+                    <th nowrap class="text-center">Quantity</th>
+                    <th nowrap class="text-right">Unit Price</th>
+                    <th nowrap class="text-right">Amount Excluding VAT (Rs.)</th>
+                </tr>
+            </thead>
+            <?php
+                $invoiceproducts = array();
+                $i=1;
+                foreach ($invoiceDetails as $rowinvoicedetail) {
+                    // Check if cusType is equal to 1
+                    if ($cusType == 1) {
+                        $vatNew = $rowinvoicedetail['encustomer_newprice'] * $rowvat['vat'] / 100;
+                        $vatRefill = $rowinvoicedetail['encustomer_refillprice'] * $rowvat['vat'] / 100;
+                        $vatEmpty = $rowinvoicedetail['encustomer_emptyprice'] * $rowvat['vat'] / 100;
+                    } else {
+                        $vatNew = $rowvat['vat'] * $rowinvoicedetail['newprice'] / 100;
+                        $vatRefill = $rowvat['vat'] * $rowinvoicedetail['refillprice'] / 100;
+                        $vatEmpty = $rowvat['vat'] * $rowinvoicedetail['emptyprice'] / 100;
+                    }
+
+                    // Calculate total prices including VAT
+                    $totalWithVAT = number_format(
+                        ($rowinvoicedetail['newqty'] * ($rowinvoicedetail['newprice'] + $vatNew))
+                        + ($rowinvoicedetail['refillqty'] * ($rowinvoicedetail['refillprice'] + $vatRefill))
+                        + ($rowinvoicedetail['emptyqty'] * ($rowinvoicedetail['emptyprice'] + $vatEmpty))
+                        + ($rowinvoicedetail['trustqty'] * ($rowinvoicedetail['refillprice'] + $vatRefill))
+                        + ($rowinvoicedetail['trustreturnqty'] * 0),
+                        2
+                    );
+
+                    $totalWithVATencus = number_format(
+                        ($rowinvoicedetail['newqty'] * ($rowinvoicedetail['encustomer_newprice'] + $vatNew))
+                        + ($rowinvoicedetail['refillqty'] * ($rowinvoicedetail['encustomer_refillprice'] + $vatRefill))
+                        + ($rowinvoicedetail['emptyqty'] * ($rowinvoicedetail['encustomer_emptyprice'] + $vatEmpty))
+                        + ($rowinvoicedetail['trustqty'] * ($rowinvoicedetail['encustomer_refillprice'] + $vatRefill))
+                        + ($rowinvoicedetail['trustreturnqty'] * 0),
+                        2
+                    );
+
+                    if($rowinvoicedetail['newqty']>0) {
+                        $obj = new stdClass();
+                        $obj->reference = $i;
+                        $obj->description = $rowinvoicedetail['product_name'].' - New';
+                        $obj->quantity = $rowinvoicedetail['newqty'];
+                        $obj->unitprice = $cusType == 1 ? number_format(($rowinvoicedetail['encustomer_newprice']+$vatNew), 2) : number_format(($rowinvoicedetail['newprice']+$vatNew), 2);
+                        $obj->amount = $cusType == 1 ? number_format($rowinvoicedetail['newqty'] * ($rowinvoicedetail['encustomer_newprice']+$vatNew), 2) : number_format($rowinvoicedetail['newqty'] * ($rowinvoicedetail['newprice']+$vatNew), 2);
+                        array_push($invoiceproducts, $obj);
+                    }
+                    if($rowinvoicedetail['refillqty']>0) {
+                        $obj = new stdClass();
+                        $obj->reference = $i;
+                        $obj->description = $rowinvoicedetail['product_name'].' - Refill';
+                        $obj->quantity = $rowinvoicedetail['refillqty'];
+                        $obj->unitprice = $cusType == 1 ? number_format(($rowinvoicedetail['encustomer_refillprice']+$vatRefill), 2) : number_format(($rowinvoicedetail['refillprice']+$vatRefill), 2);
+                        $obj->amount = $cusType == 1 ? number_format($rowinvoicedetail['refillqty'] * ($rowinvoicedetail['encustomer_refillprice']+$vatRefill), 2) : number_format($rowinvoicedetail['refillqty'] * ($rowinvoicedetail['refillprice']+$vatRefill), 2);
+                        array_push($invoiceproducts, $obj);
+                    }
+                    if($rowinvoicedetail['emptyqty']>0) {
+                        $obj = new stdClass();
+                        $obj->reference = $i;
+                        $obj->description = $rowinvoicedetail['product_name'].' - Empty';
+                        $obj->quantity = $rowinvoicedetail['emptyqty'];
+                        $obj->unitprice = $cusType == 1 ? number_format(($rowinvoicedetail['encustomer_emptyprice']+$vatEmpty), 2) : number_format(($rowinvoicedetail['emptyprice']+$vatEmpty), 2);
+                        $obj->amount = $cusType == 1 ? number_format($rowinvoicedetail['emptyqty'] * ($rowinvoicedetail['encustomer_emptyprice']+$vatEmpty), 2) : number_format($rowinvoicedetail['emptyqty'] * ($rowinvoicedetail['emptyprice']+$vatEmpty), 2);
+                        array_push($invoiceproducts, $obj);
+                    }
+                    $i++;
+                }
+            ?>
+            <tbody>
+                <?php 
+                    foreach ($invoiceproducts as $product) {
+                        echo '
+                            <tr>
+                                <td nowrap>'.$product->reference.'</td>
+                                <td nowrap>'.$product->description.'</td>
+                                <td nowrap class="text-center">'.$product->quantity.'</td>
+                                <td nowrap class="text-right">'.$product->unitprice.'</td>
+                                <td nowrap class="text-right">'.$product->amount.'</td>
+                            </tr>
+                        ';
+                    }
+                ?>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="4" class="text-right">Total Value of Supply:</th>
+                    <th class="text-right"><?php echo number_format($rowinvoiceinfo['total'], 2); ?></th>
+                </tr>
+                <tr>
+                    <th colspan="4" class="text-right">VAT Amount (Total Value of Supply @ <?php echo $rowvat['vat']; ?>%)</th>
+                    <th class="text-right"><?php echo number_format($rowinvoiceinfo['taxamount'], 2); ?></th>
+                </tr>
+                <tr>
+                    <th colspan="4" class="text-right">Total Amount including VAT:</th>
+                    <th class="text-right"><?php echo number_format($rowinvoiceinfo['nettotal'], 2); ?></th>
+                </tr>
+        </table>
+    </div>
+</div>
+<div class="row mt-3">
+    <div class="col-12">
+        <div class="card rounded-0 border-dark shadow-none">
+            <div class="card-body p-2 small"><label class="font-weight-bold my-0">Total Amount in words: </label> <?php echo ConvertRupeeToText($rowinvoiceinfo['nettotal']); ?></div>
+        </div>
+    </div>
+    <div class="col-12">
+        <div class="card rounded-0 border-dark border-top-0 shadow-none">
+            <div class="card-body p-2 small"><label class="font-weight-bold my-0">Mode of Payment: </label> <?php echo $rowpaymethod['payment_methods']; ?></div>
+        </div>
+    </div>
+</div>
+<?php } ?>
