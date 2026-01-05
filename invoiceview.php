@@ -32,24 +32,26 @@ include "include/topnavbar.php";
                     <div class="card-body p-0 p-2">
                         <div class="row">
                             <div class="col-12">
-                                <table class="table table-bordered table-striped table-sm nowrap" id="dataTable">
-                                    <thead>
-                                        <tr>
-                                            <th>#</th>
-                                            <th>Invoice</th>
-                                            <th>Date</th>
-                                            <th>Customer</th>
-                                            <th>Executive Name</th>
-                                            <th>Area</th>
-                                            <th class="text-right">Total</th>
-                                            <th class="text-right">Balance</th>
-                                            <th>Payment</th>
-                                            <th>Cancel Status</th>
-                                            <th>Cancel Reason</th>
-                                            <th class="text-right">Actions</th>
-                                        </tr>
-                                    </thead>
-                                </table>
+                                <div class="scrollbar pb-3" id="style-2">
+                                    <table class="table table-bordered table-striped table-sm nowrap" id="dataTable">
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Invoice</th>
+                                                <th>Date</th>
+                                                <th>Customer</th>
+                                                <th>Executive Name</th>
+                                                <th>Area</th>
+                                                <th class="text-right">Total</th>
+                                                <th class="text-right">Balance</th>
+                                                <th>Payment</th>
+                                                <th>Cancel Status</th>
+                                                <th>Cancel Reason</th>
+                                                <th class="text-right">Actions</th>
+                                            </tr>
+                                        </thead>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -73,9 +75,9 @@ include "include/topnavbar.php";
             <div class="modal-body">
                 <div id="viewreceiptprint"></div>
             </div>
-            <div class="modal-footer">
+            <!-- <div class="modal-footer">
                 <button class="btn btn-danger btn-sm fa-pull-right" id="btnreceiptprint"><i class="fas fa-print"></i>&nbsp;Print Receipt</button>
-            </div>
+            </div> -->
         </div>
     </div>
 </div>
@@ -318,9 +320,14 @@ include "include/topnavbar.php";
                     "data": null,
                     "render": function(data, type, full) {
                         var button = '';
-                        button+='<button class="btn btn-outline-primary btn-sm btnAddremarks mr-1" id="'+full['idtbl_invoice']+'" data-toggle="tooltip" data-placement="bottom" title="Add Salesrep"><i class="fas fa-marker"></i></button>';
-                        if (statuscheck == 1 && (userID==1 || userID==25)) { // Only show if statuscheck is 1 AND user is admin or manager
+                        if (full['status'] == 1) {
+                            button+='<button class="btn btn-outline-primary btn-sm btnAddremarks mr-1" id="'+full['idtbl_invoice']+'" data-toggle="tooltip" data-placement="bottom" title="Add Salesrep"><i class="fas fa-marker"></i></button>';
+                        }
+                        if (statuscheck == 1 && (userID==1 || userID==25) && full['status'] == 1) { // Only show if statuscheck is 1 AND user is admin or manager
                         button+='<button class="btn btn-outline-warning btn-sm btnChangeCustomer mr-1" id="'+full['idtbl_invoice']+'" data-cus-id="'+full['tbl_customer_idtbl_customer']+'" data-toggle="tooltip" data-placement="bottom" title="Change customer"><i class="fas fa-user-edit"></i></button>';
+                        }
+                        if (full['status'] == 1) {
+                            button += '<a href="pdfprocess/invoicepdf.php?record=' + full['idtbl_invoice'] +'" class="btn btn-danger btn-sm mr-1" target="_blank"><i class="fas fa-file-pdf"></i></a>';
                         }
                         button += '<button class="btn btn-outline-dark btn-sm btnView mr-1 ';
                         if (editcheck == 0) {
