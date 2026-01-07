@@ -1,5 +1,8 @@
 <?php
 session_start();
+ini_set('memory_limit', '999M');
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 require '../vendor/autoload.php';
 require_once('../connection/db.php');
 
@@ -187,6 +190,7 @@ $dompdf = new Dompdf($options);
 
 $html='';
 if ($vatStatus == 0) {
+    $invoiceno = 'INT-' . $rowinvoiceinfo['idtbl_invoice'];
     $invoiceDetails = [];
     while ($rowinvoicedetail = $resultinvoicedetail->fetch_assoc()) {
         $invoiceDetails[] = $rowinvoicedetail;
@@ -197,7 +201,7 @@ if ($vatStatus == 0) {
 
     <head>
         <meta charset="UTF-8">
-        <title>LAUGFS Gas PLC - TAX Invoice AGT'.$rowinvoiceinfo['tax_invoice_num'].'</title>
+        <title>LAUGFS Gas PLC - TAX Invoice INT'.$rowinvoiceinfo['idtbl_invoice'].'</title>
         <style>
             body {
                 font-family: Arial, sans-serif;
@@ -421,6 +425,7 @@ if ($vatStatus == 0) {
     ';
 }
 else{
+    $invoiceno = 'AGT' . $rowinvoiceinfo['tax_invoice_num'];
     $invoiceDetails = [];
     while ($rowinvoicedetail = $resultinvoicedetail->fetch_assoc()) {
         $invoiceDetails[] = $rowinvoicedetail;
@@ -645,7 +650,7 @@ else{
 $dompdf->loadHtml($html);
 $dompdf->setPaper('A4', 'portrait');
 $dompdf->render();
-$dompdf->stream("ansen_gas_invoice_" . $recordID . ".pdf", ["Attachment" => false]);
+$dompdf->stream("ansen_gas_invoice_" . $invoiceno . ".pdf", ["Attachment" => false]);
 
 // Close database connection
 mysqli_close($conn);
