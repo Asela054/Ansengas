@@ -115,7 +115,8 @@ include "include/topnavbar.php";
                     return {
                         searchTerm: params.term,
                         type: $('#typeSelector').val(),
-                        groupcategory: $('#groupcategory').val()
+                        groupcategory: $('#groupcategory').val(),
+                        selectdate: $('#date').val(),
                     };
                 },
                 processResults: function (response) {
