@@ -14,6 +14,7 @@ $obj->dob=$row['dob'];
 $obj->epfno=$row['epfno'];
 $obj->nic=$row['nic'];
 $obj->phone=$row['phone'];
+$obj->email=$row['email'];
 $obj->address=$row['address'];
 $obj->emptype=$row['tbl_user_type_idtbl_user_type'];
 $obj->useraccount=$row['useraccount_id'];

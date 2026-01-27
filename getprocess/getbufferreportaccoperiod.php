@@ -18,6 +18,164 @@ if(!empty($_POST['groupcategory'])){$groupcategory=$_POST['groupcategory'];}
 //     `tbl_product` ON tbl_product.idtbl_product = tbl_customer_buffer_stock_detail.tbl_product_idtbl_product WHERE `tbl_customer_buffer_stock_detail`.`tbl_customer_buffer_stock_idtbl_customer_buffer_stock` = '{$rowCustomerBufferStock['idtbl_customer_buffer_stock']}' AND `tbl_customer_buffer_stock_detail`.`status` = 1 ORDER BY `tbl_product`.`orderlevel` ASC";
 // $resultCustomerBufferStockDetail = $conn->query($sqlCustomerBufferStockDetail);
 
+// $sql="SELECT 
+//     c.idtbl_customer,
+//     c.name AS Customer,
+//     c.pv_num AS 'PV Number',
+//     r.idtbl_reject_reason AS 'rejectid',
+//     r.reason AS 'rejectreason',
+//     bs.customreason AS 'rejectcustomreason',
+
+//     -- 2KG (Product ID 6)
+//     COALESCE(SUM(CASE WHEN d.tbl_product_idtbl_product = 6 THEN d.fullqty ELSE 0 END), 0) AS '2KG_Full',
+//     COALESCE(SUM(CASE WHEN d.tbl_product_idtbl_product = 6 THEN d.emptyqty ELSE 0 END), 0) AS '2KG_Empty',
+    
+//     -- 5KG (Product ID 4)
+//     COALESCE(SUM(CASE WHEN d.tbl_product_idtbl_product = 4 THEN d.fullqty ELSE 0 END), 0) AS '5KG_Full',
+//     COALESCE(SUM(CASE WHEN d.tbl_product_idtbl_product = 4 THEN d.emptyqty ELSE 0 END), 0) AS '5KG_Empty',
+    
+//     -- 12.5KG (Product ID 1)
+//     COALESCE(SUM(CASE WHEN d.tbl_product_idtbl_product = 1 THEN d.fullqty ELSE 0 END), 0) AS '12_5KG_Full',
+//     COALESCE(SUM(CASE WHEN d.tbl_product_idtbl_product = 1 THEN d.emptyqty ELSE 0 END), 0) AS '12_5KG_Empty',
+    
+//     -- 37.5KG (Product ID 2)
+//     COALESCE(SUM(CASE WHEN d.tbl_product_idtbl_product = 2 THEN d.fullqty ELSE 0 END), 0) AS '37_5KG_Full',
+//     COALESCE(SUM(CASE WHEN d.tbl_product_idtbl_product = 2 THEN d.emptyqty ELSE 0 END), 0) AS '37_5KG_Empty',
+    
+//     -- Total Columns
+//     COALESCE(SUM(d.fullqty), 0) AS 'Total_Full',
+//     COALESCE(SUM(d.emptyqty), 0) AS 'Total_Empty'
+// FROM 
+//     tbl_customer c
+// LEFT JOIN 
+//     tbl_customer_buffer_stock bs ON c.idtbl_customer = bs.tbl_customer_idtbl_customer
+//     AND bs.date = '$date'
+// LEFT JOIN 
+//     tbl_customer_buffer_stock_detail d ON bs.idtbl_customer_buffer_stock = d.tbl_customer_buffer_stock_idtbl_customer_buffer_stock
+//     AND d.tbl_product_idtbl_product IN (1, 2, 4, 6)
+// LEFT JOIN `tbl_reject_reason` r ON bs.tbl_reject_reason_idtbl_reject_reason = r.idtbl_reject_reason";
+// if ($type == '2' && !empty($customerID)) {
+//     $sql .= " LEFT JOIN tbl_customerwise_salesrep cs ON cs.tbl_customer_idtbl_customer = c.idtbl_customer";
+// }
+// if ($type == '4' && !empty($customerID)) {
+//     $sql .= " LEFT JOIN tbl_vehicle_load vl ON vl.idtbl_vehicle_load = bs.tbl_vehicle_load_idtbl_vehicle_load";
+//     $sql .= " LEFT JOIN tbl_area a ON vl.tbl_area_idtbl_area = a.idtbl_area";
+// }
+// $sql .= " WHERE 
+//     c.status = 1";
+// if ($type == '1' && !empty($customerID)) {
+//     $sql .= " AND c.idtbl_customer = '$customerID'";
+// }   
+// if($type == '1' && !empty($_POST['groupcategory'])){
+//     $sql .= " AND c.tbl_group_category_idtbl_group_category = '$groupcategory'";
+// }
+// if ($type == '2' && !empty($customerID)) {
+//     $sql .= " AND cs.tbl_employee_idtbl_employee = '$customerID'";
+// }
+// if ($type == '3' && !empty($customerID)) {
+//     $sql .= " AND bs.tbl_vehicle_idtbl_vehicle = '$customerID'";
+// }
+// if ($type == '4' && !empty($customerID)) {
+//     $sql .= " AND vl.driverid = '$customerID'";
+//     $sql .= " AND c.tbl_area_idtbl_area = vl.tbl_area_idtbl_area";
+// }
+// if ($type == '5' && !empty($customerID)) {
+//     $sql .= " AND c.tbl_area_idtbl_area = '$customerID'";
+// }
+// $sql .= " GROUP BY 
+//     c.idtbl_customer, c.name, c.pv_num
+// HAVING
+//     SUM(d.fullqty) > 0 OR SUM(d.emptyqty) > 0  -- Only show customers with stock
+// ORDER BY 
+//     c.name";
+// $sql="SELECT 
+//     c.idtbl_customer,
+//     c.name AS Customer,
+//     c.pv_num AS 'PV Number',
+//     r.idtbl_reject_reason AS 'rejectid',
+//     r.reason AS 'rejectreason',
+//     bs.customreason AS 'rejectcustomreason',
+
+//     -- 2KG (Product ID 6)
+//     SUM(CASE WHEN d.tbl_product_idtbl_product = 6 THEN d.fullqty ELSE 0 END) AS '2KG_Full',
+//     SUM(CASE WHEN d.tbl_product_idtbl_product = 6 THEN d.emptyqty ELSE 0 END) AS '2KG_Empty',
+//     COALESCE((SELECT SUM(id.refillqty) FROM tbl_invoice i JOIN tbl_invoice_detail id ON i.idtbl_invoice = id.tbl_invoice_idtbl_invoice WHERE i.tbl_customer_idtbl_customer = c.idtbl_customer AND i.date = '$date' AND id.tbl_product_idtbl_product = 6 AND i.status = 1), 0) AS '2KG_Sales',
+//     -- Percentage 2KG: ((Empty - Sales) / Empty) * 100
+//     ( (SUM(CASE WHEN d.tbl_product_idtbl_product = 6 THEN d.emptyqty ELSE 0 END) - COALESCE((SELECT SUM(id.refillqty) FROM tbl_invoice i JOIN tbl_invoice_detail id ON i.idtbl_invoice = id.tbl_invoice_idtbl_invoice WHERE i.tbl_customer_idtbl_customer = c.idtbl_customer AND i.date = '$date' AND id.tbl_product_idtbl_product = 6 AND i.status = 1), 0)) 
+//       / NULLIF(SUM(CASE WHEN d.tbl_product_idtbl_product = 6 THEN d.emptyqty ELSE 0 END), 0) * 100 ) AS '2KG_Loss_Percentage',
+    
+//     -- 5KG (Product ID 4)
+//     SUM(CASE WHEN d.tbl_product_idtbl_product = 4 THEN d.fullqty ELSE 0 END) AS '5KG_Full',
+//     SUM(CASE WHEN d.tbl_product_idtbl_product = 4 THEN d.emptyqty ELSE 0 END) AS '5KG_Empty',
+//     COALESCE((SELECT SUM(id.refillqty) FROM tbl_invoice i JOIN tbl_invoice_detail id ON i.idtbl_invoice = id.tbl_invoice_idtbl_invoice WHERE i.tbl_customer_idtbl_customer = c.idtbl_customer AND i.date = '$date' AND id.tbl_product_idtbl_product = 4 AND i.status = 1), 0) AS '5KG_Sales',
+//     -- Percentage 5KG
+//     ( (SUM(CASE WHEN d.tbl_product_idtbl_product = 4 THEN d.emptyqty ELSE 0 END) - COALESCE((SELECT SUM(id.refillqty) FROM tbl_invoice i JOIN tbl_invoice_detail id ON i.idtbl_invoice = id.tbl_invoice_idtbl_invoice WHERE i.tbl_customer_idtbl_customer = c.idtbl_customer AND i.date = '$date' AND id.tbl_product_idtbl_product = 4 AND i.status = 1), 0)) 
+//       / NULLIF(SUM(CASE WHEN d.tbl_product_idtbl_product = 4 THEN d.emptyqty ELSE 0 END), 0) * 100 ) AS '5KG_Loss_Percentage',
+    
+//     -- 12.5KG (Product ID 1)
+//     SUM(CASE WHEN d.tbl_product_idtbl_product = 1 THEN d.fullqty ELSE 0 END) AS '12_5KG_Full',
+//     SUM(CASE WHEN d.tbl_product_idtbl_product = 1 THEN d.emptyqty ELSE 0 END) AS '12_5KG_Empty',
+//     COALESCE((SELECT SUM(id.refillqty) FROM tbl_invoice i JOIN tbl_invoice_detail id ON i.idtbl_invoice = id.tbl_invoice_idtbl_invoice WHERE i.tbl_customer_idtbl_customer = c.idtbl_customer AND i.date = '$date' AND id.tbl_product_idtbl_product = 1 AND i.status = 1), 0) AS '12_5KG_Sales',
+//     -- Percentage 12.5KG
+//     ( (SUM(CASE WHEN d.tbl_product_idtbl_product = 1 THEN d.emptyqty ELSE 0 END) - COALESCE((SELECT SUM(id.refillqty) FROM tbl_invoice i JOIN tbl_invoice_detail id ON i.idtbl_invoice = id.tbl_invoice_idtbl_invoice WHERE i.tbl_customer_idtbl_customer = c.idtbl_customer AND i.date = '$date' AND id.tbl_product_idtbl_product = 1 AND i.status = 1), 0)) 
+//       / NULLIF(SUM(CASE WHEN d.tbl_product_idtbl_product = 1 THEN d.emptyqty ELSE 0 END), 0) * 100 ) AS '12_5KG_Loss_Percentage',
+    
+//     -- 37.5KG (Product ID 2)
+//     SUM(CASE WHEN d.tbl_product_idtbl_product = 2 THEN d.fullqty ELSE 0 END) AS '37_5KG_Full',
+//     SUM(CASE WHEN d.tbl_product_idtbl_product = 2 THEN d.emptyqty ELSE 0 END) AS '37_5KG_Empty',
+//     COALESCE((SELECT SUM(id.refillqty) FROM tbl_invoice i JOIN tbl_invoice_detail id ON i.idtbl_invoice = id.tbl_invoice_idtbl_invoice WHERE i.tbl_customer_idtbl_customer = c.idtbl_customer AND i.date = '$date' AND id.tbl_product_idtbl_product = 2 AND i.status = 1), 0) AS '37_5KG_Sales',
+//     -- Percentage 37.5KG
+//     ( (SUM(CASE WHEN d.tbl_product_idtbl_product = 2 THEN d.emptyqty ELSE 0 END) - COALESCE((SELECT SUM(id.refillqty) FROM tbl_invoice i JOIN tbl_invoice_detail id ON i.idtbl_invoice = id.tbl_invoice_idtbl_invoice WHERE i.tbl_customer_idtbl_customer = c.idtbl_customer AND i.date = '$date' AND id.tbl_product_idtbl_product = 2 AND i.status = 1), 0)) 
+//       / NULLIF(SUM(CASE WHEN d.tbl_product_idtbl_product = 2 THEN d.emptyqty ELSE 0 END), 0) * 100 ) AS '37_5KG_Loss_Percentage',
+    
+//     -- Total Columns
+//     COALESCE(SUM(d.fullqty), 0) AS 'Total_Full',
+//     COALESCE(SUM(d.emptyqty), 0) AS 'Total_Empty'
+
+// FROM 
+//     tbl_customer c
+// LEFT JOIN 
+//     tbl_customer_buffer_stock bs ON c.idtbl_customer = bs.tbl_customer_idtbl_customer
+//     AND bs.date = '$date'
+// LEFT JOIN 
+//     tbl_customer_buffer_stock_detail d ON bs.idtbl_customer_buffer_stock = d.tbl_customer_buffer_stock_idtbl_customer_buffer_stock
+//     AND d.tbl_product_idtbl_product IN (1, 2, 4, 6)
+// LEFT JOIN `tbl_reject_reason` r ON bs.tbl_reject_reason_idtbl_reject_reason = r.idtbl_reject_reason";
+
+// if ($type == '2' && !empty($customerID)) {
+//     $sql .= " LEFT JOIN tbl_customerwise_salesrep cs ON cs.tbl_customer_idtbl_customer = c.idtbl_customer";
+// }
+// if ($type == '4' && !empty($customerID)) {
+//     $sql .= " LEFT JOIN tbl_vehicle_load vl ON vl.idtbl_vehicle_load = bs.tbl_vehicle_load_idtbl_vehicle_load";
+//     $sql .= " LEFT JOIN tbl_area a ON vl.tbl_area_idtbl_area = a.idtbl_area";
+// }
+// $sql .= " WHERE 
+//     c.status = 1";
+// if ($type == '1' && !empty($customerID)) {
+//     $sql .= " AND c.idtbl_customer = '$customerID'";
+// }   
+// if($type == '1' && !empty($_POST['groupcategory'])){
+//     $sql .= " AND c.tbl_group_category_idtbl_group_category = '$groupcategory'";
+// }
+// if ($type == '2' && !empty($customerID)) {
+//     $sql .= " AND cs.tbl_employee_idtbl_employee = '$customerID'";
+// }
+// if ($type == '3' && !empty($customerID)) {
+//     $sql .= " AND bs.tbl_vehicle_idtbl_vehicle = '$customerID'";
+// }
+// if ($type == '4' && !empty($customerID)) {
+//     $sql .= " AND vl.driverid = '$customerID'";
+//     $sql .= " AND c.tbl_area_idtbl_area = vl.tbl_area_idtbl_area";
+// }
+// if ($type == '5' && !empty($customerID)) {
+//     $sql .= " AND c.tbl_area_idtbl_area = '$customerID'";
+// }
+// $sql .= " GROUP BY 
+//     c.idtbl_customer, c.name, c.pv_num
+// HAVING
+//     SUM(d.fullqty) > 0 OR SUM(d.emptyqty) > 0
+// ORDER BY 
+//     c.name";
 $sql="SELECT 
     c.idtbl_customer,
     c.name AS Customer,
@@ -27,33 +185,165 @@ $sql="SELECT
     bs.customreason AS 'rejectcustomreason',
 
     -- 2KG (Product ID 6)
-    COALESCE(SUM(CASE WHEN d.tbl_product_idtbl_product = 6 THEN d.fullqty ELSE 0 END), 0) AS '2KG_Full',
-    COALESCE(SUM(CASE WHEN d.tbl_product_idtbl_product = 6 THEN d.emptyqty ELSE 0 END), 0) AS '2KG_Empty',
+    COALESCE((SELECT SUM(fullqty) FROM tbl_customer_buffer_stock_detail 
+              WHERE tbl_customer_buffer_stock_idtbl_customer_buffer_stock = bs.idtbl_customer_buffer_stock 
+              AND tbl_product_idtbl_product = 6 AND status = 1), 0) AS '2KG_Full',
+    
+    COALESCE((SELECT SUM(emptyqty) FROM tbl_customer_buffer_stock_detail 
+              WHERE tbl_customer_buffer_stock_idtbl_customer_buffer_stock = bs.idtbl_customer_buffer_stock 
+              AND tbl_product_idtbl_product = 6 AND status = 1), 0) AS '2KG_Empty',
+    
+    COALESCE((SELECT SUM(id.refillqty) FROM tbl_invoice i 
+              JOIN tbl_invoice_detail id ON i.idtbl_invoice = id.tbl_invoice_idtbl_invoice 
+              WHERE i.tbl_customer_idtbl_customer = c.idtbl_customer 
+              AND i.date = '$date' 
+              AND id.tbl_product_idtbl_product = 6 
+              AND i.status = 1), 0) AS '2KG_Sales',
+    
+    -- Percentage 2KG
+    CASE 
+        WHEN COALESCE((SELECT SUM(emptyqty) FROM tbl_customer_buffer_stock_detail 
+                       WHERE tbl_customer_buffer_stock_idtbl_customer_buffer_stock = bs.idtbl_customer_buffer_stock 
+                       AND tbl_product_idtbl_product = 6 AND status = 1), 0) > 0
+        THEN 
+            (
+                COALESCE((SELECT SUM(emptyqty) FROM tbl_customer_buffer_stock_detail 
+                         WHERE tbl_customer_buffer_stock_idtbl_customer_buffer_stock = bs.idtbl_customer_buffer_stock 
+                         AND tbl_product_idtbl_product = 6 AND status = 1), 0) 
+                - COALESCE((SELECT SUM(id.refillqty) FROM tbl_invoice i 
+                           JOIN tbl_invoice_detail id ON i.idtbl_invoice = id.tbl_invoice_idtbl_invoice 
+                           WHERE i.tbl_customer_idtbl_customer = c.idtbl_customer 
+                           AND i.date = '$date' 
+                           AND id.tbl_product_idtbl_product = 6 
+                           AND i.status = 1), 0)
+            ) / COALESCE((SELECT SUM(emptyqty) FROM tbl_customer_buffer_stock_detail 
+                         WHERE tbl_customer_buffer_stock_idtbl_customer_buffer_stock = bs.idtbl_customer_buffer_stock 
+                         AND tbl_product_idtbl_product = 6 AND status = 1), 0) * 100
+        ELSE NULL
+    END AS '2KG_Loss_Percentage',
     
     -- 5KG (Product ID 4)
-    COALESCE(SUM(CASE WHEN d.tbl_product_idtbl_product = 4 THEN d.fullqty ELSE 0 END), 0) AS '5KG_Full',
-    COALESCE(SUM(CASE WHEN d.tbl_product_idtbl_product = 4 THEN d.emptyqty ELSE 0 END), 0) AS '5KG_Empty',
+    COALESCE((SELECT SUM(fullqty) FROM tbl_customer_buffer_stock_detail 
+              WHERE tbl_customer_buffer_stock_idtbl_customer_buffer_stock = bs.idtbl_customer_buffer_stock 
+              AND tbl_product_idtbl_product = 4 AND status = 1), 0) AS '5KG_Full',
+    
+    COALESCE((SELECT SUM(emptyqty) FROM tbl_customer_buffer_stock_detail 
+              WHERE tbl_customer_buffer_stock_idtbl_customer_buffer_stock = bs.idtbl_customer_buffer_stock 
+              AND tbl_product_idtbl_product = 4 AND status = 1), 0) AS '5KG_Empty',
+    
+    COALESCE((SELECT SUM(id.refillqty) FROM tbl_invoice i 
+              JOIN tbl_invoice_detail id ON i.idtbl_invoice = id.tbl_invoice_idtbl_invoice 
+              WHERE i.tbl_customer_idtbl_customer = c.idtbl_customer 
+              AND i.date = '$date' 
+              AND id.tbl_product_idtbl_product = 4 
+              AND i.status = 1), 0) AS '5KG_Sales',
+    
+    -- Percentage 5KG
+    CASE 
+        WHEN COALESCE((SELECT SUM(emptyqty) FROM tbl_customer_buffer_stock_detail 
+                       WHERE tbl_customer_buffer_stock_idtbl_customer_buffer_stock = bs.idtbl_customer_buffer_stock 
+                       AND tbl_product_idtbl_product = 4 AND status = 1), 0) > 0
+        THEN 
+            (
+                COALESCE((SELECT SUM(emptyqty) FROM tbl_customer_buffer_stock_detail 
+                         WHERE tbl_customer_buffer_stock_idtbl_customer_buffer_stock = bs.idtbl_customer_buffer_stock 
+                         AND tbl_product_idtbl_product = 4 AND status = 1), 0) 
+                - COALESCE((SELECT SUM(id.refillqty) FROM tbl_invoice i 
+                           JOIN tbl_invoice_detail id ON i.idtbl_invoice = id.tbl_invoice_idtbl_invoice 
+                           WHERE i.tbl_customer_idtbl_customer = c.idtbl_customer 
+                           AND i.date = '$date' 
+                           AND id.tbl_product_idtbl_product = 4 
+                           AND i.status = 1), 0)
+            ) / COALESCE((SELECT SUM(emptyqty) FROM tbl_customer_buffer_stock_detail 
+                         WHERE tbl_customer_buffer_stock_idtbl_customer_buffer_stock = bs.idtbl_customer_buffer_stock 
+                         AND tbl_product_idtbl_product = 4 AND status = 1), 0) * 100
+        ELSE NULL
+    END AS '5KG_Loss_Percentage',
     
     -- 12.5KG (Product ID 1)
-    COALESCE(SUM(CASE WHEN d.tbl_product_idtbl_product = 1 THEN d.fullqty ELSE 0 END), 0) AS '12_5KG_Full',
-    COALESCE(SUM(CASE WHEN d.tbl_product_idtbl_product = 1 THEN d.emptyqty ELSE 0 END), 0) AS '12_5KG_Empty',
+    COALESCE((SELECT SUM(fullqty) FROM tbl_customer_buffer_stock_detail 
+              WHERE tbl_customer_buffer_stock_idtbl_customer_buffer_stock = bs.idtbl_customer_buffer_stock 
+              AND tbl_product_idtbl_product = 1 AND status = 1), 0) AS '12_5KG_Full',
+    
+    COALESCE((SELECT SUM(emptyqty) FROM tbl_customer_buffer_stock_detail 
+              WHERE tbl_customer_buffer_stock_idtbl_customer_buffer_stock = bs.idtbl_customer_buffer_stock 
+              AND tbl_product_idtbl_product = 1 AND status = 1), 0) AS '12_5KG_Empty',
+    
+    COALESCE((SELECT SUM(id.refillqty) FROM tbl_invoice i 
+              JOIN tbl_invoice_detail id ON i.idtbl_invoice = id.tbl_invoice_idtbl_invoice 
+              WHERE i.tbl_customer_idtbl_customer = c.idtbl_customer 
+              AND i.date = '$date' 
+              AND id.tbl_product_idtbl_product = 1 
+              AND i.status = 1), 0) AS '12_5KG_Sales',
+    
+    -- Percentage 12.5KG
+    CASE 
+        WHEN COALESCE((SELECT SUM(emptyqty) FROM tbl_customer_buffer_stock_detail 
+                       WHERE tbl_customer_buffer_stock_idtbl_customer_buffer_stock = bs.idtbl_customer_buffer_stock 
+                       AND tbl_product_idtbl_product = 1 AND status = 1), 0) > 0
+        THEN 
+            (
+                COALESCE((SELECT SUM(emptyqty) FROM tbl_customer_buffer_stock_detail 
+                         WHERE tbl_customer_buffer_stock_idtbl_customer_buffer_stock = bs.idtbl_customer_buffer_stock 
+                         AND tbl_product_idtbl_product = 1 AND status = 1), 0) 
+                - COALESCE((SELECT SUM(id.refillqty) FROM tbl_invoice i 
+                           JOIN tbl_invoice_detail id ON i.idtbl_invoice = id.tbl_invoice_idtbl_invoice 
+                           WHERE i.tbl_customer_idtbl_customer = c.idtbl_customer 
+                           AND i.date = '$date' 
+                           AND id.tbl_product_idtbl_product = 1 
+                           AND i.status = 1), 0)
+            ) / COALESCE((SELECT SUM(emptyqty) FROM tbl_customer_buffer_stock_detail 
+                         WHERE tbl_customer_buffer_stock_idtbl_customer_buffer_stock = bs.idtbl_customer_buffer_stock 
+                         AND tbl_product_idtbl_product = 1 AND status = 1), 0) * 100
+        ELSE NULL
+    END AS '12_5KG_Loss_Percentage',
     
     -- 37.5KG (Product ID 2)
-    COALESCE(SUM(CASE WHEN d.tbl_product_idtbl_product = 2 THEN d.fullqty ELSE 0 END), 0) AS '37_5KG_Full',
-    COALESCE(SUM(CASE WHEN d.tbl_product_idtbl_product = 2 THEN d.emptyqty ELSE 0 END), 0) AS '37_5KG_Empty',
+    COALESCE((SELECT SUM(fullqty) FROM tbl_customer_buffer_stock_detail 
+              WHERE tbl_customer_buffer_stock_idtbl_customer_buffer_stock = bs.idtbl_customer_buffer_stock 
+              AND tbl_product_idtbl_product = 2 AND status = 1), 0) AS '37_5KG_Full',
     
-    -- Total Columns
-    COALESCE(SUM(d.fullqty), 0) AS 'Total_Full',
-    COALESCE(SUM(d.emptyqty), 0) AS 'Total_Empty'
+    COALESCE((SELECT SUM(emptyqty) FROM tbl_customer_buffer_stock_detail 
+              WHERE tbl_customer_buffer_stock_idtbl_customer_buffer_stock = bs.idtbl_customer_buffer_stock 
+              AND tbl_product_idtbl_product = 2 AND status = 1), 0) AS '37_5KG_Empty',
+    
+    COALESCE((SELECT SUM(id.refillqty) FROM tbl_invoice i 
+              JOIN tbl_invoice_detail id ON i.idtbl_invoice = id.tbl_invoice_idtbl_invoice 
+              WHERE i.tbl_customer_idtbl_customer = c.idtbl_customer 
+              AND i.date = '$date' 
+              AND id.tbl_product_idtbl_product = 2 
+              AND i.status = 1), 0) AS '37_5KG_Sales',
+    
+    -- Percentage 37.5KG
+    CASE 
+        WHEN COALESCE((SELECT SUM(emptyqty) FROM tbl_customer_buffer_stock_detail 
+                       WHERE tbl_customer_buffer_stock_idtbl_customer_buffer_stock = bs.idtbl_customer_buffer_stock 
+                       AND tbl_product_idtbl_product = 2 AND status = 1), 0) > 0
+        THEN 
+            (
+                COALESCE((SELECT SUM(emptyqty) FROM tbl_customer_buffer_stock_detail 
+                         WHERE tbl_customer_buffer_stock_idtbl_customer_buffer_stock = bs.idtbl_customer_buffer_stock 
+                         AND tbl_product_idtbl_product = 2 AND status = 1), 0) 
+                - COALESCE((SELECT SUM(id.refillqty) FROM tbl_invoice i 
+                           JOIN tbl_invoice_detail id ON i.idtbl_invoice = id.tbl_invoice_idtbl_invoice 
+                           WHERE i.tbl_customer_idtbl_customer = c.idtbl_customer 
+                           AND i.date = '$date' 
+                           AND id.tbl_product_idtbl_product = 2 
+                           AND i.status = 1), 0)
+            ) / COALESCE((SELECT SUM(emptyqty) FROM tbl_customer_buffer_stock_detail 
+                         WHERE tbl_customer_buffer_stock_idtbl_customer_buffer_stock = bs.idtbl_customer_buffer_stock 
+                         AND tbl_product_idtbl_product = 2 AND status = 1), 0) * 100
+        ELSE NULL
+    END AS '37_5KG_Loss_Percentage'
+
 FROM 
     tbl_customer c
 LEFT JOIN 
     tbl_customer_buffer_stock bs ON c.idtbl_customer = bs.tbl_customer_idtbl_customer
     AND bs.date = '$date'
 LEFT JOIN 
-    tbl_customer_buffer_stock_detail d ON bs.idtbl_customer_buffer_stock = d.tbl_customer_buffer_stock_idtbl_customer_buffer_stock
-    AND d.tbl_product_idtbl_product IN (1, 2, 4, 6)
-LEFT JOIN `tbl_reject_reason` r ON bs.tbl_reject_reason_idtbl_reject_reason = r.idtbl_reject_reason";
+    `tbl_reject_reason` r ON bs.tbl_reject_reason_idtbl_reject_reason = r.idtbl_reject_reason";
+
 if ($type == '2' && !empty($customerID)) {
     $sql .= " LEFT JOIN tbl_customerwise_salesrep cs ON cs.tbl_customer_idtbl_customer = c.idtbl_customer";
 }
@@ -82,12 +372,14 @@ if ($type == '4' && !empty($customerID)) {
 if ($type == '5' && !empty($customerID)) {
     $sql .= " AND c.tbl_area_idtbl_area = '$customerID'";
 }
+
+$sql .= " AND bs.idtbl_customer_buffer_stock IS NOT NULL";
+
 $sql .= " GROUP BY 
-    c.idtbl_customer, c.name, c.pv_num
-HAVING
-    SUM(d.fullqty) > 0 OR SUM(d.emptyqty) > 0  -- Only show customers with stock
+    c.idtbl_customer, c.name, c.pv_num, r.idtbl_reject_reason, r.reason, bs.customreason, bs.tbl_customer_idtbl_customer
 ORDER BY 
     c.name";
+    // echo $sql;
 $result = $conn->query($sql);
 
 $areacustomers = array();
@@ -104,12 +396,16 @@ if($type == '4'){
 $totals = array(
     '2KG_Full' => 0,
     '2KG_Empty' => 0,
+    '2KG_Sales' => 0,
     '5KG_Full' => 0,
     '5KG_Empty' => 0,
+    '5KG_Sales' => 0,
     '12_5KG_Full' => 0,
     '12_5KG_Empty' => 0,
+    '12_5KG_Sales' => 0,
     '37_5KG_Full' => 0,
-    '37_5KG_Empty' => 0
+    '37_5KG_Empty' => 0,
+    '37_5KG_Sales' => 0
 );
 
 $html='';
@@ -121,27 +417,35 @@ $html='';
             <tr>
                 <th nowrap rowspan="2">Customer</th>
                 <th nowrap rowspan="2">Reason</th>
-                <th nowrap colspan="2" class="text-center">2KG</th>
-                <th nowrap colspan="2" class="text-center">5KG</th>
-                <th nowrap colspan="2" class="text-center">12.5KG</th>
-                <th nowrap colspan="2" class="text-center">37.5KG</th>
+                <th nowrap colspan="4" class="text-center">2KG</th>
+                <th nowrap colspan="4" class="text-center">5KG</th>
+                <th nowrap colspan="4" class="text-center">12.5KG</th>
+                <th nowrap colspan="4" class="text-center">37.5KG</th>
             </tr>
             <tr>                    
                 <!-- 2KG Columns -->
                 <th class="text-center">Full Qty</th>
                 <th class="text-center">Empty Qty</th>
+                <th class="text-center">Sale Qty</th>
+                <th class="text-center">Loss %</th>
                 
                 <!-- 5KG Columns -->
                 <th class="text-center">Full Qty</th>
                 <th class="text-center">Empty Qty</th>
+                <th class="text-center">Sale Qty</th>
+                <th class="text-center">Loss %</th>
                 
                 <!-- 12.5KG Columns -->
                 <th class="text-center">Full Qty</th>
                 <th class="text-center">Empty Qty</th>
+                <th class="text-center">Sale Qty</th>
+                <th class="text-center">Loss %</th>
                 
                 <!-- 37.5KG Columns -->
                 <th class="text-center">Full Qty</th>
                 <th class="text-center">Empty Qty</th>
+                <th class="text-center">Sale Qty</th>
+                <th class="text-center">Loss %</th>
             </tr>
         </thead>
         <tbody>';
@@ -149,12 +453,16 @@ $html='';
             $bufferenteredcustomers[] = $rowinfo['idtbl_customer'];
             $totals['2KG_Full'] += $rowinfo['2KG_Full'];
             $totals['2KG_Empty'] += $rowinfo['2KG_Empty'];
+            $totals['2KG_Sales'] += $rowinfo['2KG_Sales'];
             $totals['5KG_Full'] += $rowinfo['5KG_Full'];
             $totals['5KG_Empty'] += $rowinfo['5KG_Empty'];
+            $totals['5KG_Sales'] += $rowinfo['5KG_Sales'];
             $totals['12_5KG_Full'] += $rowinfo['12_5KG_Full'];
             $totals['12_5KG_Empty'] += $rowinfo['12_5KG_Empty'];
+            $totals['12_5KG_Sales'] += $rowinfo['12_5KG_Sales'];
             $totals['37_5KG_Full'] += $rowinfo['37_5KG_Full'];
             $totals['37_5KG_Empty'] += $rowinfo['37_5KG_Empty'];
+            $totals['37_5KG_Sales'] += $rowinfo['37_5KG_Sales'];
             
             $html.='<tr>
                 <td nowrap>'.$rowinfo['Customer'].'</td>';
@@ -168,18 +476,26 @@ $html='';
                 <!-- 2KG Columns -->
                 <td class="text-center">'.($rowinfo['2KG_Full'] <= 0 ? '' : ceil($rowinfo['2KG_Full'])).'</td>
                 <td class="text-center">'.($rowinfo['2KG_Empty'] <= 0 ? '' : ceil($rowinfo['2KG_Empty'])).'</td>
+                <td class="text-center">'.($rowinfo['2KG_Sales'] <= 0 ? '' : ceil($rowinfo['2KG_Sales'])).'</td>
+                <td class="text-center">'.($rowinfo['2KG_Loss_Percentage'] <= 0 ? '' : ceil($rowinfo['2KG_Loss_Percentage']).'%').'</td>
                 
                 <!-- 5KG Columns -->
                 <td class="text-center">'.($rowinfo['5KG_Full'] <= 0 ? '' : ceil($rowinfo['5KG_Full'])).'</td>
                 <td class="text-center">'.($rowinfo['5KG_Empty'] <= 0 ? '' : ceil($rowinfo['5KG_Empty'])).'</td>
+                <td class="text-center">'.($rowinfo['5KG_Sales'] <= 0 ? '' : ceil($rowinfo['5KG_Sales'])).'</td>
+                <td class="text-center">'.($rowinfo['5KG_Loss_Percentage'] <= 0 ? '' : ceil($rowinfo['5KG_Loss_Percentage']).'%').'</td>
                 
                 <!-- 12.5KG Columns -->
                 <td class="text-center">'.($rowinfo['12_5KG_Full'] <= 0 ? '' : ceil($rowinfo['12_5KG_Full'])).'</td>
                 <td class="text-center">'.($rowinfo['12_5KG_Empty'] <= 0 ? '' : ceil($rowinfo['12_5KG_Empty'])).'</td>
+                <td class="text-center">'.($rowinfo['12_5KG_Sales'] <= 0 ? '' : ceil($rowinfo['12_5KG_Sales'])).'</td>
+                <td class="text-center">'.($rowinfo['12_5KG_Loss_Percentage'] <= 0 ? '' : ceil($rowinfo['12_5KG_Loss_Percentage']).'%').'</td>
                 
                 <!-- 37.5KG Columns -->
                 <td class="text-center">'.($rowinfo['37_5KG_Full'] <= 0 ? '' : ceil($rowinfo['37_5KG_Full'])).'</td>
                 <td class="text-center">'.($rowinfo['37_5KG_Empty'] <= 0 ? '' : ceil($rowinfo['37_5KG_Empty'])).'</td>
+                <td class="text-center">'.($rowinfo['37_5KG_Sales'] <= 0 ? '' : ceil($rowinfo['37_5KG_Sales'])).'</td>
+                <td class="text-center">'.($rowinfo['37_5KG_Loss_Percentage'] <= 0 ? '' : ceil($rowinfo['37_5KG_Loss_Percentage']).'%').'</td>
             </tr>';
         }
 
@@ -196,16 +512,24 @@ $html='';
                         <!-- 2KG Columns -->
                         <td class="text-center"></td>
                         <td class="text-center"></td>
+                        <td class="text-center"></td>
+                        <td class="text-center"></td>
                         
                         <!-- 5KG Columns -->
+                        <td class="text-center"></td>
+                        <td class="text-center"></td>
                         <td class="text-center"></td>
                         <td class="text-center"></td>
                         
                         <!-- 12.5KG Columns -->
                         <td class="text-center"></td>
                         <td class="text-center"></td>
+                        <td class="text-center"></td>
+                        <td class="text-center"></td>
                         
                         <!-- 37.5KG Columns -->
+                        <td class="text-center"></td>
+                        <td class="text-center"></td>
                         <td class="text-center"></td>
                         <td class="text-center"></td>
                     </tr>';
@@ -218,12 +542,20 @@ $html='';
                 <th colspan="2" nowrap>Total</th>
                 <th class="text-center">'.($totals['2KG_Full'] <= 0 ? '' : ceil($totals['2KG_Full'])).'</th>
                 <th class="text-center">'.($totals['2KG_Empty'] <= 0 ? '' : ceil($totals['2KG_Empty'])).'</th>
+                <th class="text-center">'.($totals['2KG_Sales'] <= 0 ? '' : ceil($totals['2KG_Sales'])).'</th>
+                <th class="text-center">'.($totals['2KG_Empty'] <= 0 ? '' : ceil(max(0, ($totals['2KG_Empty'] - $totals['2KG_Sales']) / $totals['2KG_Empty']) * 100).'%').'</th>
                 <th class="text-center">'.($totals['5KG_Full'] <= 0 ? '' : ceil($totals['5KG_Full'])).'</th>
                 <th class="text-center">'.($totals['5KG_Empty'] <= 0 ? '' : ceil($totals['5KG_Empty'])).'</th>
+                <th class="text-center">'.($totals['5KG_Sales'] <= 0 ? '' : ceil($totals['5KG_Sales'])).'</th>
+                <th class="text-center">'.($totals['5KG_Empty'] <= 0 ? '' : ceil(max(0, ($totals['5KG_Empty'] - $totals['5KG_Sales']) / $totals['5KG_Empty']) * 100).'%').'</th>
                 <th class="text-center">'.($totals['12_5KG_Full'] <= 0 ? '' : ceil($totals['12_5KG_Full'])).'</th>
                 <th class="text-center">'.($totals['12_5KG_Empty'] <= 0 ? '' : ceil($totals['12_5KG_Empty'])).'</th>
+                <th class="text-center">'.($totals['12_5KG_Sales'] <= 0 ? '' : ceil($totals['12_5KG_Sales'])).'</th>
+                <th class="text-center">'.($totals['12_5KG_Empty'] <= 0 ? '' : ceil(max(0, ($totals['12_5KG_Empty'] - $totals['12_5KG_Sales']) / $totals['12_5KG_Empty']) * 100).'%').'</th>
                 <th class="text-center">'.($totals['37_5KG_Full'] <= 0 ? '' : ceil($totals['37_5KG_Full'])).'</th>
                 <th class="text-center">'.($totals['37_5KG_Empty'] <= 0 ? '' : ceil($totals['37_5KG_Empty'])).'</th>
+                <th class="text-center">'.($totals['37_5KG_Sales'] <= 0 ? '' : ceil($totals['37_5KG_Sales'])).'</th>
+                <th class="text-center">'.($totals['37_5KG_Empty'] <= 0 ? '' : ceil(max(0, ($totals['37_5KG_Empty'] - $totals['37_5KG_Sales']) / $totals['37_5KG_Empty']) * 100).'%').'</th>
             </tr>
         </tfoot></table></div>';
 // }

@@ -38,7 +38,7 @@ include "include/topnavbar.php";
                                         <label class="small font-weight-bold text-dark">Name*</label>
                                         <input type="text" class="form-control form-control-sm" id="empname" name="empname" required>
                                     </div>
-                                    <div class="form-row mb-1">
+                                    <div class="form-group mb-1">
                                         <label class="small font-weight-bold text-dark">Date of Birth</label>
                                         <input type="date" id="dob" name="dob" class="form-control form-control-sm" value="<?php echo date('Y-m-d') ?>">
                                     </div>
@@ -53,6 +53,10 @@ include "include/topnavbar.php";
                                     <div class="form-group mb-1">
                                         <label class="small font-weight-bold text-dark">Mobile*</label>
                                         <input type="text" class="form-control form-control-sm" id="empmobile" name="empmobile" required>
+                                    </div>
+                                    <div class="form-group mb-1">
+                                        <label class="small font-weight-bold text-dark">Email*</label>
+                                        <input type="email" class="form-control form-control-sm" id="empemail" name="empemail">
                                     </div>
                                     <div class="form-group mb-1">
                                         <label class="small font-weight-bold text-dark">Address</label>
@@ -149,7 +153,8 @@ include "include/topnavbar.php";
                         $('#empepf').val(obj.epfno);
                         $('#empnic').val(obj.nic);
                         $('#empmobile').val(obj.phone);
-                        $('#empaddress').val(obj.address);                
+                        $('#empmobile').val(obj.phone);
+                        $('#empemail').val(obj.email);                
                         $('#emptype').val(obj.emptype);    
                         $('#user_account').val(obj.useraccount);              
           
