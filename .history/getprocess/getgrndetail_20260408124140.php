@@ -43,7 +43,7 @@ $result=$conn->query($sql);
             <td><?php echo number_format($row['emptyprice'],2); ?></td>
             <td><?php echo $row['newqty']; ?></td>
             <td><?php echo $row['fillqty']; ?></td>
-            <td><?php echo $row['emptyqty']; ?></td>
+            <td><?php echo $row['fillqty']; ?></td>
             <td><?php echo $row['trustqty']; ?></td>
             <td><?php echo $row['saftyqty']; ?></td>
             <td class="text-right"><?php echo number_format($row['totalwithoutvat'], 2); ?></td>

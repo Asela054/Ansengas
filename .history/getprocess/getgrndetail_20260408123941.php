@@ -7,7 +7,7 @@ $sqlvat = "SELECT `idtbl_vat_info`, `vat` FROM `tbl_vat_info` ORDER BY `idtbl_va
 $resultvat = $conn->query($sqlvat);
 $rowvat = $resultvat->fetch_assoc();
 
-$sql="SELECT `tbl_grndetail`.`newqty`, `tbl_grndetail`.`fillqty`, `tbl_grndetail`.`emptyqty`, `tbl_grndetail`.`trustqty`, `tbl_grndetail`.`saftyqty`, `tbl_grndetail`.`unitprice_withoutvat`, `tbl_grndetail`.`refillprice_withoutvat`, `tbl_grndetail`.`emptyprice_withoutvat`, `tbl_grndetail`.`unitprice`, `tbl_grndetail`.`refillprice`, `tbl_grndetail`.`emptyprice`, `tbl_grndetail`.`totalwithoutvat`, `tbl_grndetail`.`total`, `tbl_product`.`product_name` FROM `tbl_grndetail` LEFT JOIN `tbl_product` ON `tbl_product`.`idtbl_product`=`tbl_grndetail`.`tbl_product_idtbl_product` WHERE `tbl_grndetail`.`tbl_grn_idtbl_grn`='$grnid' AND `tbl_grndetail`.`status`=1 ";
+$sql="SELECT `tbl_grndetail`.`newqty`, `tbl_grndetail`.`fillqty`, `tbl_grndetail`.`trustqty`, `tbl_grndetail`.`saftyqty`, `tbl_grndetail`.`unitprice_withoutvat`, `tbl_grndetail`.`refillprice_withoutvat`, `tbl_grndetail`.`emptyprice_withoutvat`, `tbl_grndetail`.`unitprice`, `tbl_grndetail`.`refillprice`, `tbl_grndetail`.`emptyprice`, `tbl_grndetail`.`totalwithoutvat`, `tbl_grndetail`.`total`, `tbl_product`.`product_name` FROM `tbl_grndetail` LEFT JOIN `tbl_product` ON `tbl_product`.`idtbl_product`=`tbl_grndetail`.`tbl_product_idtbl_product` WHERE `tbl_grndetail`.`tbl_grn_idtbl_grn`='$grnid' AND `tbl_grndetail`.`status`=1 ";
 $result=$conn->query($sql);
 ?>
 <table class="table table-striped table-bordered table-dark table-sm" id="">
@@ -22,7 +22,6 @@ $result=$conn->query($sql);
             <th class="text-center">Empty price+(VAT)</th>
             <th class="text-center">New</th>
             <th class="text-center">Refill</th>
-            <th class="text-center">Empty</th>
             <th class="text-center">Trust</th>
             <th class="text-center">Safety</th>
             <th class="text-right">Total</th>
@@ -43,7 +42,6 @@ $result=$conn->query($sql);
             <td><?php echo number_format($row['emptyprice'],2); ?></td>
             <td><?php echo $row['newqty']; ?></td>
             <td><?php echo $row['fillqty']; ?></td>
-            <td><?php echo $row['emptyqty']; ?></td>
             <td><?php echo $row['trustqty']; ?></td>
             <td><?php echo $row['saftyqty']; ?></td>
             <td class="text-right"><?php echo number_format($row['totalwithoutvat'], 2); ?></td>
