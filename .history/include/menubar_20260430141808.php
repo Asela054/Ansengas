@@ -467,11 +467,6 @@ function checkprivilege($arraymenu, $menuID, $type){
                 <div class="nav-link-icon"><i class="fas fa-sticky-note"></i></div>
                 Credit Note
             </a>
-            <?php }if(menucheck($menuprivilegearray, 98)==1){ ?>
-            <a class="nav-link p-0 px-3 py-2" href="purchasereturn.php">
-                <div class="nav-link-icon"><i class="fas fa-sticky-note"></i></div>
-                Purchase Return
-            </a>
             <?php }if(menucheck($menuprivilegearray, 6)==1){ ?>
             <a class="nav-link p-0 px-3 py-2" href="grn.php">
                 <div class="nav-link-icon"><i data-feather="truck"></i></div>

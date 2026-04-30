@@ -467,10 +467,10 @@ function checkprivilege($arraymenu, $menuID, $type){
                 <div class="nav-link-icon"><i class="fas fa-sticky-note"></i></div>
                 Credit Note
             </a>
-            <?php }if(menucheck($menuprivilegearray, 98)==1){ ?>
-            <a class="nav-link p-0 px-3 py-2" href="purchasereturn.php">
+            <?php }if(menucheck($menuprivilegearray, 83)==1){ ?>
+            <a class="nav-link p-0 px-3 py-2" href="creditnote.php">
                 <div class="nav-link-icon"><i class="fas fa-sticky-note"></i></div>
-                Purchase Return
+                Credit Note
             </a>
             <?php }if(menucheck($menuprivilegearray, 6)==1){ ?>
             <a class="nav-link p-0 px-3 py-2" href="grn.php">

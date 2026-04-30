@@ -29,4 +29,4 @@ mysqli_close($conn);
 
 // Return only valid JSON
 echo json_encode($products);
-?> 
+?>

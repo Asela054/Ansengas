@@ -394,7 +394,7 @@ else if($lastElement=='budgetvariance.php'){
     $statuscheck=checkprivilege($menuprivilegearray, 97, 3);
     $deletecheck=checkprivilege($menuprivilegearray, 97, 4);
 }
-else if($lastElement=='purchasereturn.php'){
+else if($lastElement=='budgetvariance.php'){
     $addcheck=checkprivilege($menuprivilegearray, 98, 1);
     $editcheck=checkprivilege($menuprivilegearray, 98, 2);
     $statuscheck=checkprivilege($menuprivilegearray, 98, 3);
@@ -466,11 +466,6 @@ function checkprivilege($arraymenu, $menuID, $type){
             <a class="nav-link p-0 px-3 py-2" href="creditnote.php">
                 <div class="nav-link-icon"><i class="fas fa-sticky-note"></i></div>
                 Credit Note
-            </a>
-            <?php }if(menucheck($menuprivilegearray, 98)==1){ ?>
-            <a class="nav-link p-0 px-3 py-2" href="purchasereturn.php">
-                <div class="nav-link-icon"><i class="fas fa-sticky-note"></i></div>
-                Purchase Return
             </a>
             <?php }if(menucheck($menuprivilegearray, 6)==1){ ?>
             <a class="nav-link p-0 px-3 py-2" href="grn.php">
