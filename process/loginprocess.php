@@ -10,7 +10,7 @@ date_default_timezone_set(TIMEZONE);
 //Start Database
 $IP = "localhost";
 $user = "root";
-$pass = "asela123";
+$pass = "";
 $db = "erav_ansengas";
 $con = mysqli_connect($IP, $user, $pass, $db);
 
