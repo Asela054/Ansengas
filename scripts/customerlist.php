@@ -61,8 +61,8 @@ $joinQuery = "FROM `tbl_customer` AS `u` LEFT JOIN `tbl_area` AS `ud` ON (`ud`.`
 
 $typeFilter = isset($_POST['customerType']) && $_POST['customerType'] !== '' ? 
               " AND `u`.`type` = '".intval($_POST['customerType'])."'" : '';
-
-$extraWhere = "`u`.`status` IN (1, 2, 5)" . $typeFilter;
+$showDeactivated = isset($_POST['showDeactivated']) && $_POST['showDeactivated'] === '1';
+$extraWhere = ($showDeactivated ? "`u`.`status` = 2" : "`u`.`status` IN (1, 2)") . $typeFilter;
 
 
 echo json_encode(
