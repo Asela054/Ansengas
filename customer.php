@@ -299,6 +299,12 @@ include "include/topnavbar.php";
                                              </select>
                                          </div>
                                      </div>
+                                     <div class="col-3 d-flex align-items-end">
+                                         <div class="custom-control custom-checkbox mb-3 ml-3">
+                                             <input type="checkbox" class="custom-control-input" id="deactivateCustomerOnly">
+                                             <label class="custom-control-label small font-weight-bold text-dark" for="deactivateCustomerOnly">Deactivate Customers</label>
+                                         </div>
+                                     </div>
                                  </div>
 
                                 <div class="scrollbar pb-3" id="style-2">
@@ -751,7 +757,7 @@ include "include/topnavbar.php";
             }
         });
 
-        function loadCustomerTable(customerType = '') {
+        function loadCustomerTable(customerType = '', showDeactivated = 0) {
             $('#dataTable').DataTable({
                 "destroy": true,
                 "processing": true,
@@ -773,7 +779,8 @@ include "include/topnavbar.php";
                     url: "scripts/customerlist.php",
                     type: "POST",
                     data: {
-                        customerType: customerType
+                        customerType: customerType,
+                        showDeactivated: showDeactivated
                     }
                 },
                 "order": [
@@ -875,9 +882,10 @@ include "include/topnavbar.php";
 
         loadCustomerTable();
 
-        $('#customerTypeFilter').on('change', function () {
-            const selectedType = $(this).val();
-            loadCustomerTable(selectedType);
+        $('#customerTypeFilter, #deactivateCustomerOnly').on('change', function () {
+            const selectedType = $('#customerTypeFilter').val();
+            const showDeactivated = $('#deactivateCustomerOnly').is(':checked') ? 1 : 0;
+            loadCustomerTable(selectedType, showDeactivated);
         });
         $('#dataTable tbody').on('click', '.btnEdit', async function() {
             var r = await Otherconfirmation("You want to edit this ? ");
