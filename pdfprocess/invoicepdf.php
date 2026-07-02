@@ -425,225 +425,532 @@ if ($vatStatus == 0) {
     ';
 }
 else{
-    $invoiceno = 'AGT' . $rowinvoiceinfo['tax_invoice_num'];
+    $companyID = 1;
+
+    $yy  = date('y', strtotime($rowinvoiceinfo["date"]));          // e.g. 26
+    $mmm = strtoupper(date('M', strtotime($rowinvoiceinfo["date"]))); // e.g. JUL
+    $qqqqMap = [
+        1 => 'AGT1'
+    ];
+    $qqqq = $qqqqMap[$companyID] ?? 'GEN1';
+    $taxDatePrefix = $yy . $mmm . '_' . $qqqq . '_';
+
+    // Strip the first two characters from tax_invoice_num, keep the rest
+    $rawTaxInvNum = $rowinvoiceinfo['tax_invoice_num'];
+    $strippedTaxInvNum = substr($rawTaxInvNum, 2);
+
+    $showTaxInvNum = $taxDatePrefix . sprintf('%05d', $strippedTaxInvNum);
+
+    $invoiceno = $showTaxInvNum;
     $invoiceDetails = [];
     while ($rowinvoicedetail = $resultinvoicedetail->fetch_assoc()) {
         $invoiceDetails[] = $rowinvoicedetail;
     }
+    
+    // Assume vat_customer is 1 for tax invoices
+    $vat_customer = 1;
 
-    $html.='
-    <!DOCTYPE html>
-    <html lang="en">
+    $html = '
+		<!DOCTYPE html>
+		<html lang="en">
+		<head>
+			<meta charset="UTF-8">
+				<style>
+					* {
+						margin: 0;
+						padding: 0;
+						box-sizing: border-box;
+					}
 
-    <head>
-        <meta charset="UTF-8">
-        <title>LAUGFS Gas PLC - TAX Invoice AGT'.$rowinvoiceinfo['tax_invoice_num'].'</title>
-        <style>
-            body {
-                font-family: Arial, sans-serif;
-                font-size: 14px;
-                margin: 0px;
-            }
-        </style>
-    </head>
+					body {
+						font-family: DejaVu Sans, sans-serif;
+						font-size: 12px;
+						color: #000;
+						padding: 20px;
+						margin-top: 80px;
+					}
 
-    <body>
-        <table style="width: 100%; border-collapse: collapse;">
-            <tr>
-                <td>&nbsp;</td>
-                <td width="25%">
-                    <table style="width: 100%; border-collapse: collapse; border: 1px solid black;">
-                        <tr>
-                            <td style="border: 1px solid black; text-align: center;"><h3 style="margin-top: 5px;margin-bottom: 5px;">Tax Invoice</h3></td>
-                        </tr>
-                    </table>
-                </td>
-                <td>&nbsp;</td>
-            </tr>
-            <tr>
-                <td colspan="3">
-                    <table style="width: 100%;margin-top: 10px;border-collapse: separate; border-spacing: 15px 0;">
-                        <tr>
-                            <td width="50%" style="border: 1px solid black; padding: 5px;vertical-align: top;">
-                                <strong>Date of Invoice:</strong> '.$rowinvoiceinfo['date'].'
-                            </td>
-                            <td style="border: 1px solid black; padding: 5px;vertical-align: top;">
-                                <strong>Tax Invoice No:</strong> AGT'.$rowinvoiceinfo['tax_invoice_num'].'
-                            </td>                            
-                        </tr>                    
-                    </table>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="3">
-                    <table style="width: 100%;margin-top: 10px;border-collapse: separate; border-spacing: 15px 0;">
-                        <tr>
-                            <td width="50%" style="border: 1px solid black; padding: 5px;vertical-align: top;">
-                                <strong>Supplier\'s TIN:</strong> 102575474-7000<br>
-                                <strong>Supplier\'s Name:</strong> ANSEN GAS DISTRIBUTORS (PVT) LTD<br>
-                                <strong>Address:</strong> 65, Arcbishop, Archbishop Nicholas Marcus Fernando Mawatha, Negombo, Sri Lanka<br>
-                                <strong>Phone:</strong> 0312 235 050
-                            </td>
-                            <td style="border: 1px solid black; padding: 5px;vertical-align: top;">
-                                <strong>Purchaser\'s TIN:</strong> '.$rowinvoiceinfo['vat_num'].'<br>
-                                <strong>Purchaser\'s Name:</strong> '.$rowinvoiceinfo['tax_cus_name'].'<br>
-                                <strong>Address:</strong> '.$rowinvoiceinfo['address'].'<br>
-                                <strong>Phone:</strong> '.$rowinvoiceinfo['phone'].'
-                            </td>                            
-                        </tr>                    
-                    </table>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="3">
-                    <table style="width: 100%;margin-top: 10px;border-collapse: separate; border-spacing: 15px 0;">
-                        <tr>
-                            <td width="50%" style="border: 1px solid black; padding: 5px;vertical-align: top;">
-                                <strong>Date of Delivery:</strong> '.$rowinvoiceinfo['date'].'
-                            </td>
-                            <td style="border: 1px solid black; padding: 5px;vertical-align: top;">
-                                <strong>Place of Supply:</strong> 
-                            </td>                            
-                        </tr>                    
-                    </table>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="3">
-                    <table style="width: 100%;margin-top: 10px;border-collapse: separate; border-spacing: 15px 0;">
-                        <tr>
-                            <td style="border: 1px solid black; padding: 5px;vertical-align: top;height: 75px;">
-                                <strong>Additional Information if any: </strong> 
-                            </td>                        
-                        </tr>                    
-                    </table>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="3">
-                    <table style="width: 100%;border-collapse: separate; border-spacing: 15px 0;">
+					 /** Define the header rules **/
+					header {
+						position: fixed;
+						top: 15px;
+						left: 0px;
+						right: 0px;
+						height: 255px;
+					}
+
+					/* ── Header ── */
+					.header {
+						text-align: center;
+						margin-bottom: 15px;
+					}
+
+					.header img {
+						width: 80px;
+						height: auto;
+						margin-bottom: 5px;
+					}
+
+					.company-name {
+						font-size: 16px;
+						font-weight: bold;
+						text-transform: uppercase;
+						margin-bottom: 2px;
+					}
+
+					.company-sub {
+						font-size: 12px;
+						margin-bottom: 2px;
+					}
+
+					/* ── Info Table ── */
+					.info-table {
+						width: 100%;
+						// border-collapse: collapse;
+						border-spacing: 15px 10px;
+						// margin-bottom: 10px;
+					}
+
+					.info-table td {
+						border: 1px solid #000;
+						padding: 5px 8px;
+						vertical-align: top;
+						width: 50%;
+					}
+
+					.label {
+						font-weight: bold;
+					}
+
+					/* Style for the inner layout tables */
+					.inner-details-table {
+						width: 100%;
+						table-layout: fixed;
+						border-collapse: collapse;
+					}
+
+					.inner-details-table th {
+						text-align: left; /* PDF engines default <th> to center alignment */
+						font-weight: bold;
+					}
+
+					.inner-details-table td {
+						text-align: left; /* PDF engines default <th> to center alignment */
+					}
+
+					/* ── Additional Info ── */
+					.additional-info {
+						border: 1px solid #000;
+						padding: 6px 8px;
+						margin-bottom: 10px;
+						margin-left: 15px;
+						margin-right: 15px;
+						min-height: 30px;
+					}
+
+					/* ── Items Table ── */
+                    .items-table {
+                        width: calc(100% - 30px);
+                        border-collapse: collapse;
+                        margin-left: 15px;
+                        margin-right: 15px;
+                    }
+
+					.items-table th {
+						border: 1px solid #000;
+						padding: 6px 5px;
+						text-align: center;
+						font-weight: bold;
+						background-color: #f0f0f0;
+						font-size: 12px;
+					}
+
+					.items-table td {
+						border: 1px solid #000;
+						padding: 5px;
+						vertical-align: top;
+						font-size: 12px;
+					}
+
+					.items-table .col-ref       { width: 10%; text-align: center; }
+					.items-table .col-desc      { width: 42%; text-align: left;   }
+					.items-table .col-qty       { width: 10%; text-align: center; }
+					.items-table .col-unitprice { width: 18%; text-align: right;  }
+					.items-table .col-amount    { width: 20%; text-align: right;  }
+
+					.items-table .empty-row td  { height: 25px; }
+
+					/* ── Summary ── */
+					.summary-label { text-align: left;  font-size: 12px; }
+					.summary-value { text-align: right; font-size: 12px; font-weight: bold; }
+
+					/* ── Total Words & Mode ── */
+					.total-words-box {
+						border: 1px solid #000;
+						padding: 6px 8px;
+						min-height: 28px;
+						margin-top: 15px;
+						margin-left: 15px;
+						margin-right: 15px;
+					}
+
+					.mode-payment-box {
+						border: 1px solid #000;
+						border-top: 0;
+						padding: 6px 8px;
+						min-height: 28px;
+						margin-left: 15px;
+						margin-right: 15px;
+					}
+
+					/* ── Footer ── */
+					.footer-ref {
+						text-align: left;
+						font-size: 9px;
+						margin-top: 15px;
+					}
+
+					.footer {
+						margin-top: 5px;
+						font-size: 9px;
+						text-align: center;
+						color: #555;
+						border-top: 1px solid #000;
+						padding-top: 5px;
+					}
+
+					/* ── Utilities ── */
+					.text-right  { text-align: right;  }
+					.text-center { text-align: center; }
+					.text-left   { text-align: left;   }
+					.font-bold   { font-weight: bold;  }
+					.asterisk    { color: #888; 	  }
+
+					/** Define the footer rules **/
+					footer {
+						position: fixed; 
+						bottom: 0px; 
+						left: 0px; 
+						right: 0px;
+						height: 120px; /* Slightly increased to fit signatures comfortably */
+					}
+
+					.footertable {
+						width: 100%;
+						text-align: center;
+						border-collapse: collapse;
+						margin-top: 10px;
+					}
+
+					.footertable td {
+						width: 33.33%;
+						padding-top: 60px; /* Creates the space for physical signatures */
+						vertical-align: bottom;
+					}
+
+					.sig-line {
+						border-top: 1px dotted #000;
+						width: 80%;
+						margin: 0 auto 5px auto;
+					}
+
+				</style>
+		</head>
+		<body>
+
+			<!-- ══ HEADER ══════════════════════════════════════════════════════ -->
+			<header>
+				<div class="header">
+					<div class="company-name">ANSEN GAS DISTRIBUTORS (PVT) LTD</div>
+					<div class="company-sub">65, Archbishop Nicholas Marcus Fernando Mawatha, Negombo, Sri Lanka</div>
+					<div class="company-sub">Tel: 0312 235 050 | Email: info@ansengas.lk</div>
+				</div>
+			</header>
+
+			<!-- ══ FOOTER ══════════════════════════════════════════════════════ -->
+			<footer>
+                <table class="footertable">
+                    <tbody>
                         <tr>
                             <td>
-                                <table style="width: 100%; border-collapse: collapse;border: 1px solid black; margin-top: 10px;">
-                                    <tr>
-                                        <th style="border: 1px solid black; padding: 5px;">Reference</th>
-                                        <th style="border: 1px solid black; padding: 5px;">Description of Goods or Services</th>
-                                        <th style="border: 1px solid black; padding: 5px;text-align: center;">Quantity</th>
-                                        <th style="border: 1px solid black; padding: 5px;text-align: right;">Unit Price</th>
-                                        <th style="border: 1px solid black; padding: 5px;text-align: right;">Amount Excluding VAT (Rs.)</th>
-                                    </tr>
-                                    ';
-                                    $invoiceproducts = array();
-                                    $i=1;
-                                    foreach ($invoiceDetails as $rowinvoicedetail) {
-                                        // Check if cusType is equal to 1
-                                        if ($cusType == 1) {
-                                            $vatNew = $rowinvoicedetail['encustomer_newprice'] * $rowvat['vat'] / 100;
-                                            $vatRefill = $rowinvoicedetail['encustomer_refillprice'] * $rowvat['vat'] / 100;
-                                            $vatEmpty = $rowinvoicedetail['encustomer_emptyprice'] * $rowvat['vat'] / 100;
-                                        } else {
-                                            $vatNew = $rowvat['vat'] * $rowinvoicedetail['newprice'] / 100;
-                                            $vatRefill = $rowvat['vat'] * $rowinvoicedetail['refillprice'] / 100;
-                                            $vatEmpty = $rowvat['vat'] * $rowinvoicedetail['emptyprice'] / 100;
-                                        }
-
-                                        // Calculate total prices including VAT
-                                        $totalWithVAT = number_format(
-                                            ($rowinvoicedetail['newqty'] * ($rowinvoicedetail['newprice'] + $vatNew))
-                                            + ($rowinvoicedetail['refillqty'] * ($rowinvoicedetail['refillprice'] + $vatRefill))
-                                            + ($rowinvoicedetail['emptyqty'] * ($rowinvoicedetail['emptyprice'] + $vatEmpty))
-                                            + ($rowinvoicedetail['trustqty'] * ($rowinvoicedetail['refillprice'] + $vatRefill))
-                                            + ($rowinvoicedetail['trustreturnqty'] * 0),
-                                            2
-                                        );
-
-                                        $totalWithVATencus = number_format(
-                                            ($rowinvoicedetail['newqty'] * ($rowinvoicedetail['encustomer_newprice'] + $vatNew))
-                                            + ($rowinvoicedetail['refillqty'] * ($rowinvoicedetail['encustomer_refillprice'] + $vatRefill))
-                                            + ($rowinvoicedetail['emptyqty'] * ($rowinvoicedetail['encustomer_emptyprice'] + $vatEmpty))
-                                            + ($rowinvoicedetail['trustqty'] * ($rowinvoicedetail['encustomer_refillprice'] + $vatRefill))
-                                            + ($rowinvoicedetail['trustreturnqty'] * 0),
-                                            2
-                                        );
-
-                                        if($rowinvoicedetail['newqty']>0) {
-                                            $obj = new stdClass();
-                                            $obj->reference = $i;
-                                            $obj->description = $rowinvoicedetail['product_name'].' - New';
-                                            $obj->quantity = $rowinvoicedetail['newqty'];
-                                            $obj->unitprice = $cusType == 1 ? number_format(($rowinvoicedetail['encustomer_newprice']+$vatNew), 2) : number_format(($rowinvoicedetail['newprice']+$vatNew), 2);
-                                            $obj->amount = $cusType == 1 ? number_format($rowinvoicedetail['newqty'] * ($rowinvoicedetail['encustomer_newprice']+$vatNew), 2) : number_format($rowinvoicedetail['newqty'] * ($rowinvoicedetail['newprice']+$vatNew), 2);
-                                            array_push($invoiceproducts, $obj);
-                                        }
-                                        if($rowinvoicedetail['refillqty']>0) {
-                                            $obj = new stdClass();
-                                            $obj->reference = $i;
-                                            $obj->description = $rowinvoicedetail['product_name'].' - Refill';
-                                            $obj->quantity = $rowinvoicedetail['refillqty'];
-                                            $obj->unitprice = $cusType == 1 ? number_format(($rowinvoicedetail['encustomer_refillprice']+$vatRefill), 2) : number_format(($rowinvoicedetail['refillprice']+$vatRefill), 2);
-                                            $obj->amount = $cusType == 1 ? number_format($rowinvoicedetail['refillqty'] * ($rowinvoicedetail['encustomer_refillprice']+$vatRefill), 2) : number_format($rowinvoicedetail['refillqty'] * ($rowinvoicedetail['refillprice']+$vatRefill), 2);
-                                            array_push($invoiceproducts, $obj);
-                                        }
-                                        if($rowinvoicedetail['emptyqty']>0) {
-                                            $obj = new stdClass();
-                                            $obj->reference = $i;
-                                            $obj->description = $rowinvoicedetail['product_name'].' - Empty';
-                                            $obj->quantity = $rowinvoicedetail['emptyqty'];
-                                            $obj->unitprice = $cusType == 1 ? number_format(($rowinvoicedetail['encustomer_emptyprice']+$vatEmpty), 2) : number_format(($rowinvoicedetail['emptyprice']+$vatEmpty), 2);
-                                            $obj->amount = $cusType == 1 ? number_format($rowinvoicedetail['emptyqty'] * ($rowinvoicedetail['encustomer_emptyprice']+$vatEmpty), 2) : number_format($rowinvoicedetail['emptyqty'] * ($rowinvoicedetail['emptyprice']+$vatEmpty), 2);
-                                            array_push($invoiceproducts, $obj);
-                                        }
-                                        $i++;
-                                    }
-                                    foreach ($invoiceproducts as $product) {
-                                        $html.='
-                                        <tr>
-                                            <td style="border: 1px solid black; padding: 5px;">'.$product->reference.'</td>
-                                            <td style="border: 1px solid black; padding: 5px;">'.$product->description.'</td>
-                                            <td style="border: 1px solid black; padding: 5px; text-align: center;">'.$product->quantity.'</td>
-                                            <td style="border: 1px solid black; padding: 5px; text-align: right;">'.$product->unitprice.'</td>
-                                            <td style="border: 1px solid black; padding: 5px; text-align: right;">'.$product->amount.'</td>
-                                        </tr>
-                                        ';
-                                    }
-                                    $html.='<tr>
-                                        <td colspan="4" style="border: 1px solid black; padding: 5px;">Total Value of Supply:</td>
-                                        <td style="border: 1px solid black; padding: 5px; text-align: right;"><strong>'.number_format($rowinvoiceinfo['total'], 2).'</strong></td>
-                                    </tr>
-                                    <tr>
-                                        <td colspan="4" style="border: 1px solid black; padding: 5px;">VAT Amount (Total Value of Supply @ '.$rowvat['vat'].'%)	</td>
-                                        <td style="border: 1px solid black; padding: 5px; text-align: right;"><strong>'.number_format($rowinvoiceinfo['taxamount'], 2).'</strong></td>
-                                    </tr>
-                                    <tr>
-                                        <td colspan="4" style="border: 1px solid black; padding: 5px;">Total Amount including VAT:</td>
-                                        <td style="border: 1px solid black; padding: 5px; text-align: right;"><strong>'.number_format($rowinvoiceinfo['nettotal'], 2).'</strong></td>
-                                    </tr>
-                                </table>
+                                <div class="sig-line"></div>
+                                Prepared By
+                            </td>
+                            <td>
+                                <div class="sig-line"></div>
+                                Checked By
+                            </td>
+                            <td>
+                                <div class="sig-line"></div>
+                                For ANSEN GAS
                             </td>
                         </tr>
-                    </table>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="3">
-                    <table style="width: 100%;margin-top: 10px;border-collapse: separate; border-spacing: 15px 0;">
-                        <tr>
-                            <td style="border: 1px solid black; padding: 5px;vertical-align: top;">
-                                <strong>Total Amount in words: </strong> '.ConvertRupeeToText($rowinvoiceinfo['nettotal']).'
-                            </td>                        
-                        </tr>                    
-                        <tr>
-                            <td style="border: 1px solid black; padding: 5px;vertical-align: top;border-top: none;">
-                                <strong>Mode of Payment: </strong> '.$rowpaymethod['payment_methods'].'
-                            </td>                        
-                        </tr>                    
-                    </table>
-                </td>
-            </tr>
-        </table>
-    </body>
-    </html>
-    ';
+                    </tbody>
+                </table>
+            </footer>
+
+			<!-- ══ TITLE ════════════════════════════════════════════════════════ -->
+			<div style="text-align: center; margin-bottom: 15px;">
+				<table style="margin: 0 auto; border-collapse: collapse;">
+					<tr>
+						<td style="
+							border: 2px solid #000;
+							padding: 8px 30px;
+							font-size: 16px;
+							font-weight: bold;
+							letter-spacing: 2px;
+							text-align: center;
+						">TAX INVOICE</td>
+					</tr>
+				</table>
+			</div>
+
+			<!-- ══ SUPPLIER & PURCHASER INFO ════════════════════════════════════ -->
+
+			<table class="info-table">
+
+				<!-- Row 1: Date of Invoice | Tax Invoice No -->
+				<tr>
+					<td>
+						<table class="inner-details-table" style="width: 100%; border: none; border-collapse: collapse;">
+							<tr>
+								<th style="border: none;width:38%;vertical-align: top;">Date of Invoice</th>
+								<th style="border: none;width:2%;vertical-align: top;">:</th>
+								<td style="border: none;width:60%;vertical-align: top;padding-top:0;">'. date('m/d/Y', strtotime($rowinvoiceinfo['date'])) .'</td>
+							</tr>
+						</table>
+					</td>
+					<td>
+						<table class="inner-details-table" style="width: 100%; border: none; border-collapse: collapse;">
+							<tr>
+								<th style="border: none;width:38%;vertical-align: top;">Tax Invoice No.</th>
+								<th style="border: none;width:2%;vertical-align: top;">:</th>
+                                <td style="border: none;width:60%;vertical-align: top;padding-top:0;">'. $showTaxInvNum .'</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+
+				<!-- Row 2: Supplier TIN | Purchaser TIN -->
+				<tr>
+					<td>	
+						<table class="inner-details-table" style="width: 100%; border: none; border-collapse: collapse;">
+							<tr>
+								<th style="border: none;width:38%;vertical-align: top;">Supplier`s TIN</th>
+								<th style="border: none;width:2%; width: 2px;vertical-align: top;">:</th>
+								<td style="border: none;width:60%;vertical-align: top;padding-top:0;">102575474</td>
+							</tr>
+							<tr>
+								<th style="border: none;vertical-align: top;">Supplier`s Name</th>
+								<th style="border: none;vertical-align: top;">:</th>
+								<td style="border: none;vertical-align: top;padding-top:0;">ANSEN GAS DISTRIBUTORS (PVT) LTD</td>
+							</tr>
+							<tr>
+								<th style="border: none;vertical-align: top;">Address</th>
+								<th style="border: none;vertical-align: top;">:</th>
+								<td style="border: none;vertical-align: top;padding-top:0;">65, Archbishop Nicholas Marcus Fernando Mawatha, Negombo, Sri Lanka</td>
+							</tr>
+							<tr>
+								<th style="border: none;vertical-align: top;">Telephone No. </th>
+								<th style="border: none;vertical-align: top;">:</th>
+								<td style="border: none;vertical-align: top;padding-top:0;">0312 235 050</td>
+							</tr>
+						</table>
+					</td>
+					<td>
+						<table class="inner-details-table" style="width: 100%; border: none; border-collapse: collapse;">
+							<tr>
+								<th style="border: none;width:38%;vertical-align: top;">Purchaser`s TIN</th>
+								<th style="border: none;width:2%;vertical-align: top;">:</th>
+                                <td style="border: none;width:60%;vertical-align: top;padding-top:0;">'. explode('-', $rowinvoiceinfo['vat_num'])[0] .'</td>
+							</tr>
+							<tr>
+								<th style="border: none;vertical-align: top;">Purchaser`s Name</th>
+								<th style="border: none;vertical-align: top;">:</th>
+								<td style="border: none;vertical-align: top;padding-top:0;">' . $rowinvoiceinfo['tax_cus_name'] . '</td>
+							</tr>
+							<tr>
+								<th style="border: none;vertical-align: top;">Address</th>
+								<th style="border: none;vertical-align: top;">:</th>
+								<td style="border: none;vertical-align: top;padding-top:0;">' . $rowinvoiceinfo['address'] . '</td>
+							</tr>
+							<tr>
+								<th style="border: none;vertical-align: top;">Telephone No.</th>
+								<th style="border: none;vertical-align: top;">:</th>
+								<td style="border: none;vertical-align: top;padding-top:0;">' . $rowinvoiceinfo['phone'] . '</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+
+				<!-- Row 6: Date of Supply | Place of Supply -->
+				<tr>
+					<td>
+						<table class="inner-details-table" style="width: 100%; border: none; border-collapse: collapse;">
+							<tr>
+								<th style="border: none;width:38%;vertical-align: top;">Date of Supply</th>
+								<th style="border: none;width:2%;vertical-align: top;">:</th>
+								<td style="border: none;width:60%;vertical-align: top;padding-top:0;">'. date('m/d/Y', strtotime($rowinvoiceinfo['date'])) .'</td>
+							</tr>
+						</table>						
+					</td>
+					<td>
+						<table class="inner-details-table" style="width: 100%; border: none; border-collapse: collapse;">
+							<tr>
+								<th style="border: none;width:38%;vertical-align: top;">Place of Supply </th>
+								<th style="border: none;width:2%;vertical-align: top;">:</th>
+								<td style="border: none;width:60%;vertical-align: top;padding-top:0;">' . $rowinvoiceinfo['name'] . '</td>
+							</tr>
+						</table>						
+					</td>
+				</tr>
+
+			</table>
+
+            <!-- ══ ADDITIONAL INFORMATION ════════════════════════════════════════ -->
+            <div class="additional-info">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <tr>
+                        <td style="padding: 5px; vertical-align: top; height: 25px;">
+                            <strong>Additional Information if any: </strong> 
+                        </td>                        
+                    </tr>  
+                </table>					
+            </div>
+
+			<!-- ══ ITEMS TABLE ════════════════════════════════════════════════════ -->
+			<table class="items-table">
+
+				<!-- ── Head ── -->
+                <thead>
+                    <tr>
+                        <th class="col-ref" style="vertical-align: top;">
+                            Reference
+                        </th>
+                        <th class="col-desc" style="vertical-align: top;">Description of Goods or Services</th>
+                        <th class="col-qty" style="vertical-align: top;">Quantity</th>
+                        <th class="col-unitprice" style="vertical-align: top;">Unit Price</th>
+                        <th class="col-amount" style="vertical-align: top;">
+                            Amount Excluding VAT (Rs.)
+                        </th>
+                    </tr>
+                </thead>
+
+				<!-- ── Body ── -->
+				<tbody>';
+					$ref_counter = 1;
+					foreach ($invoiceDetails as $rowinvoicedetail) {
+						if ($cusType == 1) {
+							$vatNew = $rowinvoicedetail['encustomer_newprice'] * $rowvat['vat'] / 100;
+							$vatRefill = $rowinvoicedetail['encustomer_refillprice'] * $rowvat['vat'] / 100;
+							$vatEmpty = $rowinvoicedetail['encustomer_emptyprice'] * $rowvat['vat'] / 100;
+						} else {
+							$vatNew = $rowvat['vat'] * $rowinvoicedetail['newprice'] / 100;
+							$vatRefill = $rowvat['vat'] * $rowinvoicedetail['refillprice'] / 100;
+							$vatEmpty = $rowvat['vat'] * $rowinvoicedetail['emptyprice'] / 100;
+						}
+
+						if($rowinvoicedetail['newqty']>0) {
+							$unitprice = $cusType == 1 ? $rowinvoicedetail['encustomer_newprice'] + $vatNew : $rowinvoicedetail['newprice'] + $vatNew;
+							$total = $cusType == 1 ? $rowinvoicedetail['newqty'] * ($rowinvoicedetail['encustomer_newprice']+$vatNew) : $rowinvoicedetail['newqty'] * ($rowinvoicedetail['newprice']+$vatNew);
+							$html.='<tr>
+								<td class="col-ref text-center">'. $ref_counter .'</td>
+								<td class="col-desc">' . $rowinvoicedetail['product_name'] . ' - New</td>
+								<td class="col-qty text-center">' . $rowinvoicedetail['newqty'] . '</td>
+								<td class="col-unitprice text-right">' . number_format($unitprice, 2, '.', ',') . '</td>
+								<td class="col-amount text-right">' . number_format($total, 2, '.', ',') . '</td>
+							</tr>';
+							$ref_counter++;
+						}
+						
+						if($rowinvoicedetail['refillqty']>0) {
+							$unitprice = $cusType == 1 ? $rowinvoicedetail['encustomer_refillprice'] + $vatRefill : $rowinvoicedetail['refillprice'] + $vatRefill;
+							$total = $cusType == 1 ? $rowinvoicedetail['refillqty'] * ($rowinvoicedetail['encustomer_refillprice']+$vatRefill) : $rowinvoicedetail['refillqty'] * ($rowinvoicedetail['refillprice']+$vatRefill);
+							$html.='<tr>
+								<td class="col-ref text-center">'. $ref_counter .'</td>
+								<td class="col-desc">' . $rowinvoicedetail['product_name'] . ' - Refill</td>
+								<td class="col-qty text-center">' . $rowinvoicedetail['refillqty'] . '</td>
+								<td class="col-unitprice text-right">' . number_format($unitprice, 2, '.', ',') . '</td>
+								<td class="col-amount text-right">' . number_format($total, 2, '.', ',') . '</td>
+							</tr>';
+							$ref_counter++;
+						}
+						
+						if($rowinvoicedetail['emptyqty']>0) {
+							$unitprice = $cusType == 1 ? $rowinvoicedetail['encustomer_emptyprice'] + $vatEmpty : $rowinvoicedetail['emptyprice'] + $vatEmpty;
+							$total = $cusType == 1 ? $rowinvoicedetail['emptyqty'] * ($rowinvoicedetail['encustomer_emptyprice']+$vatEmpty) : $rowinvoicedetail['emptyqty'] * ($rowinvoicedetail['emptyprice']+$vatEmpty);
+							$html.='<tr>
+								<td class="col-ref text-center">'. $ref_counter .'</td>
+								<td class="col-desc">' . $rowinvoicedetail['product_name'] . ' - Empty</td>
+								<td class="col-qty text-center">' . $rowinvoicedetail['emptyqty'] . '</td>
+								<td class="col-unitprice text-right">' . number_format($unitprice, 2, '.', ',') . '</td>
+								<td class="col-amount text-right">' . number_format($total, 2, '.', ',') . '</td>
+							</tr>';
+							$ref_counter++;
+						}
+					}
+				$html.='</tbody>';
+				
+				$vat_amount = $rowinvoiceinfo['taxamount'];
+				$subtotal = $rowinvoiceinfo['total'];
+				$nettotal = $rowinvoiceinfo['nettotal'];
+				$rupeetext = ConvertRupeeToText(round($nettotal, 2));
+
+				$html.='
+				<!-- ── Summary ── -->
+				<tfoot>
+				<tr>
+					<td colspan="4" class="summary-label">
+						Total Value of Supply :
+					</td>
+					<td class="summary-value text-right">
+						' . number_format($subtotal, 2, '.', ',') . '
+					</td>
+				</tr>
+				<tr>
+					<td colspan="4" class="summary-label">
+						VAT Amount (Total Value of Supply @ ' . $rowvat['vat'] . '%)
+					</td>
+					<td class="summary-value text-right">
+						' . number_format($vat_amount, 2, '.', ',') . '
+					</td>
+				</tr>
+				<tr>
+					<td colspan="4" class="summary-label font-bold">
+						Total Amount / consideration including VAT :
+					</td>
+					<td class="summary-value text-right font-bold">
+						' . number_format($nettotal, 2, '.', ',') . '
+					</td>
+				</tr>
+				</tfoot>
+
+			</table>
+
+			<!-- ══ TOTAL IN WORDS ════════════════════════════════════════════════ -->
+			<div class="total-words-box">
+				<table class="inner-details-table" style="width: 100%; border: none; border-collapse: collapse;">
+					<tr>
+						<th style="border: none;width:24%;vertical-align: top;">Total Amount in words</th>
+						<th style="border: none;width:2%;vertical-align: top;">:</th>
+						<td style="border: none;width:74%;vertical-align: top;padding-top:0;">'. $rupeetext .'</td>
+					</tr>
+				</table>	
+			</div>
+
+			<!-- ══ MODE OF PAYMENT ═══════════════════════════════════════════════ -->
+			<div class="mode-payment-box">
+				<table class="inner-details-table" style="width: 100%; border: none; border-collapse: collapse;">
+					<tr>
+						<th style="border: none;width:24%;vertical-align: top;">Mode of Payment</th>
+						<th style="border: none;width:2%;vertical-align: top;">:</th>
+						<td style="border: none;width:74%;vertical-align: top;padding-top:0;"></td>
+					</tr>
+				</table>	
+			</div>
+		</body>
+		</html>
+	';
 }
 
 // echo $html;
