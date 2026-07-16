@@ -689,7 +689,7 @@ else{
                     </tbody>
                 </table>
                 -->
-                <div style="text-align: center; font-size: 10px; padding-top: 20px;">
+                <div style="text-align: center; padding-top: 20px;">
                     This is a computer-generated invoice. No signature is required.
                 </div>
             </footer>
