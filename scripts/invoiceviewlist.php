@@ -61,6 +61,10 @@ require('ssp.customized.class.php');
 $joinQuery = "FROM(SELECT 
     u.idtbl_invoice,
     CASE 
+        WHEN u.date >= '2026-07-01' 
+             AND u.tax_invoice_num IS NOT NULL 
+             AND u.tax_invoice_num != '' 
+        THEN CONCAT(UPPER(DATE_FORMAT(u.date, '%y%b')), '_AGT1_', SUBSTRING(u.tax_invoice_num, 3))
         WHEN u.tax_invoice_num = '' OR u.tax_invoice_num IS NULL THEN CONCAT('INV-', u.idtbl_invoice)
         ELSE CONCAT('AGT', u.tax_invoice_num)
     END AS invoiceNumber,
