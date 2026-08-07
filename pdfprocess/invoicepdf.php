@@ -856,8 +856,8 @@ else{
 						}
 
 						if($rowinvoicedetail['newqty']>0) {
-							$unitprice = $cusType == 1 ? $rowinvoicedetail['encustomer_newprice'] + $vatNew : $rowinvoicedetail['newprice'] + $vatNew;
-							$total = $cusType == 1 ? $rowinvoicedetail['newqty'] * ($rowinvoicedetail['encustomer_newprice']+$vatNew) : $rowinvoicedetail['newqty'] * ($rowinvoicedetail['newprice']+$vatNew);
+							$unitprice = $cusType == 1 ? $rowinvoicedetail['encustomer_newprice'] : $rowinvoicedetail['newprice'];
+							$total = $cusType == 1 ? $rowinvoicedetail['newqty'] * $rowinvoicedetail['encustomer_newprice'] : $rowinvoicedetail['newqty'] * $rowinvoicedetail['newprice'];
 							$html.='<tr>
 								<td class="col-ref text-center">'. $ref_counter .'</td>
 								<td class="col-desc">' . $rowinvoicedetail['product_name'] . ' - New</td>
@@ -869,8 +869,8 @@ else{
 						}
 						
 						if($rowinvoicedetail['refillqty']>0) {
-							$unitprice = $cusType == 1 ? $rowinvoicedetail['encustomer_refillprice'] + $vatRefill : $rowinvoicedetail['refillprice'] + $vatRefill;
-							$total = $cusType == 1 ? $rowinvoicedetail['refillqty'] * ($rowinvoicedetail['encustomer_refillprice']+$vatRefill) : $rowinvoicedetail['refillqty'] * ($rowinvoicedetail['refillprice']+$vatRefill);
+							$unitprice = $cusType == 1 ? $rowinvoicedetail['encustomer_refillprice'] : $rowinvoicedetail['refillprice'];
+							$total = $cusType == 1 ? $rowinvoicedetail['refillqty'] * $rowinvoicedetail['encustomer_refillprice'] : $rowinvoicedetail['refillqty'] * $rowinvoicedetail['refillprice'];
 							$html.='<tr>
 								<td class="col-ref text-center">'. $ref_counter .'</td>
 								<td class="col-desc">' . $rowinvoicedetail['product_name'] . ' - Refill</td>
@@ -882,8 +882,8 @@ else{
 						}
 						
 						if($rowinvoicedetail['emptyqty']>0) {
-							$unitprice = $cusType == 1 ? $rowinvoicedetail['encustomer_emptyprice'] + $vatEmpty : $rowinvoicedetail['emptyprice'] + $vatEmpty;
-							$total = $cusType == 1 ? $rowinvoicedetail['emptyqty'] * ($rowinvoicedetail['encustomer_emptyprice']+$vatEmpty) : $rowinvoicedetail['emptyqty'] * ($rowinvoicedetail['emptyprice']+$vatEmpty);
+							$unitprice = $cusType == 1 ? $rowinvoicedetail['encustomer_emptyprice'] : $rowinvoicedetail['emptyprice'];
+							$total = $cusType == 1 ? $rowinvoicedetail['emptyqty'] * $rowinvoicedetail['encustomer_emptyprice'] : $rowinvoicedetail['emptyqty'] * $rowinvoicedetail['emptyprice'];
 							$html.='<tr>
 								<td class="col-ref text-center">'. $ref_counter .'</td>
 								<td class="col-desc">' . $rowinvoicedetail['product_name'] . ' - Empty</td>
