@@ -13,6 +13,7 @@
                                     <div class="form-group"><label class="small mb-1" for="inputPassword">Password</label><input class="form-control form-control-sm py-3" id="password" name="password" type="password" placeholder="Enter password" /></div>
                                     <div class="form-group d-flex align-items-center justify-content-between mt-4 mb-0"><button type="submit" class="btn btn-outline-primary btn-sm ml-auto w-25">Login</button></div>
                                 </form>
+                                <a href="privacypolicy.php" target="_blank" class="small text-decoration-none text-dark font-weight-bold">Privacy & Policy</a>
                             </div>
                             <div class="card-footer bg-laugfs">
                                 <div class="row">
