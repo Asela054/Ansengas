@@ -308,7 +308,28 @@ if($exporttype==1){
                 $html.='
                 <td>'.date("d/m/Y", strtotime($row['date'])).'</td>
                 <td>';
-                if(!empty($row['tax_invoice_num'])){$html.=$row['tax_invoice_num'];}
+                if(!empty($row['tax_invoice_num'])){
+                    $companyID = 1;
+
+                    $yy  = date('y', strtotime($row["date"]));          // e.g. 26
+                    $mmm = strtoupper(date('M', strtotime($row["date"]))); // e.g. JUL
+                    $qqqqMap = [
+                        1 => 'AGT1'
+                    ];
+                    $qqqq = $qqqqMap[$companyID] ?? 'GEN1';
+                    $taxDatePrefix = $yy . $mmm . '_' . $qqqq . '_';
+
+                    // Strip the first two characters from tax_invoice_num, keep the rest
+                    $rawTaxInvNum = $row['tax_invoice_num'];
+                    $strippedTaxInvNum = substr($rawTaxInvNum, 2);
+
+                    if($row["date"] < '2026-07-01'){
+                        $html.=$row['tax_invoice_num'];
+                    }
+                    else{
+                        $html.=$taxDatePrefix . sprintf('%05d', $strippedTaxInvNum);
+                    }                    
+                }
                 else{$html.='INV-'.$row['idtbl_invoice'];}
                 $html.='</td>
                 <td>'.$row['name'].'</td>';
@@ -811,7 +832,28 @@ if($exporttype==1){
                 <td>'.date("d/m/Y", strtotime($row['date'])).'</td>
                 <td>PR-'.$row['idtbl_invoice_payment'].'</td>
                 <td>';
-                if(!empty($row['tax_invoice_num'])){$html.=$row['tax_invoice_num'];}
+                if(!empty($row['tax_invoice_num'])){
+                    $companyID = 1;
+
+                    $yy  = date('y', strtotime($row["date"]));          // e.g. 26
+                    $mmm = strtoupper(date('M', strtotime($row["date"]))); // e.g. JUL
+                    $qqqqMap = [
+                        1 => 'AGT1'
+                    ];
+                    $qqqq = $qqqqMap[$companyID] ?? 'GEN1';
+                    $taxDatePrefix = $yy . $mmm . '_' . $qqqq . '_';
+
+                    // Strip the first two characters from tax_invoice_num, keep the rest
+                    $rawTaxInvNum = $row['tax_invoice_num'];
+                    $strippedTaxInvNum = substr($rawTaxInvNum, 2);
+
+                    if($row["date"] < '2026-07-01'){
+                        $html.=$row['tax_invoice_num'];
+                    }
+                    else{
+                        $html.=$taxDatePrefix . sprintf('%05d', $strippedTaxInvNum);
+                    }                    
+                }
                 else{$html.='INV-'.$row['idtbl_invoice'];}
                 $html.='</td>';
             }
@@ -1118,7 +1160,28 @@ if($exporttype==1){
                 $html.='
                 <td>'.date("d/m/Y", strtotime($row['date'])).'</td>
                 <td>';
-                if(!empty($row['tax_invoice_num'])){$html.=$row['tax_invoice_num'];}
+                if(!empty($row['tax_invoice_num'])){
+                    $companyID = 1;
+
+                    $yy  = date('y', strtotime($row["date"]));          // e.g. 26
+                    $mmm = strtoupper(date('M', strtotime($row["date"]))); // e.g. JUL
+                    $qqqqMap = [
+                        1 => 'AGT1'
+                    ];
+                    $qqqq = $qqqqMap[$companyID] ?? 'GEN1';
+                    $taxDatePrefix = $yy . $mmm . '_' . $qqqq . '_';
+
+                    // Strip the first two characters from tax_invoice_num, keep the rest
+                    $rawTaxInvNum = $row['tax_invoice_num'];
+                    $strippedTaxInvNum = substr($rawTaxInvNum, 2);
+
+                    if($row["date"] < '2026-07-01'){
+                        $html.=$row['tax_invoice_num'];
+                    }
+                    else{
+                        $html.=$taxDatePrefix . sprintf('%05d', $strippedTaxInvNum);
+                    }
+                }
                 else{$html.='INV-'.$row['idtbl_invoice'];}
                 $html.='</td>
                 <td>'.$row['name'].'</td>';
@@ -1175,7 +1238,28 @@ if($exporttype==1){
             <tr>
                 <td>'.date("d/m/Y", strtotime($row['invoicedate'])).'</td>
                 <td>';
-                if(!empty($row['tax_invoice_num'])){$html.='AGT'.$row['tax_invoice_num'];}
+                if(!empty($row['tax_invoice_num'])){
+                    $companyID = 1;
+
+                    $yy  = date('y', strtotime($row["date"]));          // e.g. 26
+                    $mmm = strtoupper(date('M', strtotime($row["date"]))); // e.g. JUL
+                    $qqqqMap = [
+                        1 => 'AGT1'
+                    ];
+                    $qqqq = $qqqqMap[$companyID] ?? 'GEN1';
+                    $taxDatePrefix = $yy . $mmm . '_' . $qqqq . '_';
+
+                    // Strip the first two characters from tax_invoice_num, keep the rest
+                    $rawTaxInvNum = $row['tax_invoice_num'];
+                    $strippedTaxInvNum = substr($rawTaxInvNum, 2);
+
+                    if($row["date"] < '2026-07-01'){
+                        $html.='AGT'.$row['tax_invoice_num'];
+                    }
+                    else{
+                        $html.=$taxDatePrefix . sprintf('%05d', $strippedTaxInvNum);
+                    }
+                }
                 else{$html.='INV-'.$row['tbl_invoice_idtbl_invoice'];}
                 $html.='</td>
                 <td>'.$row['customername'].'</td>
@@ -1203,7 +1287,9 @@ if($exporttype==1){
             THEN CONCAT('AGT', `tbl_invoice`.`tax_invoice_num`)
             ELSE CONCAT('INV-', `tbl_invoice`.`idtbl_invoice`)
         END AS `invoice_number`, 
-        `tbl_invoice`.`idtbl_invoice`
+        `tbl_invoice`.`idtbl_invoice`,
+        `tbl_invoice`.`tax_invoice_num`,
+        `tbl_invoice`.`date`
     FROM
         `tbl_invoice_special_discount`
     LEFT JOIN
@@ -1238,7 +1324,28 @@ if($exporttype==1){
         while ($row = $result->fetch_assoc()) {
             $html .= '<tr>
                 <td>' . date("d/m/Y", strtotime($row['invdate'])) . '</td>
-                <td>' . $row['invoice_number'] . '</td>
+                <td>';
+                $companyID = 1;
+
+                $yy  = date('y', strtotime($row["date"]));          // e.g. 26
+                $mmm = strtoupper(date('M', strtotime($row["date"]))); // e.g. JUL
+                $qqqqMap = [
+                    1 => 'AGT1'
+                ];
+                $qqqq = $qqqqMap[$companyID] ?? 'GEN1';
+                $taxDatePrefix = $yy . $mmm . '_' . $qqqq . '_';
+
+                // Strip the first two characters from tax_invoice_num, keep the rest
+                $rawTaxInvNum = $row['tax_invoice_num'];
+                $strippedTaxInvNum = substr($rawTaxInvNum, 2);
+
+                if($row["date"] < '2026-07-01'){
+                    $html.= $row['invoice_number'];
+                }
+                else{
+                    $html.=$taxDatePrefix . sprintf('%05d', $strippedTaxInvNum);
+                }
+                $html.='</td>
                 <td>' . $row['name'] . '</td>
                 <td class="text-right">&nbsp;</td>
                 <td class="text-right">' . number_format(round($row['totaldiscount'], 2), 2) . '</td>
