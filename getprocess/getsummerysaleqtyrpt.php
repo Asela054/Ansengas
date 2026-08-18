@@ -483,6 +483,7 @@ if($resultdaily->num_rows>0){
             $objdiscount->customername=$rowdaily['cusname'];
             $objdiscount->invoiceno=$rowdaily['idtbl_invoice'];
             $objdiscount->tax_invoice_num=$rowdaily['tax_invoice_num'];
+            $objdiscount->invoicedate=$rowdaily['date'];
             $objdiscount->discountamount=$discount_amount;
 
             array_push($discountbrekup, $objdiscount);
@@ -514,6 +515,7 @@ if($resultdaily->num_rows>0){
                 $objdiscount->customername=$rowdaily['cusname'];
                 $objdiscount->invoiceno=$rowdaily['idtbl_invoice'];
                 $objdiscount->tax_invoice_num=$rowdaily['tax_invoice_num'];
+                $objdiscount->invoicedate=$rowdaily['date'];
                 $objdiscount->discountamount=$discount_amount;
 
                 array_push($discountbrekup, $objdiscount);
@@ -548,6 +550,7 @@ if($resultdaily->num_rows>0){
                             $objdiscount->customername=$rowdaily['cusname'];
                             $objdiscount->invoiceno=$rowdaily['idtbl_invoice'];
                             $objdiscount->tax_invoice_num=$rowdaily['tax_invoice_num'];
+                            $objdiscount->invoicedate=$rowdaily['date'];
                             $objdiscount->discountamount=$discount_amount;
 
                             array_push($discountbrekup, $objdiscount);
@@ -743,6 +746,7 @@ if($resultdaily->num_rows>0){
                 $objcheque->customername=$rowdaily['cusname'];
                 $objcheque->invoiceno=$rowdaily['idtbl_invoice'];
                 $objcheque->tax_invoice_num=$rowdaily['tax_invoice_num'];
+                $objcheque->invoicedate=$rowdaily['date'];
                 $objcheque->nettotal=$rowdaily['nettotal'];
                 $objcheque->receiptno=$rowbanktrf['receiptno'];
                 $objcheque->trfdate=$rowbanktrf['chequedate'];
@@ -880,6 +884,7 @@ if($resultdaily->num_rows>0){
             $objcredit->customername=$rowdaily['cusname'];
             $objcredit->invoiceno=$rowdaily['idtbl_invoice'];
             $objcredit->tax_invoice_num=$rowdaily['tax_invoice_num'];
+            $objcredit->invoicedate=$rowdaily['date'];
             $objcredit->creditamount=$creditValue;
 
             array_push($creditbrekup, $objcredit);
@@ -1484,7 +1489,28 @@ $resultacceinfo =$conn-> query($sqlacceinfo);
             <tr>
                 <td nowrap><?php echo $rowtrfbrekup->customername ?></td>
                 <td nowrap class="text-right"><?php echo number_format($rowtrfbrekup->amount, 2); $trflisttotal+=$rowtrfbrekup->amount; ?></td>
-                <td nowrap class=""><?php if(!empty($rowtrfbrekup->tax_invoice_num)){echo 'AGT'.$rowtrfbrekup->tax_invoice_num;}else{echo 'INV-'.$rowtrfbrekup->invoiceno;} ?></td>
+                <td nowrap class=""><?php if(!empty($rowtrfbrekup->tax_invoice_num)){
+                    $companyID = 1;
+
+                    $yy  = date('y', strtotime($rowtrfbrekup->invoicedate));          // e.g. 26
+                    $mmm = strtoupper(date('M', strtotime($rowtrfbrekup->invoicedate))); // e.g. JUL
+                    $qqqqMap = [
+                        1 => 'AGT1'
+                    ];
+                    $qqqq = $qqqqMap[$companyID] ?? 'GEN1';
+                    $taxDatePrefix = $yy . $mmm . '_' . $qqqq . '_';
+
+                    // Strip the first two characters from tax_invoice_num, keep the rest
+                    $rawTaxInvNum = $rowtrfbrekup->tax_invoice_num;
+                    $strippedTaxInvNum = substr($rawTaxInvNum, 2);
+
+                    if($rowtrfbrekup->invoicedate < '2026-07-01'){
+                        echo 'AGT'.$rowtrfbrekup->tax_invoice_num;
+                    }
+                    else{
+                        echo $taxDatePrefix . sprintf('%05d', $strippedTaxInvNum);
+                    }
+                }else{echo 'INV-'.$rowtrfbrekup->invoiceno;} ?></td>
                 <td nowrap class="text-right"></td>
                 <td nowrap class="text-right"></td>
                 <td nowrap class="text-center"></td>
@@ -1519,7 +1545,29 @@ $resultacceinfo =$conn-> query($sqlacceinfo);
             <tr>
                 <td nowrap><?php echo $rowdiscountbrekup->customername ?></td>
                 <td nowrap class="text-right"><?php echo number_format($rowdiscountbrekup->discountamount, 2); ?></td>
-                <td nowrap class=""><?php if(!empty($rowdiscountbrekup->tax_invoice_num)){echo 'AGT'.$rowdiscountbrekup->tax_invoice_num;}else{echo 'INV-'.$rowdiscountbrekup->invoiceno;} ?></td>
+                <td nowrap class=""><?php if(!empty($rowdiscountbrekup->tax_invoice_num)){
+                    $companyID = 1;
+
+                    $yy  = date('y', strtotime($rowdiscountbrekup->invoicedate));          // e.g. 26
+                    $mmm = strtoupper(date('M', strtotime($rowdiscountbrekup->invoicedate))); // e.g. JUL
+                    $qqqqMap = [
+                        1 => 'AGT1'
+                    ];
+                    $qqqq = $qqqqMap[$companyID] ?? 'GEN1';
+                    $taxDatePrefix = $yy . $mmm . '_' . $qqqq . '_';
+
+                    // Strip the first two characters from tax_invoice_num, keep the rest
+                    $rawTaxInvNum = $rowdiscountbrekup->tax_invoice_num;
+                    $strippedTaxInvNum = substr($rawTaxInvNum, 2);
+
+                    if($rowdiscountbrekup->invoicedate < '2026-07-01'){
+                        echo 'AGT'.$rowdiscountbrekup->tax_invoice_num;
+                    }
+                    else{
+                        echo $taxDatePrefix . sprintf('%05d', $strippedTaxInvNum);
+                    }
+                }else{echo 'INV-'.$rowdiscountbrekup->invoiceno;} ?>
+                </td>
                 <td nowrap class="text-right"></td>
                 <td nowrap class="text-right"></td>
                 <td nowrap class="text-center"></td>
@@ -1554,7 +1602,29 @@ $resultacceinfo =$conn-> query($sqlacceinfo);
             <tr>
                 <td nowrap><?php echo $rowcreditbrekup->customername ?></td>
                 <td nowrap class="text-right"><?php echo number_format($rowcreditbrekup->creditamount, 2); $creditlisttotal+=$rowcreditbrekup->creditamount; ?></td>
-                <td nowrap class=""><?php if(!empty($rowcreditbrekup->tax_invoice_num)){echo 'AGT'.$rowcreditbrekup->tax_invoice_num;}else{echo 'INV-'.$rowcreditbrekup->invoiceno;} ?></td>
+                <td nowrap class=""><?php if(!empty($rowcreditbrekup->tax_invoice_num)){
+                    $companyID = 1;
+
+                    $yy  = date('y', strtotime($rowcreditbrekup->invoicedate));          // e.g. 26
+                    $mmm = strtoupper(date('M', strtotime($rowcreditbrekup->invoicedate))); // e.g. JUL
+                    $qqqqMap = [
+                        1 => 'AGT1'
+                    ];
+                    $qqqq = $qqqqMap[$companyID] ?? 'GEN1';
+                    $taxDatePrefix = $yy . $mmm . '_' . $qqqq . '_';
+
+                    // Strip the first two characters from tax_invoice_num, keep the rest
+                    $rawTaxInvNum = $rowcreditbrekup->tax_invoice_num;
+                    $strippedTaxInvNum = substr($rawTaxInvNum, 2);
+
+                    if($rowcreditbrekup->invoicedate < '2026-07-01'){
+                        echo 'AGT'.$rowcreditbrekup->tax_invoice_num;
+                    }
+                    else{
+                        echo $taxDatePrefix . sprintf('%05d', $strippedTaxInvNum);
+                    }
+                }else{echo 'INV-'.$rowcreditbrekup->invoiceno;} ?>
+                </td>
                 <td nowrap class="text-right"></td>
                 <td nowrap class="text-right"></td>
                 <td nowrap class="text-center"></td>

@@ -38,7 +38,26 @@ if($advance==0){
                     if ($rowdaily['tax_invoice_num'] == null) {
                         echo 'INV-'.$rowdaily['idtbl_invoice'];
                     } else {
-                        echo 'AGT'.$rowdaily['tax_invoice_num'];
+                        $companyID = 1;
+
+                        $yy  = date('y', strtotime($rowdaily["date"]));          // e.g. 26
+                        $mmm = strtoupper(date('M', strtotime($rowdaily["date"]))); // e.g. JUL
+                        $qqqqMap = [
+                            1 => 'AGT1'
+                        ];
+                        $qqqq = $qqqqMap[$companyID] ?? 'GEN1';
+                        $taxDatePrefix = $yy . $mmm . '_' . $qqqq . '_';
+
+                        // Strip the first two characters from tax_invoice_num, keep the rest
+                        $rawTaxInvNum = $rowdaily['tax_invoice_num'];
+                        $strippedTaxInvNum = substr($rawTaxInvNum, 2);
+
+                        if($rowdaily["date"] < '2026-07-01'){
+                            echo 'AGT'.$rowdaily['tax_invoice_num'];
+                        }
+                        else{
+                            echo $taxDatePrefix . sprintf('%05d', $strippedTaxInvNum);
+                        }
                     }
                 ?>
                 </td>
@@ -298,7 +317,26 @@ if($advance==0){
                     if ($rowdaily['tax_invoice_num'] == null) {
                         echo 'INV-'.$rowdaily['idtbl_invoice'];
                     } else {
-                        echo 'AGT'.$rowdaily['tax_invoice_num'];
+                        $companyID = 1;
+
+                        $yy  = date('y', strtotime($rowdaily["date"]));          // e.g. 26
+                        $mmm = strtoupper(date('M', strtotime($rowdaily["date"]))); // e.g. JUL
+                        $qqqqMap = [
+                            1 => 'AGT1'
+                        ];
+                        $qqqq = $qqqqMap[$companyID] ?? 'GEN1';
+                        $taxDatePrefix = $yy . $mmm . '_' . $qqqq . '_';
+
+                        // Strip the first two characters from tax_invoice_num, keep the rest
+                        $rawTaxInvNum = $rowdaily['tax_invoice_num'];
+                        $strippedTaxInvNum = substr($rawTaxInvNum, 2);
+
+                        if($rowdaily["date"] < '2026-07-01'){
+                            echo 'AGT'.$rowdaily['tax_invoice_num'];
+                        }
+                        else{
+                            echo $taxDatePrefix . sprintf('%05d', $strippedTaxInvNum);
+                        }
                     }
                 ?>
                 </td>

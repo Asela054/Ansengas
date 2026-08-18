@@ -42,7 +42,30 @@ $result =$conn-> query($sql);
         <tr>
             <td>&nbsp;</td>
             <td><?php echo $row['date']; ?></td>
-            <td><?php echo 'AGT'.$row['tax_invoice_num']; ?></td>
+            <td>
+            <?php 
+                $companyID = 1;
+
+                $yy  = date('y', strtotime($row["date"]));          // e.g. 26
+                $mmm = strtoupper(date('M', strtotime($row["date"]))); // e.g. JUL
+                $qqqqMap = [
+                    1 => 'AGT1'
+                ];
+                $qqqq = $qqqqMap[$companyID] ?? 'GEN1';
+                $taxDatePrefix = $yy . $mmm . '_' . $qqqq . '_';
+
+                // Strip the first two characters from tax_invoice_num, keep the rest
+                $rawTaxInvNum = $row['tax_invoice_num'];
+                $strippedTaxInvNum = substr($rawTaxInvNum, 2);
+
+                if($row["date"] < '2026-07-01'){
+                    echo 'AGT'.$row['tax_invoice_num'];
+                }
+                else{
+                    echo $taxDatePrefix . sprintf('%05d', $strippedTaxInvNum);
+                }
+            ?>
+            </td>
             <td><?php echo $row['vat_num']; ?></td>
             <td><?php echo $row['tax_cus_name']; ?></td>
             <td><?php echo $rowdesc['category_label']; ?></td>
