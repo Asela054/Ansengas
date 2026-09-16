@@ -289,24 +289,28 @@ include "include/topnavbar.php";
                             </div>
                             <div class="col-8">
                                  <div class="form-row mb-1">
-                                     <div class="col-3">
-                                         <label class="small font-weight-bold text-dark">Customer Type</label>
-                                         <div class="input-group input-group-sm">
-                                             <select id="customerTypeFilter" class="form-control form-control-sm mb-3">
-                                                 <option value="">All Customers</option>
-                                                 <option value="2">Dealer</option>
-                                                 <option value="1">Commercial</option>
-                                             </select>
-                                         </div>
-                                     </div>
-                                     <div class="col-3 d-flex align-items-end">
-                                         <div class="custom-control custom-checkbox mb-3 ml-3">
-                                             <input type="checkbox" class="custom-control-input" id="deactivateCustomerOnly">
-                                             <label class="custom-control-label small font-weight-bold text-dark" for="deactivateCustomerOnly">Deactivate Customers</label>
-                                         </div>
-                                     </div>
-                                 </div>
-
+                                    <div class="col-3">
+                                        <label class="small font-weight-bold text-dark">Customer Type</label>
+                                        <div class="input-group input-group-sm">
+                                            <select id="customerTypeFilter" class="form-control form-control-sm mb-3">
+                                                <option value="">All Customers</option>
+                                                <option value="2">Dealer</option>
+                                                <option value="1">Commercial</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-3 d-flex align-items-end">
+                                        <div class="custom-control custom-checkbox mb-3 ml-3">
+                                            <input type="checkbox" class="custom-control-input" id="deactivateCustomerOnly">
+                                            <label class="custom-control-label small font-weight-bold text-dark" for="deactivateCustomerOnly">Deactivate Customers</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-3 d-flex align-items-end">
+                                        <a href="process/exportcustomerprocess.php" class="btn btn-outline-success btn-sm mb-3" target="_blank">
+                                            <i class="fas fa-file-csv mr-1"></i> Export CSV
+                                        </a>
+                                    </div>
+                                </div>
                                 <div class="scrollbar pb-3" id="style-2">
                                     <table class="table table-bordered table-striped table-sm nowrap" id="dataTable">
                                         <thead>
